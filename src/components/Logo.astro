@@ -1,0 +1,42 @@
+---
+interface Props {
+  onDark?: boolean;
+  size?: string;
+}
+const { onDark = false, size = "1.5rem" } = Astro.props;
+---
+
+<span class:list={["logo", { "on-dark": onDark }]} style={`font-size:${size}`}>
+  <span class="scr">the</span><span class="hvy">STUDIO</span><span class="scr">by</span><span class="hvy">ATIS</span>
+</span>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.26em;
+    line-height: 1;
+    justify-content: center;
+  }
+  .logo .scr {
+    font-family: var(--script);
+    font-size: 1.5em;
+    color: var(--plata-oscura);
+    transform: translateY(0.06em);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+  .logo .hvy {
+    font-family: var(--sans);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+  .logo.on-dark .scr {
+    color: var(--plata-clara);
+    text-shadow: 0 0 9px rgba(200, 212, 244, 0.7);
+  }
+  .logo.on-dark .hvy {
+    color: #eef1f6;
+  }
+</style>

@@ -1,0 +1,105 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import PainCarousel from "../components/PainCarousel.astro";
+import GlassButton from "../components/GlassButton.astro";
+
+const painCards = [
+  {
+    sector: "Dental",
+    text: "Pierdes entre el 20 y el 30% de tus pacientes al año por falta de seguimiento. Un recordatorio automático por WhatsApp reduce los no-shows hasta un 80%.",
+    source: "INV-01 / INV-02",
+  },
+  {
+    sector: "Dental",
+    text: "Solo aceptas entre el 35 y el 50% de los presupuestos que propones. El seguimiento automático sube la aceptación hasta un 30%.",
+    source: "INV-01",
+  },
+  {
+    sector: "Dental",
+    text: "Un paciente vale de media 2.160€ para tu clínica. Captarlo cuesta 65-135€ — automatizar el seguimiento se recupera en el primer mes.",
+    source: "INV-01",
+  },
+  {
+    sector: "Reformas",
+    text: "Más de la mitad de los leads se pierden por no responder a tiempo. Contactar en menos de 5 minutos multiplica por 21 las posibilidades de cerrar.",
+    source: "INV-01 (HBR)",
+  },
+  {
+    sector: "Reformas",
+    text: "Tu margen neto ronda el 3-7%. Cada presupuesto que se pierde por falta de seguimiento es margen que no vuelve.",
+    source: "INV-02",
+  },
+  {
+    sector: "Reformas",
+    text: "Un presupuesto desglosado y rápido sube la aceptación — en un comprador racional, la confianza pesa más que el precio.",
+    source: "INV-02",
+  },
+];
+---
+
+<BaseLayout
+  title="Casos — The Studio, by Atis"
+  description="Resultados y datos reales del sector que trabajamos, citados a nuestra propia investigación de mercado."
+  path="/casos"
+>
+  <PageHero kicker="Resultados" title="No hablamos por hablar">
+    <p class="lead">Datos reales del sector, citados a nuestra propia investigación.</p>
+  </PageHero>
+
+  <section class="carousel-wrap">
+    <PainCarousel cards={painCards} />
+  </section>
+
+  <section class="block panel">
+    <p class="note">
+      <b>Nota de transparencia:</b> los casos con clientes reales de The Studio están en proceso de documentar
+      con cifras verificadas. Hasta entonces, mostramos datos citados a nuestra propia investigación
+      de mercado (INV-01, INV-02) en vez de inventar resultados que no podemos respaldar.
+    </p>
+  </section>
+
+  <section class="block cta-block">
+    <p>¿Quieres ver qué números saldrían en tu caso?</p>
+    <GlassButton href="/contacto">Pídeme tu plan gratis</GlassButton>
+  </section>
+</BaseLayout>
+
+<style>
+  .lead {
+    font-size: 1.05rem;
+    color: var(--muted);
+    text-align: center;
+  }
+  .carousel-wrap {
+    padding: 20px 24px 40px;
+  }
+  .block {
+    max-width: 640px;
+    margin: 20px auto;
+    padding: 24px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid rgba(51, 75, 164, 0.12);
+    border-radius: var(--radius-lg);
+  }
+  .note {
+    font-family: var(--sans);
+    font-size: 0.86rem;
+    color: var(--muted);
+    line-height: 1.6;
+    text-align: justify;
+    margin: 0;
+  }
+  .cta-block {
+    text-align: center;
+    padding: 20px 24px 64px;
+  }
+  .cta-block p {
+    font-family: var(--sans);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+</style>

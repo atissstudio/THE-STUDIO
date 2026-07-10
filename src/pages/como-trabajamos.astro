@@ -1,0 +1,165 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import Highlight from "../components/Highlight.astro";
+import GlassButton from "../components/GlassButton.astro";
+
+const steps = [
+  {
+    n: "1",
+    title: "Auditoría — la puerta de entrada",
+    body: "Miramos tu negocio con datos y te decimos la verdad: qué te frena, con números, sin humo.",
+  },
+  {
+    n: "2",
+    title: "La cuña — un primer resultado, rápido",
+    body: "De la auditoría sale la oferta más atractiva y de ROI más obvio para tu caso: normalmente, una solución de IA que te quita un trabajo pesado concreto. No va preestablecida — sale de tu negocio, no de un catálogo.",
+  },
+  {
+    n: "3",
+    title: "Demostrar — con tus números",
+    body: "Un primer resultado medible, con tus propios datos. Así se gana la confianza: demostrando, no prometiendo.",
+  },
+  {
+    n: "4",
+    title: "Escalar — hacia la consultoría completa",
+    body: "Una vez dentro, subimos hacia comunicación + marketing + IA completos, siempre explicando el porqué de cada paso.",
+  },
+];
+---
+
+<BaseLayout
+  title="Cómo trabajamos — The Studio, by Atis"
+  description="Nuestro método: auditoría, una cuña de IA con ROI rápido, demostrar con tus números y escalar hacia la consultoría completa."
+  path="/como-trabajamos"
+>
+  <PageHero kicker="Cómo trabajamos" title="Un proceso, sin humo.">
+    <p class="lead">Empezamos pequeño, demostramos con tus números y escalamos contigo.</p>
+  </PageHero>
+
+  <section class="steps">
+    {
+      steps.map((step) => (
+        <div class="step">
+          <span class="n">{step.n}</span>
+          <div>
+            <h2>{step.title}</h2>
+            <p>{step.body}</p>
+          </div>
+        </div>
+      ))
+    }
+  </section>
+
+  <section class="block panel">
+    <h2>Por qué empezamos por la IA</h2>
+    <p>
+      Es novedosa, tiene ROI inmediato, es tangible y quita trabajo pesado — fácil de demostrar en
+      semanas, no en meses. Nos aleja de las agencias que solo venden leads: nosotros{" "}
+      <Highlight>devolvemos tiempo</Highlight> y enseñamos, porque la pedagogía es el puente hacia
+      la confianza.
+    </p>
+  </section>
+
+  <section class="block">
+    <h2>Dos modos de entrega</h2>
+    <p>
+      <b>Sobre la marcha:</b> resolvemos problemas concretos uno a uno, demostrando ROI en cada paso.
+      Es la forma de entrar con un comprador racional y con criterio.
+    </p>
+    <p>
+      <b>Plan estratégico completo:</b> auditamos todo y montamos un plan de comunicación que pone
+      bases y estrategia. Es a donde escalamos una vez ganada la confianza.
+    </p>
+  </section>
+
+  <section class="block cta-block">
+    <p>¿Empezamos por tu auditoría?</p>
+    <GlassButton href="/contacto">Pídeme tu plan gratis</GlassButton>
+  </section>
+</BaseLayout>
+
+<style>
+  .steps {
+    max-width: 680px;
+    margin: 30px auto;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .step {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+  }
+  .n {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--azul);
+    color: #fff;
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: grid;
+    place-items: center;
+  }
+  .step h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 1rem;
+    margin: 4px 0 6px;
+    color: var(--ink);
+  }
+  .step p {
+    font-family: var(--sans);
+    color: #3a4250;
+    line-height: 1.6;
+    margin: 0;
+    text-align: justify;
+  }
+  .block {
+    max-width: 680px;
+    margin: 20px auto;
+    padding: 24px;
+    text-align: left;
+  }
+  .block h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    margin: 0 0 12px;
+  }
+  .block p {
+    font-family: var(--sans);
+    color: #3a4250;
+    line-height: 1.6;
+    text-align: justify;
+    margin: 0 0 12px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid rgba(51, 75, 164, 0.12);
+    border-radius: var(--radius-lg);
+    max-width: 728px;
+  }
+  .lead {
+    font-size: 1.05rem;
+    color: var(--muted);
+    text-align: center;
+  }
+  .cta-block {
+    text-align: center;
+    padding: 30px 24px 64px;
+  }
+  .cta-block p {
+    font-family: var(--sans);
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+</style>

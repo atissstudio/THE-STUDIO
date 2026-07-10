@@ -1,0 +1,67 @@
+---
+import Logo from "./Logo.astro";
+
+const links = [
+  { href: "/sobre-atis", label: "Sobre Atis" },
+  { href: "/como-trabajamos", label: "Cómo trabajamos" },
+  { href: "/servicios", label: "Servicios" },
+  { href: "/casos", label: "Casos" },
+  { href: "/contacto", label: "Contacto" },
+];
+---
+
+<footer>
+  <a href="/" aria-label="The Studio, by Atis — inicio">
+    <Logo size="1.05rem" />
+  </a>
+  <nav aria-label="Navegación de pie de página">
+    <ul>
+      {
+        links.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+  <small>The Studio, by Atis · Canarias</small>
+</footer>
+
+<style>
+  footer {
+    max-width: 800px;
+    margin: 36px auto 0;
+    padding: 20px 24px 48px;
+    text-align: center;
+    border-top: 1px solid var(--line);
+  }
+  footer nav ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    margin: 16px 0 0;
+    padding: 0;
+  }
+  footer nav a {
+    font-family: var(--sans);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--muted);
+  }
+  footer nav a:hover {
+    color: var(--azul);
+  }
+  footer small {
+    display: block;
+    font-family: var(--sans);
+    color: var(--muted);
+    font-size: 0.76rem;
+    margin-top: 16px;
+  }
+</style>

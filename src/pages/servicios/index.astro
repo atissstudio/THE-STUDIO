@@ -1,0 +1,101 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/PageHero.astro";
+
+const services = [
+  {
+    href: "/servicios/auditoria",
+    title: "Auditoría",
+    body: "El punto de partida: miramos tu negocio con datos y te decimos qué te frena, sin humo.",
+  },
+  {
+    href: "/servicios/branding",
+    title: "Branding",
+    body: "Ordenamos lo que eres — identidad, mensaje, presencia — para que se note que eres serio.",
+  },
+  {
+    href: "/servicios/marketing-ia",
+    title: "Marketing + IA",
+    body: "Automatizamos el trabajo pesado y traemos clientes de verdad, con IA que te devuelve el tiempo.",
+  },
+];
+---
+
+<BaseLayout
+  title="Servicios — The Studio, by Atis"
+  description="Auditoría, branding y marketing + IA: los tres servicios de The Studio, pensados como una escalera hacia la consultoría completa."
+  path="/servicios"
+>
+  <PageHero kicker="Qué hacemos" title="Servicios">
+    <p class="lead">Empezamos por lo que más ROI te da, y escalamos contigo.</p>
+  </PageHero>
+
+  <section class="grid">
+    {
+      services.map((s) => (
+        <a class="card" href={s.href}>
+          <h2>{s.title}</h2>
+          <p>{s.body}</p>
+          <span class="link">Ver más →</span>
+        </a>
+      ))
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .lead {
+    font-size: 1.05rem;
+    color: var(--muted);
+    text-align: center;
+  }
+  .grid {
+    max-width: 800px;
+    margin: 20px auto 64px;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 26px 20px;
+    transition: transform 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+  }
+  .card h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--ink);
+    font-size: 1.05rem;
+    margin: 0 0 8px;
+  }
+  .card p {
+    font-family: var(--sans);
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0 0 10px;
+  }
+  .link {
+    font-family: var(--sans);
+    color: var(--azul);
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>

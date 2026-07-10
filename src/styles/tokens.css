@@ -1,0 +1,86 @@
+/*
+  Tokens de diseño de The Studio, by Atis.
+  Portados de design/identity-manual.html — no inventar valores nuevos de marca aquí,
+  solo la escala de espaciado (no existía en el manual).
+*/
+:root {
+  /* Color */
+  --azul: #334ba4;
+  --azul-deep: #25376f;
+  --azul-lit: #6f86e0;
+  --ink: #111520; /* tinta de texto — nunca fondo */
+  --muted: #5c6472;
+  --line: #dce3f2;
+  --panel: linear-gradient(160deg, #eaf1fe, #d5e2fb);
+  --panel-strong: linear-gradient(160deg, #dbe6fc, #c1d4f7);
+  --plata-oscura: #565e6c; /* plata sobre fondo claro */
+  --plata-clara: #eef1f7; /* plata sobre fondo oscuro (acentos puntuales) */
+
+  /* Tipografía — Helvetica es de pago; Arial es el sustituto libre (decisión 2026-07-10) */
+  --sans: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --script: "Pinyon Script", "Snell Roundhand", "Segoe Script", cursive;
+
+  /* Espaciado — escala nueva, no estaba definida en el manual */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Radios */
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 22px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+/* Liquid glass: blanco base + destellos de plata translúcidos y multidireccionales, sin negro */
+body {
+  margin: 0;
+  background-color: #fcfcfd;
+  background-image: radial-gradient(50% 40% at 12% 8%, rgba(255, 255, 255, 0.9), transparent 65%),
+    radial-gradient(48% 42% at 88% 6%, rgba(196, 201, 209, 0.3), transparent 68%),
+    radial-gradient(55% 48% at 4% 48%, rgba(210, 214, 221, 0.24), transparent 66%),
+    radial-gradient(60% 50% at 97% 44%, rgba(200, 205, 213, 0.28), transparent 68%),
+    radial-gradient(52% 45% at 18% 88%, rgba(214, 218, 225, 0.26), transparent 65%),
+    radial-gradient(55% 46% at 84% 96%, rgba(196, 201, 209, 0.28), transparent 66%),
+    radial-gradient(70% 60% at 50% 50%, rgba(255, 255, 255, 0.8), transparent 72%);
+  background-attachment: fixed;
+  font-family: var(--sans);
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Resaltado — regla única del manual: manuscrita + negrita + plata adaptativa + 1pt más */
+.em {
+  font-family: var(--script);
+  font-weight: 700;
+  color: var(--plata-oscura);
+  font-size: calc(1em + 1pt);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+  padding: 0 0.04em;
+}
+.em.on-dark {
+  color: var(--plata-clara);
+  text-shadow: 0 0 12px rgba(200, 212, 244, 0.7);
+}
+
+.scr {
+  font-family: var(--script);
+  font-weight: 400;
+}

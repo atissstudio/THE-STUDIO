@@ -1,0 +1,85 @@
+---
+import "../styles/tokens.css";
+import SEO from "../components/SEO.astro";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  image?: string;
+}
+const { title, description, path, image } = Astro.props;
+
+// LocalBusiness JSON-LD con solo los campos verificados.
+// Sin address/telephone: no hay dato real documentado — no se inventa (regla de CLAUDE.md).
+// address/telephone/sameAs: por confirmar cuando existan.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: "The Studio, by Atis",
+  url: new URL(path, Astro.site ?? "https://the-studio-atis.vercel.app").toString(),
+  description: "Consultoría de comunicación, marketing e IA para negocios en Canarias.",
+  areaServed: "Canarias, España",
+};
+
+// Breadcrumbs JSON-LD, calculados a partir del path — solo en páginas internas (no home).
+const siteBase = Astro.site ?? new URL("https://the-studio-atis.vercel.app");
+const segments = path.split("/").filter(Boolean);
+const breadcrumbLd =
+  segments.length > 0
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Inicio", item: new URL("/", siteBase).toString() },
+          ...segments.map((seg, i) => ({
+            "@type": "ListItem",
+            position: i + 2,
+            name: seg
+              .split("-")
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(" "),
+            item: new URL("/" + segments.slice(0, i + 1).join("/"), siteBase).toString(),
+          })),
+        ],
+      }
+    : null;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <SEO title={title} description={description} path={path} image={image} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap"
+      rel="stylesheet"
+    />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    {breadcrumbLd && <script type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} />}
+  </head>
+  <body>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <linearGradient id="plataLiquida" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f4f5f7"></stop>
+          <stop offset="28%" stop-color="#aab0bb"></stop>
+          <stop offset="52%" stop-color="#e8eaed"></stop>
+          <stop offset="76%" stop-color="#9aa0ab"></stop>
+          <stop offset="100%" stop-color="#eef0f2"></stop>
+        </linearGradient>
+      </defs>
+    </svg>
+    <Nav />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

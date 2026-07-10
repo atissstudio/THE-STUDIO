@@ -1,0 +1,128 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import Highlight from "../components/Highlight.astro";
+import GlassButton from "../components/GlassButton.astro";
+---
+
+<BaseLayout
+  title="Sobre Atis — The Studio, by Atis"
+  description="The Studio es la agencia de Atis, cooperativa creativa canaria. Por qué existimos y qué creemos."
+  path="/sobre-atis"
+>
+  <PageHero kicker="Sobre Atis" title="No venimos a encajar.">
+    <p class="lead">Venimos a demostrar que otra forma de hacer negocio es posible.</p>
+  </PageHero>
+
+  <section class="block">
+    <p>
+      En The Studio creemos que las cosas se pueden hacer mejor. Que un negocio no vale por lo que
+      factura, sino por lo que aporta a las personas, su cultura, su economía y su entorno.
+      Existimos para ayudar a quien tiene un valor enorme y aún no ha aprendido a mostrarlo — no al
+      que ya tiene de sobra.
+    </p>
+    <p>
+      Ponemos orden, explicamos el porqué de cada decisión y devolvemos al dueño el control de su
+      marca, porque <Highlight>nadie conoce un negocio como quien lo levantó</Highlight>. Usamos la
+      IA para quitar trabajo — no a las personas, sino a las tareas que roban tiempo — para
+      devolvérselo a quien lo necesita.
+    </p>
+  </section>
+
+  <section class="block panel">
+    <h2>Quiénes somos</h2>
+    <p>
+      The Studio (marca completa <b>"The Studio, by Atis"</b>) es la agencia de <b>Atis</b>, una
+      cooperativa creativa canaria con tres ramas: Fashion (moda), The Studio (esta agencia) y
+      Academy (formación). Ordenamos, renovamos y activamos la marca y la captación de negocios con
+      valor real, con acompañamiento pedagógico y apoyo de IA.
+    </p>
+  </section>
+
+  <section class="block">
+    <h2>Misión</h2>
+    <p>
+      Ayudar a negocios con valor real —empezando por los menos profesionalizados— a ordenar,
+      mostrar y activar lo que los hace únicos, de forma sencilla, pedagógica y accesible, usando la
+      IA para <Highlight>liberar tiempo y personas, no para sustituirlas</Highlight>.
+    </p>
+  </section>
+
+  <section class="block">
+    <h2>Lo que creemos</h2>
+    <ul class="beliefs">
+      <li>
+        <b>Nadie conoce un negocio como su dueño</b> — revelamos su valor, no imponemos el nuestro.
+      </li>
+      <li><b>Explicar el porqué</b> de cada paso es parte del servicio: pedagogía es empoderamiento.</li>
+      <li>
+        <b>IA que libera, no que reemplaza.</b> "No le vamos a quitar el trabajo a nadie; vamos a
+        hacer el trabajo que nadie quiere hacer."
+      </li>
+      <li><b>Ayudamos al infravalorado</b>, no al que ya tiene de sobra.</li>
+    </ul>
+  </section>
+
+  <section class="block cta-block">
+    <p>¿Hablamos de tu negocio?</p>
+    <GlassButton href="/contacto">Pídeme tu plan gratis</GlassButton>
+  </section>
+</BaseLayout>
+
+<style>
+  .block {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 24px;
+    text-align: left;
+  }
+  .block p {
+    font-family: var(--sans);
+    text-align: justify;
+    line-height: 1.6;
+    color: #3a4250;
+  }
+  .lead {
+    font-size: 1.05rem;
+    color: var(--muted);
+    text-align: center !important;
+  }
+  h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    font-size: 1.3rem;
+    margin: 0 0 14px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid rgba(51, 75, 164, 0.12);
+    border-radius: var(--radius-lg);
+    max-width: 728px;
+  }
+  .beliefs {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .beliefs li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--sans);
+    color: #3a4250;
+    line-height: 1.6;
+  }
+  .beliefs li:last-child {
+    border-bottom: 0;
+  }
+  .cta-block {
+    text-align: center;
+    padding: 40px 24px 64px;
+  }
+  .cta-block p {
+    font-family: var(--sans);
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+</style>
