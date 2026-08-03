@@ -116,18 +116,34 @@ Las sesiones se encarecen porque **cada mensaje reenvía todo el contexto**. Reg
 - **Portal de cliente — mockup:** `/portal/*`, datos de ejemplo inventados a propósito, login de fachada, `noindex` y **fuera del sitemap**. Conserva lienzo oscuro propio (v4) porque no es página pública.
 - **Copia en el escritorio para abrir en Safari:** `npm run export` deja la web entera en **`~/Desktop/The Studio web/`** (doble clic en `index.html`, sin servidor ni internet). El script `scripts/export-offline.mjs` prerenderiza `/contacto` solo para esa copia, pasa los enlaces absolutos a relativos (desde `file://` los absolutos irían a la raíz del disco), incrusta Pinyon Script en base64 y desactiva el formulario con una nota. **Es una foto fija: hay que relanzar `npm run export` tras cada cambio y recargar en Safari.**
 - **Verificado el 2026-08-03 (última pasada):** build limpio (21 páginas) · **0 enlaces rotos** · **0 assets rotos** · contraste comprobado en los elementos tocados esta sesión (botones sobre azul 7,8:1, insignia "+" con sombra propia). `npm run export` regenerado tras cada cambio.
+- **MÓVIL ADAPTADO Y COMMITEADO (2026-08-04).** Todo el trabajo de v5 (que llevaba semanas sin commitear) más la adaptación móvil quedaron en un solo commit (`6c8217f`). Pendiente de `git push` — lo hace Alejandro, ver siguiente sección.
+  - **Scroll por diapositivas** (`src/styles/tokens.css`, `@media max-width:900px`): cada campo de color (`.f-azul/.f-claro/.f-blanco/.f-navy`) ajusta a pantalla completa vía `scroll-snap-type: y proximity` (no `mandatory` — con `mandatory`, páginas con un solo tramo de snap lejos del principio, como `/sobre-atis` con el bloque de vídeo de 880vh sin marcar como campo, forzaban el scroll hasta el final nada más cargar; `proximity` lo corrige sin perder la sensación de diapositiva). La sección de los 4 pasos de `como-trabajamos.astro` queda fuera del snap a propósito (ya tiene su propio scroll interno).
+  - **Barra de navegación flotante abajo** (`Nav.astro`, solo móvil): la franja deja de estar fija arriba y flota como píldora de cristal claro cerca del pulgar. El panel a pantalla completa ahora crece desde abajo hacia arriba (antes desde arriba), gesto táctil de cierre invertido a conjunto.
+  - **Logo vertical en móvil**: tanto en la píldora del menú como en el `<h1>` de la portada, el wordmark pasa a dos líneas ("the STUDIO" / "by ATIS") en vez de una línea horizontal encogida por JS.
+  - **Vídeos de `SobreAtisHistoria.astro`:** decisión de Alejandro (2026-08-04) — mantienen scroll-scrubbing también en móvil, sin fallback a bucle.
+  - Verificado en navegador a 390px en las 8 rutas públicas (home, servicios, `/servicios/auditoria`, casos, contacto, sobre-atis, como-trabajamos, legal) + `/portal/login` (no usa `Nav.astro`, no afectado). Build limpio (`npm run build`, 21 páginas) y `npm run export` regenerado.
 
-### 🎯 Misión de la sesión siguiente: SOLO MÓVIL, luego publicar
+### 🎯 Misión de la sesión siguiente: portal como empleado (CEO)
 
-**El escritorio está terminado.** Lo único que falta para publicar es adaptar todo a móvil — no hay más pendiente de diseño de escritorio.
+**Publicar es la prioridad inmediata** (ver "Cómo publicar" más abajo — pasos para Alejandro, no para Claude).
 
-1. **Móvil, con scroll como navegación de diapositivas.** Decisión de Alejandro (2026-08-03): al hacer scroll en móvil, las secciones deben deslizar como diapositivas (snap entre pantallas), no un scroll continuo normal. Ya existe un precedente parcial de esto en el propio código: `src/pages/como-trabajamos.astro` tiene un sistema de diapositivas por scroll (`.proceso.is-slides`, con `IntersectionObserver`/`getBoundingClientRect` moviendo un `<article class="paso">` a la vez) — revisar ese patrón antes de construir uno nuevo, puede servir de base o de referencia de qué NO repetir (tiene su propia complejidad de sincronización con vídeo en `SobreAtisHistoria.astro` que no hace falta llevarse al móvil). Es el 83% del tráfico (INV-07), no se publica sin esto.
-   - Sitio ya tiene medios propios para móvil: breakpoint `@media (max-width: 900px)` usado en casi todos los componentes, revisar qué reglas móviles ya existen antes de escribir nuevas (evitar duplicar).
-   - El vídeo scroll-scrubbing de `SobreAtisHistoria.astro` es pesado para móvil (3 vídeos de ~2,5 MB cada uno, más datos móviles). Decidir con Alejandro si en móvil esos vídeos reproducen normal (bucle, sin scrubbing) en vez de scroll-scrubbing, como ya hace el fallback de "menos movimiento".
-2. **Datos legales reales.** Las tres páginas legales tienen los identificativos marcados como pendientes. Sin la cooperativa constituida no se pueden rellenar, y no se inventan.
-3. **Publicar:** `git push` a GitHub (lo hace Alejandro, por credenciales) + conectar Vercel. **Dominio sin elegir.**
+Después de publicar, la siguiente pieza es un **portal interno para Alejandro** (no el mockup de cliente en `/portal/*`, que es un login de fachada con datos inventados — esto es nuevo, con datos y funciones reales):
+- Herramientas centralizadas para operar la agencia.
+- Publicar documentos a clientes y darles acceso a su información.
+- Fichas y datos de clientes (una base real, no la maqueta de `/portal/*`).
+- Control de facturas.
+- Centralizar agentes de IA y automatizaciones.
 
-**Pendientes conocidos:** cifra de facturación objetivo · nicho sin decidir (dental vs. reformas, INV-01) · páginas de servicio aún cortas (200-350 palabras; INV-07 pide 3.000-5.000, se amplían con contenido real, nunca con humo) · redes sociales sin cuentas, los iconos del pie no enlazan. El **checkpoint de validación** (hablar con 5-10 negocios) Alejandro lo dio por **validado** el 2026-07-14 para no bloquear el copy.
+**Antes de escribir una sola línea**, esto necesita una conversación de alcance — es la clase de sistema que la memoria `web-stack-decision.md` ya avisó que se aplazó a propósito (auth real, base de datos, backend) por sobreingeniería prematura sin clientes reales todavía. Preguntas a resolver con Alejandro antes de tocar código: ¿cuántos usuarios (solo él, o también clientes)? ¿backend gestionado (Supabase/similar) o algo más simple primero? ¿qué automatizaciones ya existen hoy fuera del código (Notion, Zapier, n8n...) que este portal debería centralizar en vez de reconstruir? Esto es una **decisión de arquitectura**, no una ampliación del sitio Astro estático actual.
+
+**Pendientes conocidos:** cifra de facturación objetivo · nicho sin decidir (dental vs. reformas, INV-01) · páginas de servicio aún cortas (200-350 palabras; INV-07 pide 3.000-5.000, se amplían con contenido real, nunca con humo) · redes sociales sin cuentas, los iconos del pie no enlazan · datos legales de la cooperativa (§ siguiente) · dominio sin elegir. El **checkpoint de validación** (hablar con 5-10 negocios) Alejandro lo dio por **validado** el 2026-07-14 para no bloquear el copy.
+
+### Cómo publicar (pasos para Alejandro — Claude no tiene estas credenciales)
+
+1. `git push origin main` desde `~/Desktop/atis-studio`.
+2. Conectar el repo en Vercel (import project → seleccionar el repo → deploy). Astro se detecta solo.
+3. Elegir dominio, o publicar primero con el `*.vercel.app` por defecto.
+4. Los datos legales (`/legal/*`) se quedan marcados "por confirmar" hasta que la cooperativa esté constituida — publicar así es una decisión consciente, no un olvido.
 
 ---
 
