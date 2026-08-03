@@ -1,0 +1,112 @@
+---
+import PortalLayout from "../../layouts/PortalLayout.astro";
+
+const informes = [
+  { nombre: "Auditoría inicial de marca y comunicación", fecha: "3 mar. 2026", tipo: "PDF · 12 pág." },
+  { nombre: "Plan de cuña — automatización de reservas con IA", fecha: "18 mar. 2026", tipo: "PDF · 6 pág." },
+  { nombre: "Informe mensual de resultados — marzo", fecha: "2 abr. 2026", tipo: "PDF · 4 pág." },
+];
+---
+
+<PortalLayout title="Informes — Portal de cliente" path="/portal/informes" userName="Cliente demo">
+  <a href="/portal" class="back">← Portal</a>
+  <p class="kick">Ejemplo — no son documentos reales</p>
+  <h1>Informes</h1>
+  <p class="lead">Los documentos y entregas que te hemos hecho llegar hasta ahora.</p>
+
+  <ul class="list">
+    {
+      informes.map((doc) => (
+        <li>
+          <div>
+            <span class="name">{doc.nombre}</span>
+            <span class="date">{doc.fecha}</span>
+          </div>
+          <span class="type">{doc.tipo}</span>
+        </li>
+      ))
+    }
+  </ul>
+</PortalLayout>
+
+<style>
+  .back {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted-on-dark);
+    text-decoration: none;
+    margin: 20px 0 8px;
+  }
+  .back:hover {
+    color: var(--azul-lit);
+  }
+  .kick {
+    font-family: var(--sans);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--azul-lit);
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+  h1 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.6rem, 4vw, 2.1rem);
+    margin: 0 0 8px;
+  }
+  .lead {
+    font-family: var(--sans);
+    color: var(--muted-on-dark);
+    font-style: italic;
+    font-size: 0.92rem;
+    margin: 0 0 28px;
+  }
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 20px;
+  }
+  .name {
+    display: block;
+    font-family: var(--sans);
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 0.94rem;
+  }
+  .date {
+    display: block;
+    font-family: var(--sans);
+    color: var(--muted);
+    font-size: 0.78rem;
+    margin-top: 4px;
+  }
+  .type {
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--azul-deep);
+    background: rgba(51, 75, 164, 0.1);
+    border-radius: 20px;
+    padding: 5px 12px;
+    white-space: nowrap;
+  }
+</style>

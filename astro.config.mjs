@@ -9,7 +9,11 @@ const SITE_URL = "https://the-studio-atis.vercel.app";
 // https://astro.build/config
 export default defineConfig({
   site: SITE_URL,
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      filter: (page) => !page.includes("/maqueta") && !page.includes("/portal/"),
+    }),
+  ],
   // output "static" (por defecto) + adapter: todas las páginas se generan estáticas,
   // salvo /api/lead, que se marca con `export const prerender = false`.
   adapter: vercel(),

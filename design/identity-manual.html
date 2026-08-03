@@ -27,8 +27,8 @@
   h1{font-weight:800;text-transform:uppercase;letter-spacing:-.02em;line-height:1.02;margin:.3em 0;font-size:clamp(2rem,5vw,2.8rem);text-wrap:balance}
   h2{font-weight:800;text-transform:uppercase;letter-spacing:-.01em;font-size:1.3rem;margin:0}
   .scr{font-family:var(--script);font-weight:400}
-  .em{font-family:var(--script);font-weight:700;color:var(--plata-oscura);font-size:calc(1em + 1pt);text-shadow:0 1px 0 rgba(255,255,255,.7)}
-  .emd{font-family:var(--script);font-weight:700;color:var(--plata-clara);font-size:calc(1em + 1pt);text-shadow:0 0 12px rgba(200,212,244,.7)}
+  .em{font-family:var(--sans);font-weight:800;color:var(--plata-oscura);font-size:calc(1em + 1pt);text-shadow:0 1px 0 rgba(255,255,255,.7)}
+  .emd{font-family:var(--sans);font-weight:800;color:var(--plata-clara);font-size:calc(1em + 1pt);text-shadow:0 0 12px rgba(200,212,244,.7)}
   p{margin:.6em 0;text-align:justify;text-align-last:left}
   .center{text-align:center;text-align-last:center}
 
@@ -39,7 +39,7 @@
   .logo.on-dark .scr{color:var(--plata-clara);text-shadow:0 0 9px rgba(200,212,244,.7)}
   .logo.on-dark .hvy{color:#eef1f6}
 
-  /* logo perfil: vertical, alineado a la derecha (solo Helvetica = STUDIO / ATIS) */
+  /* logo perfil: vertical, alineado a la derecha (solo Arial = STUDIO / ATIS) */
   .logo-profile{width:170px;height:170px;border-radius:26px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:.62em;padding:16px 22px 26px}
   .logo-profile .line{position:relative;line-height:.86}
   .logo-profile .hvy{font-family:var(--sans);font-weight:800;font-size:2rem;letter-spacing:-.03em;color:var(--ink);text-transform:uppercase;display:block}
@@ -115,7 +115,7 @@
 </svg>
 
 <div class="wrap">
-  <h2 class="sr-only">Manual de identidad visual de The Studio, by Atis. Sistema claro, fondo liquid glass.</h2>
+  <h2 class="sr-only">Manual de identidad visual de The Studio, by Atis. Campos de color a sangre, rejilla de 12 columnas, islas de plata.</h2>
 
   <header class="top">
     <div class="kick">Manual de identidad visual</div>
@@ -138,25 +138,31 @@
   <!-- 2 -->
   <section>
     <div class="shead"><span class="snum">2</span><h2>Logo</h2></div>
-    <p class="lead"><b>Construcción:</b> <span class="scr" style="color:var(--plata-oscura);font-size:1.2em">the</span> y <span class="scr" style="color:var(--plata-oscura);font-size:1.2em">by</span> en la <b>manuscrita</b> (siempre en plata); <b>STUDIO</b> y <b>ATIS</b> en <b>Helvetica Bold mayúscula</b>.</p>
+    <p class="lead"><b>Construcción:</b> <span class="scr" style="color:var(--plata-oscura);font-size:1.2em">the</span> y <span class="scr" style="color:var(--plata-oscura);font-size:1.2em">by</span> en la <b>manuscrita</b> (siempre en plata); <b>STUDIO</b> y <b>ATIS</b> en <b>Helvetica Bold mayúscula</b>. Versión definitiva: <b>vectorizado</b> (paths reales extraídos de Arial Bold + Pinyon Script — no depende de tener ninguna fuente instalada), en <b>4 variantes de color oficiales</b> (cerradas 2026-07-10, sustituyen a cualquier versión anterior de este manual).</p>
+    <p class="poplabel" style="margin:22px 0 8px">Horizontal · principal</p>
     <div class="grid2">
-      <div class="demo"><span class="tag">Principal · horizontal</span><span class="logo" style="font-size:1.5rem"><span class="scr">the</span><span class="hvy">STUDIO</span><span class="scr">by</span><span class="hvy">ATIS</span></span></div>
-      <div class="demo"><span class="tag">Perfil · vertical, a la derecha</span>
-        <div class="logo-profile light">
-          <div class="line"><span class="scr">the</span><span class="hvy">STUDIO</span></div>
-          <div class="line"><span class="scr">by</span><span class="hvy">ATIS</span></div>
-        </div>
-      </div>
-    </div>
-    <p style="text-align-last:left"><b>Variante de perfil</b> (foto de perfil, favicon, sello): vertical y <b>alineada a la derecha</b>, "the STUDIO" arriba y "by ATIS" abajo &mdash; de forma que si lees solo la Helvetica, lees <b>STUDIO / ATIS</b> alineado a la derecha.</p>
-    <p style="text-align-last:left"><b>Positivo vs. negativo</b> no cambia el logo: cambia solo la <b>plata según el fondo</b> (ver §4). Abajo, el sello de perfil en claro y en oscuro:</p>
-    <div class="grid2">
-      <div class="demo"><span class="tag">Sobre claro</span><div class="logo-profile light"><div class="line"><span class="scr">the</span><span class="hvy">STUDIO</span></div><div class="line"><span class="scr">by</span><span class="hvy">ATIS</span></div></div></div>
-      <div class="demo"><span class="tag">Sobre oscuro (acento)</span><div class="logo-profile dark"><div class="line"><span class="scr">the</span><span class="hvy">STUDIO</span></div><div class="line"><span class="scr">by</span><span class="hvy">ATIS</span></div></div></div>
+      <div class="demo plain"><span class="tag">Sobre blanco</span><img src="logo/horizontal-sobre-blanco.svg" alt="Logo horizontal sobre blanco" style="width:100%;height:auto"></div>
+      <div class="demo" style="background:#000"><span class="tag" style="color:#c3c9d4">Sobre negro *</span><img src="logo/horizontal-sobre-negro.svg" alt="Logo horizontal sobre negro" style="width:100%;height:auto"></div>
     </div>
     <div class="grid2">
-      <ul class="u yes"><li>Aire alrededor ≈ la altura de la "S" de STUDIO.</li><li>Usa siempre la plata que corresponde al fondo.</li></ul>
-      <ul class="u no"><li>No lo rotes, deformes ni cambies proporciones.</li><li>No pongas "the/by" en Helvetica ni cambies las tipografías.</li><li>No uses plata clara sobre claro (ni oscura sobre oscuro).</li></ul>
+      <div class="demo plain"><span class="tag">Azul sobre blanco</span><img src="logo/horizontal-azul-sobre-blanco.svg" alt="Logo horizontal azul sobre blanco" style="width:100%;height:auto"></div>
+      <div class="demo" style="background:var(--azul)"><span class="tag" style="color:var(--plata-clara)">Blanco sobre azul</span><img src="logo/horizontal-blanco-sobre-azul.svg" alt="Logo horizontal blanco sobre azul" style="width:100%;height:auto"></div>
+    </div>
+
+    <p style="text-align-last:left;margin-top:20px"><b>Variante de perfil</b> (foto de perfil, favicon, sello): vertical y <b>alineada a la derecha</b>, "STUDIO" arriba y "ATIS" abajo, "the"/"by" pisando la base de cada palabra en diagonal &mdash; de forma que si lees solo la Arial, lees <b>STUDIO / ATIS</b> alineado a la derecha.</p>
+    <div class="grid2">
+      <div class="demo plain"><span class="tag">Perfil · sobre blanco</span><img src="logo/perfil-sobre-blanco.svg" alt="Logo perfil sobre blanco" style="width:140px;border-radius:22px"></div>
+      <div class="demo" style="background:#000"><span class="tag" style="color:#c3c9d4">Perfil · sobre negro *</span><img src="logo/perfil-sobre-negro.svg" alt="Logo perfil sobre negro" style="width:140px;border-radius:22px"></div>
+    </div>
+    <div class="grid2">
+      <div class="demo plain"><span class="tag">Perfil · azul sobre blanco</span><img src="logo/perfil-azul-sobre-blanco.svg" alt="Logo perfil azul sobre blanco" style="width:140px;border-radius:22px"></div>
+      <div class="demo" style="background:var(--azul)"><span class="tag" style="color:var(--plata-clara)">Perfil · blanco sobre azul</span><img src="logo/perfil-blanco-sobre-azul.svg" alt="Logo perfil blanco sobre azul" style="width:140px;border-radius:22px"></div>
+    </div>
+    <p style="text-align-last:left;font-size:.82rem;color:var(--muted)">* El fondo negro puro es una <b>excepción explícita</b> del founder a la regla general "el negro nunca es fondo" (ver §4) — vale solo para esta variante del logo, decidida el 2026-07-10. En cualquier otro uso, el negro sigue siendo solo tinta de texto.</p>
+
+    <div class="grid2">
+      <ul class="u yes"><li>Aire alrededor ≈ la altura de la "S" de STUDIO.</li><li>Usa siempre una de las 4 combinaciones oficiales de arriba — no se inventan mezclas nuevas.</li></ul>
+      <ul class="u no"><li>No lo rotes, deformes ni cambies proporciones.</li><li>No pongas "the/by" en Arial ni cambies las tipografías.</li><li>No uses fondo plateado (se descartó — no queda bien).</li></ul>
     </div>
   </section>
 
@@ -164,30 +170,31 @@
   <section>
     <div class="shead"><span class="snum">3</span><h2>Tipografía</h2></div>
     <p class="lead">Solo <b>dos familias</b>, nunca más.</p>
-    <div class="type-sample"><div class="role">Helvetica Bold · MAYÚSCULA → títulos y secciones</div><div style="font-weight:800;text-transform:uppercase;font-size:1.5rem;letter-spacing:-.02em">Vamos a que se note</div></div>
-    <div class="type-sample"><div class="role">Helvetica Regular → cuerpos (justificados)</div><div>Auditamos, ordenamos y activamos tu marca con criterio y con datos.</div></div>
-    <div class="type-sample"><div class="role">Helvetica Bold → botones y etiquetas</div><span class="glass"><span class="dot"></span>Auditoría gratis</span></div>
+    <div class="type-sample"><div class="role">Arial Bold → títulos y secciones (MAYÚSCULA solo si es corto)</div><div style="font-weight:800;text-transform:uppercase;font-size:1.5rem;letter-spacing:-.02em">Vamos a que se note</div></div>
+    <div class="type-sample"><div class="role">Arial Regular → cuerpos (justificados)</div><div>Auditamos, ordenamos y activamos tu marca con criterio y con datos.</div></div>
+    <div class="type-sample"><div class="role">Arial Bold → botones y etiquetas</div><span class="glass"><span class="dot"></span>Auditoría gratis</span></div>
     <div class="type-sample"><div class="role">Manuscrita → logo (the/by), cursivas y RESALTADOS</div><div style="font-size:1.05rem">Resaltamos <span class="em">lo importante</span> así.</div></div>
-    <div class="callout"><b>Regla de resaltado (única):</b> destacar = <b>manuscrita + negrita + plata (adaptativa) + 1 punto</b> de tamaño. Nunca azul, nunca Helvetica, nunca subrayado.</div>
-    <div class="callout"><b>Nombre de la manuscrita:</b> "manuscrita" era solo el <b>tipo</b> (letra caligráfica), no un nombre real. La definitiva propuesta es <b>Pinyon Script</b> (caligráfica formal, libre y de licencia clara, similar a la vista aquí). Alternativa más cálida: <b>Great Vibes</b>. Helvetica también debe licenciarse para web (o usar Helvetica Neue del sistema). <i>En esta maqueta se ve la del sistema como sustituta.</i></div>
+    <div class="callout"><b>Regla de resaltado (actualizada 2026-07-10, sustituye la regla única anterior):</b> destacar = <b>Arial/Helvetica negrita + plata (adaptativa) + 1 punto</b> de tamaño (mismo color y tamaño de antes, cambia solo la tipografía). <b>Subtítulos:</b> Arial cursiva. La manuscrita queda reservada <b>solo para el logo y decoración</b> (firmas, citas puntuales) — nunca para resaltar texto de cuerpo.</div>
+    <div class="callout"><b>Nombre de la manuscrita:</b> "manuscrita" era solo el <b>tipo</b> (letra caligráfica), no un nombre real. La definitiva propuesta es <b>Pinyon Script</b> (caligráfica formal, libre y de licencia clara, similar a la vista aquí). Alternativa más cálida: <b>Great Vibes</b>. <b>Arial sustituye a Helvetica en todo</b> (web y logo), decisión cerrada el 2026-07-10: Helvetica es de pago y Arial es el sustituto libre. Helvetica real queda aparcada sin fecha.</div>
   </section>
 
   <!-- 4 -->
   <section>
     <div class="shead"><span class="snum">4</span><h2>Color</h2></div>
-    <p class="lead">Domina el <b>blanco</b>; el <b>negro</b> se usa solo como <b>tinta de texto</b> (nunca como fondo/mancha); <b>plata</b> y <b>azul</b> se reservan para los detalles. <b>Sistema claro siempre</b> &mdash; leer sobre fondo oscuro cansa la vista.</p>
+    <p class="lead"><b>Actualizado 2026-07-15 (v5, sustituye al fondo único):</b> la página se divide en <b>campos de color a sangre</b> — cada sección es un color completo, y el color hace el trabajo de separar contenidos. Manda el <b>azul Atis</b> <code>#334BA4</code> (el vivo, no el marino). Regla de uso: <b>azul</b> = marca y acento, secciones de <b>texto corto</b>; <b>claro/blanco</b> = donde hay <b>lectura larga</b> (leer párrafos sobre oscuro fatiga la vista); <b>plata líquida</b> = campo propio con textura animada, nunca banda vacía de relleno; <b>navy</b> <code>#0B1230</code> = reservado al <b>pie</b>. El orden va de claro a oscuro según se baja. El <b>negro</b> sigue sin ser fondo (excepción de siempre: el logo sobre negro).</p>
     <div class="palbar">
-      <span class="sw-w" style="width:55%">Blanco 55%</span>
-      <span class="sw-k" style="width:30%">Negro 30%</span>
-      <span class="sw-s" style="width:10%">Plata 10%</span>
-      <span class="sw-a" style="width:5%">Azul 5%</span>
+      <span class="sw-a" style="width:45%">Azul Atis 45%</span>
+      <span class="sw-w" style="width:33%">Claro 33%</span>
+      <span class="sw-s" style="width:14%">Plata 14%</span>
+      <span class="sw-k" style="width:8%">Navy 8%</span>
     </div>
     <div class="grid2">
-      <div class="chip"><span class="box" style="background:#fff"></span><span class="meta"><b>Blanco</b><code>#FFFFFF</code> · fondos (liquid glass, ver §6)</span></div>
-      <div class="chip"><span class="box" style="background:#111520"></span><span class="meta"><b>Negro / tinta</b><code>#111520</code> · SOLO texto, nunca fondo</span></div>
-      <div class="chip"><span class="box" style="background:var(--azul)"></span><span class="meta"><b>Azul Atis</b><code>#334BA4</code> · acento, kickers, tarjetas</span></div>
+      <div class="chip"><span class="box" style="background:var(--azul)"></span><span class="meta"><b>Azul Atis</b><code>#334BA4</code> · color dominante, campos de marca</span></div>
+      <div class="chip"><span class="box" style="background:#eef1f7"></span><span class="meta"><b>Claro / blanco</b><code>#EEF1F7</code> · <code>#F7F9FC</code> · campos de lectura</span></div>
       <div class="chip"><span class="box" style="background:linear-gradient(135deg,#e8eaef,#9aa0ab)"></span><span class="meta"><b>Plata</b><code>#565E6C</code> claro / <code>#EEF1F7</code> oscuro</span></div>
+      <div class="chip"><span class="box" style="background:#0b1230"></span><span class="meta"><b>Navy</b><code>#0B1230</code> · solo el pie de página</span></div>
     </div>
+    <div class="callout"><b>Islas de plata (elemento gráfico vivo, nuevo 2026-07-15):</b> el archipiélago en plata líquida es un activo propio de Atis y representa a Canarias. Se usa <b>solo con función</b>: entra en las tarjetas al pasar el ratón, marca un dato, cruza la frontera entre dos campos de color. <b>Nunca decorativa suelta ni tapando texto.</b> Archivos en <code>design/plata/islas/</code> y <code>public/plata/</code>.</div>
     <div class="callout"><b>Plata adaptativa (regla clave):</b> la plata NO es fija. Sobre <b>claro</b> → plata oscura y legible <code style="color:var(--muted)">#565E6C</code>. Sobre <b>oscuro</b> → plata clara y brillante <code style="color:var(--muted)">#EEF1F7</code>. Aplica a resaltados, logo y cualquier detalle. Se usa como <b>color sólido</b> (los gradientes recortados sobre texto fallan en muchas herramientas).</div>
     <div class="callout"><b>Tarjetas:</b> azul de Atis <b>suavizado con blanco</b> (azul claro) para que el texto negro se lea sin esfuerzo. El azul intenso, solo en acentos (botones, kickers, sombras).</div>
   </section>
@@ -196,10 +203,11 @@
   <section>
     <div class="shead"><span class="snum">5</span><h2>Maquetación y párrafo</h2></div>
     <div class="grid2">
-      <ul class="u yes"><li><b>Simetría y equilibrio:</b> composición centrada, sin huecos raros.</li><li><b>Texto justificado</b> siempre.</li><li><b>Interlineado</b> de cuerpo ≈ 1.6.</li><li>Jerarquía: kicker (azul mayús) → título (Helvetica bold mayús) → cuerpo (regular) → resaltado (manuscrita plata).</li></ul>
-      <ul class="u no"><li>No alinees todo a la izquierda dejando la página desequilibrada.</li><li>No mezcles más de dos tipografías.</li><li>No uses el azul para grandes áreas (es acento).</li></ul>
+      <ul class="u yes"><li><b>Rejilla de 12 columnas</b> (actualizado 2026-07-15): el layout <b>es</b> la rejilla, no una guía decorativa. Todo bloque empieza y termina en una línea de columna.</li><li><b>Texto justificado</b> siempre.</li><li><b>Interlineado</b> de cuerpo ≈ 1.6.</li><li>Jerarquía: kicker (azul mayús) → título (Arial bold) → cuerpo (regular) → resaltado (Arial negrita plata).</li><li><b>Tarjetas a sangre:</b> de borde a borde de la pantalla, sin aire alrededor; la sangría vive dentro de cada celda. El enunciado de un grupo de tarjetas es <b>una celda más</b> de la misma retícula, nunca un título suelto flotando encima.</li></ul>
+      <ul class="u no"><li>No coloques nada "a ojo": si no cae en una línea de la rejilla, está mal.</li><li>No mezcles más de dos tipografías.</li><li>No dejes un bloque de texto a un lado con un hueco enorme al otro: equilibra o céntralo.</li></ul>
     </div>
-    <div class="callout"><b>Regla rápida de párrafo:</b> Helvetica Regular · justificado · line-height 1.6 · máx ~66 caracteres por línea · lo importante en manuscrita plata.</div>
+    <div class="callout"><b>Regla rápida de párrafo:</b> Arial Regular · justificado · line-height 1.6 · máx ~66 caracteres por línea · lo importante en Arial negrita plata.</div>
+    <div class="callout"><b>Mayúsculas (matiz 2026-07-15):</b> la caja alta se reserva a <b>rótulos y títulos cortos</b> (2 a 5 palabras). Los titulares largos y las declaraciones van en <b>caja normal</b>: en mayúsculas gritan y parten mal de línea.</div>
   </section>
 
   <!-- 6 -->
@@ -210,7 +218,7 @@
       <div class="demo"><span class="tag">Botón (sin borde)</span><span class="glass"><span class="dot"></span>Pídeme tu plan</span></div>
       <div class="demo"><span class="tag">Iconos · sin caja, plata líquida, redondos</span><div style="display:flex;gap:16px"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg></span><span class="ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg></span><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 16.5c3.5-.5 4-8.5 7-8.5s3 7.5 7 7.5c1.7 0 2.7-1.3 4-3"/></svg></span></div></div>
     </div>
-    <ul class="u yes" style="margin-top:8px"><li><b>Tarjetas:</b> azul claro con texto negro y radios generosos; nada de leer sobre oscuro.</li><li><b>Iconos:</b> sin caja/contenedor, trazo fino en plata líquida, formas 100% redondeadas.</li><li><b>Fondos:</b> liquid glass &mdash; blanco base con destellos radiales de plata translúcida, distribuidos en varios puntos (no un degradado en una sola dirección); sin negro.</li></ul>
+    <ul class="u yes" style="margin-top:8px"><li><b>Tarjetas (actualizado 2026-07-15):</b> <b>esquinas en pico</b>, sin redondear — sustituye a los "radios generosos". Van <b>a sangre</b> y se separan entre sí con una línea fina de 1px, como celdas de una retícula.</li><li><b>Iconos:</b> sin caja/contenedor, trazo fino en plata líquida, formas 100% redondeadas. <b>El pico es para las cajas, la curva para los iconos.</b></li><li><b>Fondos (actualizado 2026-07-15):</b> <b>campos de color planos a sangre</b> (ver §4), uno por sección. Sustituye al lienzo degradado único. El <b>liquid glass</b> sobrevive en la <b>plata líquida</b>: un campo con textura plateada que se mueve lenta y continuamente (desactivada con reducción de movimiento). Referencia Capi Cabrera / portada de "El Baifo" de Quevedo (abstracción geométrica + paleta volcánica + formas orgánicas del paisaje canario), que además pinta el objeto protagonista de la home.</li></ul>
   </section>
 
   <!-- 7 -->
@@ -226,16 +234,17 @@
   <section>
     <div class="shead"><span class="snum">8</span><h2>Checklist para agentes y empleados</h2></div>
     <ul class="u yes">
-      <li>Solo <b>dos tipografías</b>: Helvetica + la manuscrita (Pinyon Script).</li>
-      <li>Títulos en <b>Helvetica Bold MAYÚSCULA</b>; cuerpos regular <b>justificado</b> (1.6).</li>
-      <li>Resaltados en <b>manuscrita + negrita + plata + 1pt</b> (nunca azul ni Helvetica).</li>
-      <li><b>Plata adaptada al fondo</b> (sólida): oscura sobre claro, clara sobre oscuro.</li>
-      <li>Todo <b>claro</b>; el negro solo como tinta de texto, nunca como fondo; azul y plata solo en detalles.</li>
-      <li>Fondos en <b>liquid glass</b> (blanco + destellos de plata translúcidos, multidireccionales); nada de negro manchando.</li>
-      <li>Composición <b>simétrica y equilibrada</b>; botones de <b>cristal sin borde</b>; iconos <b>sin caja</b>, en plata líquida y <b>siempre redondeados</b>.</li>
+      <li>Solo <b>dos tipografías</b>: Arial + la manuscrita (Pinyon Script).</li>
+      <li>Títulos en <b>Arial Bold</b>; cuerpos regular <b>justificado</b> (1.6). <b>Mayúsculas solo en rótulos cortos</b> (2-5 palabras), caja normal en titulares largos.</li>
+      <li>Resaltados en <b>Arial negrita + plata + 1pt</b>; subtítulos en Arial cursiva. Manuscrita solo para logo y decoración.</li>
+      <li><b>Plata adaptada al fondo</b> (sólida): oscura sobre campos claros, clara sobre campos azules y el pie.</li>
+      <li><b>Campos de color a sangre</b> (actualizado 2026-07-15): azul Atis manda; claro donde hay lectura larga; plata líquida como campo con textura; navy solo en el pie. De claro a oscuro al bajar.</li>
+      <li><b>Rejilla de 12 columnas</b>: todo anclado a las líneas. <b>Tarjetas a sangre y con esquinas en pico.</b></li>
+      <li><b>Islas de plata</b> solo con función (hover, marcar un dato, cruzar campos), nunca decorativas sueltas ni tapando texto.</li>
+      <li>Botones de <b>cristal sin borde</b>; iconos <b>sin caja</b>, en plata líquida y <b>siempre redondeados</b>.</li>
       <li>Tono del <b>tío que sabe</b>: demostrar, no prometer.</li>
     </ul>
   </section>
 
-  <p class="foot">The Studio, by Atis · Manual de identidad visual v3 (sistema claro, liquid glass) · Canarias</p>
+  <p class="foot">The Studio, by Atis · Manual de identidad visual v5 (campos de color, rejilla de 12, esquinas en pico, islas de plata — actualizado 2026-07-15) · Canarias</p>
 </div>

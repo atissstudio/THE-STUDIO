@@ -1,0 +1,637 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Kicker from "../components/Kicker.astro";
+import Highlight from "../components/Highlight.astro";
+import GlassButton from "../components/GlassButton.astro";
+import PainCarousel from "../components/PainCarousel.astro";
+
+const painCards = [
+  {
+    sector: "Dental",
+    query: "cómo evitar que los pacientes falten a la cita",
+    text: "Un recordatorio automático por WhatsApp corta los no-shows hasta un 80%.",
+    source: "INV-01 / INV-02",
+  },
+  {
+    sector: "Reformas",
+    query: "pierdo clientes de reformas por no responder a tiempo",
+    text: "Más de la mitad de los leads se pierden por no responder rápido. Contestar en menos de 5 minutos multiplica por 21 tus opciones de cerrar.",
+    source: "INV-01 (HBR)",
+  },
+  {
+    sector: "Dental",
+    query: "por qué mis pacientes no aceptan el presupuesto",
+    text: "No es el precio, es la falta de confianza y de seguimiento. Automatizarlo sube la aceptación hasta un 30%.",
+    source: "INV-01",
+  },
+  {
+    sector: "Reformas",
+    query: "cómo mejorar el margen en mi empresa de reformas",
+    text: "Tu margen ronda el 3 al 7% neto. Cada presupuesto que se cae por falta de seguimiento es margen que no vuelve.",
+    source: "INV-02",
+  },
+  {
+    sector: "Dental",
+    query: "cuánto cuesta captar un paciente nuevo",
+    text: "De media, 2.160€. Captarlo cuesta entre 65 y 135€. Automatizar el seguimiento se paga solo en el primer mes.",
+    source: "INV-01",
+  },
+  {
+    sector: "Reformas",
+    query: "cómo conseguir más presupuestos de reformas",
+    text: "Un presupuesto claro y rápido cierra más que uno barato. La confianza pesa más que el precio.",
+    source: "INV-02",
+  },
+];
+
+const heroWords = "Tu negocio ya vale. Vamos a que se note.".split(" ");
+---
+
+<BaseLayout
+  title="The Studio, by Atis — Comunicación, Marketing e IA en Canarias"
+  description="Auditamos, ordenamos y activamos tu marca con IA que te quita el trabajo pesado y te devuelve el tiempo. Consultoría de comunicación, marketing e IA para negocios en Canarias."
+  path="/"
+>
+  <!-- 1. Hook -->
+  <div class="slide-wrap" id="slide-hook">
+    <section class="hero slide-pin">
+      <Kicker>Comunicación · Marketing · IA — en Canarias</Kicker>
+      <h1>
+        {heroWords.map((w, i) => (
+          <span class="word" style={`--i:${i}`}>{w}</span>
+        ))}
+      </h1>
+      <p class="lead beat-b">Empezamos entendiendo tu negocio. Quién eres, qué has construido, qué te frena.</p>
+      <p class="lead beat-b">
+        Desde ahí, hacemos tu branding y ponemos la <Highlight>ia</Highlight> a quitarte el trabajo pesado.
+        Te devolvemos el tiempo.
+      </p>
+      <p class="lead beat-b">
+        Y te explicamos <Highlight>cada paso</Highlight>, para que lo puedas hacer tú mismo. Porque nadie
+        conoce tu negocio como tú.
+      </p>
+      <div class="cta beat-c">
+        <GlassButton href="/contacto">Pídeme tu plan gratis</GlassButton>
+        <a class="link" href="#como-lo-hacemos">Ver cómo trabajamos &rarr;</a>
+      </div>
+    </section>
+  </div>
+
+  <!-- 2. WHY -->
+  <div class="slide-wrap" id="slide-why">
+    <section class="why slide-pin">
+      <Kicker>Por qué existimos</Kicker>
+      <h2 class="beat-a">No creemos que un negocio valga por lo que factura.</h2>
+      <p class="beat-b">Creemos que un negocio vale por lo que aporta a las personas, su cultura, su economía y su entorno.</p>
+      <p class="beat-b">
+        Creemos que todos merecen poder competir. Sobre todo los negocios que llevan años ganándose la
+        calle, mientras todo cambiaba a su alrededor. Aquí, en Canarias, donde el talento se nos va y los
+        negocios de siempre se quedan atrás.
+      </p>
+      <p class="beat-b">Adaptarse debería ser fácil. Nosotros nos encargamos de que lo sea.</p>
+      <p class="beat-b">
+        Ponemos orden. Explicamos el porqué de cada decisión. Te devolvemos el control de tu marca, porque
+        <Highlight>nadie conoce un negocio como quien lo levantó</Highlight>.
+      </p>
+      <p class="beat-b">Y con eso cumplimos. No prometemos, cumplimos.</p>
+      <a class="link beat-c" href="/sobre-atis">Ver más → Sobre Atis</a>
+    </section>
+  </div>
+
+  <!-- 3. HOW -->
+  <div class="slide-wrap" id="slide-how">
+    <section id="como-lo-hacemos" class="feature slide-pin">
+      <span class="ky">Cómo lo hacemos</span>
+      <h2 class="feature-title beat-a">Un proceso, sin humo</h2>
+      <div class="steps">
+        <div class="step beat-a" style="--i:0">
+          <div class="ic">
+            <svg viewBox="0 0 24 24"><circle pathLength="1" cx="11" cy="11" r="7"></circle><path pathLength="1" d="M16 16l5 5"
+              ></path></svg>
+          </div>
+          <div class="step-title">Te auditamos</div>
+          <p>No como un examen, sino como quien te escucha antes de opinar. Miramos tu negocio con datos y entendemos qué necesitas, quién eres y qué te frena.</p>
+        </div>
+        <div class="step beat-a" style="--i:1">
+          <div class="ic">
+            <svg viewBox="0 0 24 24"><circle pathLength="1" cx="9" cy="12" r="6"></circle><circle pathLength="1"
+                cx="15"
+                cy="12"
+                r="6"></circle></svg>
+          </div>
+          <div class="step-title">Lo diseñamos contigo</div>
+          <p>No una plantilla genérica, un plan hecho a la medida de tu negocio, de tu gente y de tu momento.</p>
+        </div>
+        <div class="step beat-a" style="--i:2">
+          <div class="ic">
+            <svg viewBox="0 0 24 24"
+              ><path pathLength="1" d="M3 16.5c3.5-.5 4-8.5 7-8.5s3 7.5 7 7.5c1.7 0 2.7-1.3 4-3"></path></svg>
+          </div>
+          <div class="step-title">Lo implementamos de la mano</div>
+          <p>Sin dejarte solo con la tecnología. Te explicamos cada paso mientras lo hacemos.</p>
+        </div>
+      </div>
+      <p class="how-canon beat-c">No le vamos a quitar el trabajo a nadie. Vamos a hacer el trabajo que nadie quiere hacer.</p>
+      <a class="link" href="/como-trabajamos">Ver más → Cómo trabajamos</a>
+    </section>
+  </div>
+
+  <!-- 4. WHAT -->
+  <div class="slide-wrap" id="slide-what">
+    <section class="what slide-pin">
+      <Kicker>Qué hacemos</Kicker>
+      <h2 class="beat-a">Servicios</h2>
+      <div class="service-grid">
+        <a class="service-card stagger" style="--i:0" href="/servicios/auditoria">
+          <span class="service-title">Auditoría</span>
+          <p>El punto de partida, qué te frena, con datos, sin humo.</p>
+          <span class="link">Ver más →</span>
+        </a>
+        <a class="service-card stagger" style="--i:1" href="/servicios/branding">
+          <span class="service-title">Branding</span>
+          <p>Ordenamos lo que eres para que se note que eres serio.</p>
+          <span class="link">Ver más →</span>
+        </a>
+        <a class="service-card stagger" style="--i:2" href="/servicios/marketing-ia">
+          <span class="service-title">Marketing + IA</span>
+          <p>Automatizamos lo pesado y traemos clientes de verdad.</p>
+          <span class="link">Ver más →</span>
+        </a>
+      </div>
+      <a class="link beat-c" href="/servicios">Ver todos los servicios →</a>
+    </section>
+  </div>
+
+  <!-- 5. Prueba social -->
+  <div class="slide-wrap" id="slide-proof">
+    <section class="proof slide-pin">
+      <Kicker>Resultados</Kicker>
+      <h2 class="beat-a">No hablamos por hablar</h2>
+      <p class="lead-small beat-a">Datos reales del sector, citados a nuestra propia investigación.</p>
+      <div class="beat-b">
+        <PainCarousel cards={painCards} />
+      </div>
+      <a class="link beat-c" href="/casos">Ver más → Casos</a>
+    </section>
+  </div>
+
+  <!-- 6. CTA final -->
+  <div class="slide-wrap" id="slide-cta">
+    <section class="popup slide-pin beat-a">
+      <div class="who">
+        <span class="av">T</span>
+        <span class="whoname"><b>El tío, de The Studio</b>te lee al entrar</span>
+      </div>
+      <p class="msg">
+        No te lo pienses sin antes saber <Highlight onLight>cómo beneficiaría a tu negocio.</Highlight> Déjame
+        tu correo y te mando un <Highlight onLight>plan gratis</Highlight>, hecho para ti.
+      </p>
+      <form class="form" action="/api/lead" method="post">
+        <input type="email" name="email" placeholder="tu@correo.com" aria-label="Tu correo" required />
+        <GlassButton type="submit" withDot={false}>Envíamelo</GlassButton>
+      </form>
+      <p class="sign">Sin compromiso.</p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 24px;
+    text-align: center;
+  }
+  h1,
+  h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+    text-wrap: balance;
+    margin: 0;
+  }
+  p {
+    font-family: var(--sans);
+  }
+  .link {
+    display: inline-block;
+    margin-top: var(--space-4);
+    color: var(--azul-lit);
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .hero {
+    padding: 44px 0 30px;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5.2vw, 3.1rem);
+  }
+  .hero .lead {
+    font-size: 1.06rem;
+    color: var(--muted-on-dark);
+    max-width: 48ch;
+    margin: 18px auto 26px;
+    text-align: justify;
+    text-align-last: center;
+  }
+  .cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .why {
+    padding: 30px 24px;
+  }
+  .why h2 {
+    font-size: 1.6rem;
+    margin: 10px 0 18px;
+  }
+  .why p {
+    text-align: justify;
+    text-align-last: center;
+    max-width: 56ch;
+    margin: 0 auto;
+    color: var(--muted-on-dark);
+  }
+
+  .feature {
+    background: var(--panel);
+    border: 1px solid rgba(51, 75, 164, 0.12);
+    border-radius: var(--radius-lg);
+    padding: 36px 32px;
+    margin: 16px auto;
+  }
+  .feature .ky {
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--azul);
+    font-weight: 700;
+  }
+  .feature-title {
+    font-size: 1.7rem;
+    margin: 8px 0 24px;
+    color: var(--ink);
+  }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 640px) {
+    .steps {
+      grid-template-columns: 1fr;
+    }
+  }
+  .step {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(51, 75, 164, 0.1);
+    border-radius: 14px;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .step .ic {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 2px 3px rgba(86, 94, 108, 0.35));
+  }
+  .step .ic svg {
+    width: 26px;
+    height: 26px;
+    overflow: visible;
+  }
+  .step .ic path,
+  .step .ic circle {
+    stroke: url(#plataLiquida);
+    stroke-width: 1.6;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .step-title {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--ink);
+    margin-bottom: 5px;
+  }
+  .step p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #4c5462;
+    line-height: 1.5;
+  }
+  .how-canon {
+    font-family: var(--script);
+    font-size: 1.15rem;
+    color: var(--plata-oscura);
+    text-align: center;
+    max-width: 46ch;
+    margin: 28px auto 6px;
+    line-height: 1.5;
+  }
+
+  .what {
+    padding: 40px 24px;
+  }
+  .what h2 {
+    font-size: 1.7rem;
+    margin: 8px 0 24px;
+  }
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: var(--space-5);
+  }
+  @media (max-width: 640px) {
+    .service-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .service-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 18px;
+    transition: transform 0.2s ease;
+  }
+  .service-card:hover {
+    transform: translateY(-2px);
+  }
+  .service-card .link {
+    color: var(--azul);
+  }
+  .service-title {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .service-card p {
+    font-size: 0.86rem;
+    color: var(--muted);
+    margin: 0 0 8px;
+  }
+
+  .proof {
+    padding: 40px 24px;
+  }
+  .proof h2 {
+    font-size: 1.7rem;
+    margin: 8px 0 6px;
+  }
+  .lead-small {
+    color: var(--muted-on-dark);
+    font-style: italic;
+    font-size: 0.88rem;
+    margin: 0 0 24px;
+  }
+
+  .popup {
+    max-width: 420px;
+    margin: 40px auto;
+    background: var(--panel-strong);
+    border: 1px solid rgba(51, 75, 164, 0.14);
+    border-radius: 20px;
+    padding: 26px;
+    box-shadow: 0 26px 50px -28px rgba(37, 55, 111, 0.5);
+  }
+  .who {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .av {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #eef1f7, #aeb4c0);
+    display: grid;
+    place-items: center;
+    font-family: var(--script);
+    color: #3a3f47;
+    font-size: 1.4rem;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  }
+  .whoname {
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: left;
+  }
+  .whoname b {
+    color: var(--ink);
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+  .msg {
+    color: #2a3140;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0 auto 16px;
+    text-align: justify;
+    text-align-last: center;
+    max-width: 34ch;
+  }
+  .form {
+    display: flex;
+    gap: 8px;
+  }
+  .form input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(51, 75, 164, 0.16);
+    border-radius: 12px;
+    padding: 11px 14px;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 0.88rem;
+    text-align: center;
+  }
+  .sign {
+    margin: 14px 0 0;
+    font-family: var(--script);
+    color: #6a7280;
+    font-size: 1.15rem;
+  }
+
+
+  /*
+    ---- Coreografía: "diapositivas" con sección fija (Fase 1, revisión 5) ----
+    Cada bloque es un .slide-wrap alto (230vh) con un .slide-pin dentro que se
+    clava en pantalla (position: sticky) mientras se hace scroll por esa altura
+    extra.
+
+    El progreso del scroll se calcula con JS (más abajo) y se vuelca en 3
+    variables CSS por bloque, --pa/--pb/--pc, cada una ya normalizada de 0 a 1
+    dentro de su propia ventana de tiempo. Se probó primero con
+    animation-timeline con nombre (100% nativo, sin JS), pero sus offsets no
+    se resuelven en el entorno de verificación (startOffset/endOffset quedan
+    null pese a que CSS.supports lo da por soportado) — no se puede confirmar
+    que funcione, así que se sustituye por este cálculo en JS, que si se puede
+    verificar y funciona igual en cualquier navegador.
+
+    Con prefers-reduced-motion, el script ni se activa: todo se queda tal cual
+    (opacity 1, sin transform), por el valor por defecto de los var().
+  */
+  .slide-wrap {
+    position: relative;
+    height: 230vh;
+  }
+  .slide-pin {
+    position: sticky;
+    top: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .slide-wrap {
+      height: auto;
+    }
+    .slide-pin {
+      position: static;
+      min-height: 0;
+    }
+  }
+
+  .word {
+    display: inline-block;
+    margin-right: 0.28em;
+  }
+
+  /* Beats: el texto se enciende, de 0.35/oscuro a 1/claro */
+  .beat-a {
+    opacity: calc(0.35 + var(--pa, 1) * 0.65);
+    filter: brightness(calc(0.55 + var(--pa, 1) * 0.45));
+  }
+  .beat-b {
+    opacity: calc(0.35 + var(--pb, 1) * 0.65);
+    filter: brightness(calc(0.55 + var(--pb, 1) * 0.45));
+  }
+  .beat-c {
+    opacity: calc(0.35 + var(--pc, 1) * 0.65);
+    filter: brightness(calc(0.55 + var(--pc, 1) * 0.45));
+  }
+  /* El titular usa beat-a con un pequeño desfase por palabra (--i) */
+  #slide-hook .word {
+    opacity: calc(0.35 + clamp(0, (var(--pa, 1) - var(--i) * 0.06), 1) * 0.65);
+  }
+  /* La CTA del hook y los link final de cada bloque, además, se desplazan al entrar */
+  .cta.beat-c,
+  a.link.beat-c {
+    transform: translateY(calc(14px * (1 - var(--pc, 1))));
+  }
+
+  /* HOW: cada icono se dibuja solo, escalonado por --i del .step */
+  .ic path,
+  .ic circle {
+    stroke-dasharray: 1;
+    stroke-dashoffset: calc(1 - clamp(0, (var(--pa, 1) - var(--i, 0) * 0.28), 1));
+  }
+  #slide-how .step {
+    opacity: calc(0.4 + clamp(0, (var(--pa, 1) - var(--i, 0) * 0.28), 1) * 0.6);
+  }
+
+  /* WHAT: entrada escalonada de las 3 tarjetas, con --i */
+  .stagger {
+    --local: clamp(0, (var(--pa, 1) - var(--i, 0) * 0.22), 1);
+    opacity: calc(0.4 + var(--local) * 0.6);
+    transform: translateY(calc(18px * (1 - var(--local))));
+  }
+
+  /* Prueba social: el carrusel aparece en el beat B */
+  .proof .beat-b {
+    opacity: var(--pb, 1);
+    transform: translateY(calc(16px * (1 - var(--pb, 1))));
+  }
+
+  /* CTA final: la tarjeta entra como mensaje de chat, el botón respira sin parar */
+  #slide-cta .popup {
+    opacity: var(--pa, 1);
+    transform: translateY(calc(36px * (1 - var(--pa, 1))));
+  }
+  .form :global(.glass) {
+    animation: breathe 3.2s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.035);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .form :global(.glass) {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    const wraps = Array.from(document.querySelectorAll<HTMLElement>(".slide-wrap"));
+
+    const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+
+    function update() {
+      const vh = window.innerHeight;
+      wraps.forEach((wrap) => {
+        const rect = wrap.getBoundingClientRect();
+        const total = rect.height - vh;
+        const p = total > 0 ? clamp01(-rect.top / total) : 1;
+        const pa = clamp01(p / 0.35);
+        const pb = clamp01((p - 0.35) / 0.3);
+        const pc = clamp01((p - 0.65) / 0.35);
+        wrap.style.setProperty("--pa", pa.toFixed(4));
+        wrap.style.setProperty("--pb", pb.toFixed(4));
+        wrap.style.setProperty("--pc", pc.toFixed(4));
+      });
+    }
+
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          update();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+  }
+</script>

@@ -1,0 +1,187 @@
+---
+import PortalLayout from "../../layouts/PortalLayout.astro";
+
+const hitos = [
+  { fecha: "3 mar. 2026", titulo: "Auditoría inicial", estado: "hecho" },
+  { fecha: "18 mar. 2026", titulo: "Propuesta de cuña (automatización IA)", estado: "hecho" },
+  { fecha: "2 abr. 2026", titulo: "Primer informe de resultados", estado: "hecho" },
+  { fecha: "20 jul. 2026", titulo: "Entrega de automatización de reservas", estado: "próximo" },
+  { fecha: "5 ago. 2026", titulo: "Revisión de resultados del trimestre", estado: "próximo" },
+];
+
+const fase = "Ejecución — cuña de automatización";
+const progreso = 60;
+---
+
+<PortalLayout title="Estado del servicio — Portal de cliente" path="/portal/estado" userName="Cliente demo">
+  <a href="/portal" class="back">← Portal</a>
+  <p class="kick">Ejemplo — hitos de demostración</p>
+  <h1>Estado del servicio</h1>
+  <p class="lead">En qué punto va tu proyecto con The Studio, y qué viene después.</p>
+
+  <div class="progress-card">
+    <span class="phase">{fase}</span>
+    <div class="bar">
+      <div class="fill" style={`width:${progreso}%`}></div>
+    </div>
+    <span class="pct">{progreso}% completado</span>
+  </div>
+
+  <h2>Próximos hitos y entregas</h2>
+  <ul class="timeline">
+    {
+      hitos.map((hito) => (
+        <li class={hito.estado === "hecho" ? "done" : "upcoming"}>
+          <span class="dot" />
+          <div class="content">
+            <span class="date">{hito.fecha}</span>
+            <span class="title">{hito.titulo}</span>
+          </div>
+          <span class="status">{hito.estado}</span>
+        </li>
+      ))
+    }
+  </ul>
+</PortalLayout>
+
+<style>
+  .back {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted-on-dark);
+    text-decoration: none;
+    margin: 20px 0 8px;
+  }
+  .back:hover {
+    color: var(--azul-lit);
+  }
+  .kick {
+    font-family: var(--sans);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--azul-lit);
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+  h1 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.6rem, 4vw, 2.1rem);
+    margin: 0 0 8px;
+  }
+  .lead {
+    font-family: var(--sans);
+    color: var(--muted-on-dark);
+    font-style: italic;
+    font-size: 0.92rem;
+    margin: 0 0 24px;
+  }
+  .progress-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px 24px;
+    box-shadow: 0 12px 30px -22px rgba(37, 55, 111, 0.35);
+    margin-bottom: 32px;
+  }
+  .phase {
+    display: block;
+    font-family: var(--sans);
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 0.98rem;
+    margin-bottom: 12px;
+  }
+  .bar {
+    background: rgba(51, 75, 164, 0.1);
+    border-radius: 20px;
+    height: 10px;
+    overflow: hidden;
+  }
+  .fill {
+    background: var(--azul);
+    height: 100%;
+    border-radius: 20px;
+  }
+  .pct {
+    display: block;
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 1.05rem;
+    margin: 0 0 14px;
+  }
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .timeline li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 18px;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .done .dot {
+    background: #2e7d5b;
+  }
+  .upcoming .dot {
+    background: var(--azul);
+  }
+  .content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .date {
+    font-family: var(--sans);
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+  .title {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+  .status {
+    font-family: var(--sans);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 20px;
+    padding: 5px 12px;
+    white-space: nowrap;
+  }
+  .done .status {
+    color: #2e7d5b;
+    background: rgba(46, 125, 91, 0.1);
+  }
+  .upcoming .status {
+    color: var(--azul-deep);
+    background: rgba(51, 75, 164, 0.1);
+  }
+</style>

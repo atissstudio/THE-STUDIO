@@ -1,0 +1,185 @@
+---
+import PortalLayout from "../../layouts/PortalLayout.astro";
+
+const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun"];
+const inversion = [400, 400, 600, 600, 600, 600];
+const retorno = [0, 250, 900, 1500, 2100, 2800];
+const max = Math.max(...retorno, ...inversion);
+
+const w = 640;
+const h = 260;
+const padL = 40;
+const padB = 30;
+const barW = 20;
+const slot = (w - padL - 20) / meses.length;
+
+function y(val: number) {
+  return h - padB - (val / max) * (h - padB - 20);
+}
+
+const totalInversion = inversion.reduce((a, b) => a + b, 0);
+const totalRetorno = retorno.reduce((a, b) => a + b, 0);
+const roi = Math.round(((totalRetorno - totalInversion) / totalInversion) * 100);
+---
+
+<PortalLayout title="Gráficos financieros — Portal de cliente" path="/portal/financieros" userName="Cliente demo">
+  <a href="/portal" class="back">← Portal</a>
+  <p class="kick">Ejemplo — cifras de demostración</p>
+  <h1>Gráficos financieros</h1>
+  <p class="lead">Inversión frente a retorno, mes a mes, desde el inicio del servicio.</p>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-label">Invertido</span>
+      <span class="stat-value">{totalInversion.toLocaleString("es-ES")} €</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Retorno estimado</span>
+      <span class="stat-value">{totalRetorno.toLocaleString("es-ES")} €</span>
+    </div>
+    <div class="stat highlight">
+      <span class="stat-label">ROI</span>
+      <span class="stat-value">+{roi}%</span>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <svg viewBox={`0 0 ${w} ${h}`} role="img" aria-label="Inversión frente a retorno por mes">
+      <line x1={padL} y1={h - padB} x2={w - 10} y2={h - padB} stroke="#dce3f2" stroke-width="1" />
+      {
+        meses.map((m, i) => {
+          const x = padL + i * slot + 10;
+          return (
+            <g>
+              <rect x={x} y={y(inversion[i])} width={barW} height={h - padB - y(inversion[i])} rx="4" fill="#c7cedd" />
+              <rect
+                x={x + barW + 4}
+                y={y(retorno[i])}
+                width={barW}
+                height={h - padB - y(retorno[i])}
+                rx="4"
+                fill="#334ba4"
+              />
+              <text x={x + barW} y={h - padB + 16} font-size="11" fill="#5c6472" text-anchor="middle" font-family="Arial, sans-serif">
+                {m}
+              </text>
+            </g>
+          );
+        })
+      }
+    </svg>
+    <div class="legend">
+      <span><i class="dot inv"></i>Inversión</span>
+      <span><i class="dot ret"></i>Retorno</span>
+    </div>
+  </div>
+</PortalLayout>
+
+<style>
+  .back {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted-on-dark);
+    text-decoration: none;
+    margin: 20px 0 8px;
+  }
+  .back:hover {
+    color: var(--azul-lit);
+  }
+  .kick {
+    font-family: var(--sans);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--azul-lit);
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+  h1 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.6rem, 4vw, 2.1rem);
+    margin: 0 0 8px;
+  }
+  .lead {
+    font-family: var(--sans);
+    color: var(--muted-on-dark);
+    font-style: italic;
+    font-size: 0.92rem;
+    margin: 0 0 24px;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 640px) {
+    .stats {
+      grid-template-columns: 1fr;
+    }
+  }
+  .stat {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .stat.highlight {
+    background: var(--panel);
+    border-color: rgba(51, 75, 164, 0.15);
+  }
+  .stat-label {
+    font-family: var(--sans);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .stat-value {
+    font-family: var(--sans);
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .chart-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 12px 30px -22px rgba(37, 55, 111, 0.35);
+  }
+  svg {
+    width: 100%;
+    height: auto;
+  }
+  .legend {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 12px;
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .dot.inv {
+    background: #c7cedd;
+  }
+  .dot.ret {
+    background: var(--azul);
+  }
+</style>

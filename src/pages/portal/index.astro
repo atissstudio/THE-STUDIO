@@ -1,0 +1,137 @@
+---
+import PortalLayout from "../../layouts/PortalLayout.astro";
+
+const cards = [
+  {
+    href: "/portal/informes",
+    label: "Informes",
+    desc: "Documentos y entregas que te hemos hecho llegar.",
+    meta: "3 documentos",
+  },
+  {
+    href: "/portal/financieros",
+    label: "Gráficos financieros",
+    desc: "Inversión frente a retorno, mes a mes.",
+    meta: "actualizado — ejemplo",
+  },
+  {
+    href: "/portal/estado",
+    label: "Estado del servicio",
+    desc: "En qué punto va tu proyecto y qué viene después.",
+    meta: "en curso — ejemplo",
+  },
+  {
+    href: "/portal/contacto",
+    label: "Contacto",
+    desc: "Agenda una llamada o mándanos un mensaje directo.",
+    meta: "respuesta en 24-48h",
+  },
+];
+---
+
+<PortalLayout title="Portal de cliente — The Studio, by Atis" path="/portal" userName="Cliente demo">
+  <section class="hero">
+    <p class="kick">Portal de cliente</p>
+    <h1>Hola, Cliente demo</h1>
+    <p class="lead">
+      Este es un <b>mockup</b> con datos de ejemplo — así se vería el seguimiento de tu servicio con
+      The Studio.
+    </p>
+  </section>
+
+  <div class="cards">
+    {
+      cards.map((c) => (
+        <a href={c.href} class="card">
+          <span class="card-label">{c.label}</span>
+          <p class="card-desc">{c.desc}</p>
+          <span class="card-meta">{c.meta}</span>
+        </a>
+      ))
+    }
+  </div>
+</PortalLayout>
+
+<style>
+  .hero {
+    text-align: center;
+    padding: 20px 0 12px;
+  }
+  .kick {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--azul-lit);
+    font-weight: 700;
+    margin: 0 0 12px;
+  }
+  h1 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    font-size: clamp(1.8rem, 4.5vw, 2.4rem);
+    margin: 0 0 12px;
+  }
+  .lead {
+    font-family: var(--sans);
+    color: var(--muted-on-dark);
+    font-style: italic;
+    font-size: 0.95rem;
+    max-width: 46ch;
+    margin: 0 auto;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-top: 36px;
+  }
+  @media (max-width: 640px) {
+    .cards {
+      grid-template-columns: 1fr;
+    }
+  }
+  .card {
+    display: block;
+    text-decoration: none;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 26px 24px;
+    box-shadow: 0 12px 30px -22px rgba(37, 55, 111, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 36px -20px rgba(37, 55, 111, 0.45);
+  }
+  .card-label {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    font-size: 1.15rem;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 8px;
+  }
+  .card-desc {
+    font-family: var(--sans);
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0 0 14px;
+  }
+  .card-meta {
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--azul-deep);
+    background: rgba(51, 75, 164, 0.1);
+    border-radius: 20px;
+    padding: 5px 12px;
+  }
+</style>

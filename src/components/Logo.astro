@@ -1,12 +1,13 @@
 ---
 interface Props {
-  onDark?: boolean;
+  onLight?: boolean;
   size?: string;
+  variant?: "horizontal" | "vertical";
 }
-const { onDark = false, size = "1.5rem" } = Astro.props;
+const { onLight = false, size = "1.5rem", variant = "horizontal" } = Astro.props;
 ---
 
-<span class:list={["logo", { "on-dark": onDark }]} style={`font-size:${size}`}>
+<span class:list={["logo", variant, { "on-light": onLight }]} style={`font-size:${size}`}>
   <span class="scr">the</span><span class="hvy">STUDIO</span><span class="scr">by</span><span class="hvy">ATIS</span>
 </span>
 
@@ -21,22 +22,40 @@ const { onDark = false, size = "1.5rem" } = Astro.props;
   .logo .scr {
     font-family: var(--script);
     font-size: 1.5em;
-    color: var(--plata-oscura);
+    color: var(--plata-clara);
     transform: translateY(0.06em);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
   }
   .logo .hvy {
     font-family: var(--sans);
     font-weight: 800;
     letter-spacing: -0.03em;
-    color: var(--ink);
+    color: var(--ink-on-dark);
     text-transform: uppercase;
   }
-  .logo.on-dark .scr {
-    color: var(--plata-clara);
-    text-shadow: 0 0 9px rgba(200, 212, 244, 0.7);
+  /* on-light: el logo vive sobre una tarjeta clara, no sobre el lienzo azul oscuro */
+  .logo.on-light .scr {
+    color: var(--plata-oscura);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
   }
-  .logo.on-dark .hvy {
-    color: #eef1f6;
+  .logo.on-light .hvy {
+    color: var(--ink);
+  }
+
+  /* variante vertical: mismos 4 nodos, dispuestos en 2 líneas, alineados a la derecha */
+  .logo.vertical {
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    column-gap: 0.22em;
+    row-gap: 0;
+    align-items: baseline;
+    justify-items: end;
+  }
+  .logo.vertical .hvy {
+    font-size: 0.6em;
+    line-height: 1.15;
+  }
+  .logo.vertical .scr {
+    font-size: 0.85em;
+    transform: none;
   }
 </style>

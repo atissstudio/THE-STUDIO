@@ -1,0 +1,100 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import GlassButton from "../../components/GlassButton.astro";
+import { servicios } from "../../data/servicios";
+
+export function getStaticPaths() {
+  return servicios.map((servicio) => ({
+    params: { slug: servicio.slug },
+    props: { servicio },
+  }));
+}
+
+const { servicio } = Astro.props;
+
+// Los otros servicios, para enlazar en horizontal desde cada página.
+const otros = servicios.filter((s) => s.slug !== servicio.slug).slice(0, 3);
+---
+
+<BaseLayout
+  title={`${servicio.title}. Servicios de The Studio, by Atis`}
+  description={`${servicio.heading}. ${servicio.lead}`}
+  path={`/servicios/${servicio.slug}`}
+>
+  <section class="f-azul hero-field row12">
+    <div class="hero-inner">
+      <p class="k">Servicios</p>
+      <h1>{servicio.heading}</h1>
+      <p class="lead">{servicio.lead}</p>
+    </div>
+  </section>
+
+  <section class="f-claro field-pad row12" data-reveal>
+    <span class="field-tag" style="color:var(--azul)">.01</span>
+    <div class="read">
+      <p class="k">{servicio.title}</p>
+      {servicio.body.map((parrafo) => <p>{parrafo}</p>)}
+    </div>
+  </section>
+
+  <section class="f-azul row12 field-cards">
+    <span class="field-tag">.02</span>
+    <div class="cells">
+      <div class="head-cell">
+        <p class="k">Seguir mirando</p>
+        <h2>Otros servicios.</h2>
+      </div>
+      {
+        otros.map((s) => (
+          <a class="cell" href={`/servicios/${s.slug}`}>
+            {/* Numeración fija: la posición real del servicio en el catálogo, no
+                la posición dentro de esta lista filtrada (que cambia según la
+                página). Así branding es siempre 02, esté donde esté listado. */}
+            <span class="n">{String(servicios.findIndex((x) => x.slug === s.slug) + 1).padStart(2, "0")}</span>
+            <span class="ct">{s.title}</span>
+            <span class="cp">{s.card}</span>
+            <img class="isla-in" src={s.isla} alt="" loading="lazy" />
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="f-azul closer row12">
+    <div class="closer-inner">
+      <p class="k">Tu plan gratis</p>
+      <h2>¿Empezamos por aquí?</h2>
+      <p>
+        Cuéntanos qué necesitas y vemos juntos por dónde empezar. Sin compromisos y sin jerga
+        técnica.
+      </p>
+      <GlassButton href="/contacto">Quiero que me ayudéis a crecer</GlassButton>
+      <p class="sidelinks">
+        <a href="/servicios">Ver todos los servicios</a>
+        <a href="/como-trabajamos">Cómo trabajamos</a>
+        <a href="/casos">Los datos</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .sidelinks {
+    margin: 26px 0 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .sidelinks a {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-on-dark);
+    text-decoration: none;
+  }
+  .sidelinks a:hover {
+    color: var(--azul-lit);
+  }
+</style>

@@ -1,0 +1,130 @@
+---
+import PortalLayout from "../../layouts/PortalLayout.astro";
+import Logo from "../../components/Logo.astro";
+import GlassButton from "../../components/GlassButton.astro";
+
+const DEMO_EMAIL = "demo@atis.studio";
+const DEMO_PASSWORD = "atisdemo2026";
+---
+
+<PortalLayout title="Acceso portal de cliente — The Studio, by Atis" path="/portal/login" protectedPage={false}>
+  <section class="login-wrap">
+    <div class="login-logo"><Logo size="1.6rem" /></div>
+    <p class="kick">Portal de cliente · demo</p>
+    <h1>Entra a tu portal</h1>
+    <p class="lead">
+      Esta es una <b>maqueta con datos de ejemplo</b>. La cuenta ya está rellenada — solo pulsa
+      «Entrar».
+    </p>
+
+    <form id="login-form">
+      <label>
+        Correo
+        <input type="email" id="email" value={DEMO_EMAIL} autocomplete="username" required />
+      </label>
+      <label>
+        Contraseña
+        <input type="password" id="password" value={DEMO_PASSWORD} autocomplete="current-password" required />
+      </label>
+      <p id="error" class="error" hidden>Cuenta demo no reconocida — usa los datos ya rellenados.</p>
+      <GlassButton type="submit">Entrar</GlassButton>
+    </form>
+  </section>
+</PortalLayout>
+
+<script define:vars={{ DEMO_EMAIL, DEMO_PASSWORD }}>
+  const form = document.getElementById("login-form");
+  const errorEl = document.getElementById("error");
+
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
+      sessionStorage.setItem("atis_portal_demo_auth", "1");
+      window.location.href = "/portal";
+    } else {
+      errorEl.hidden = false;
+    }
+  });
+</script>
+
+<style>
+  .login-wrap {
+    max-width: 420px;
+    margin: 40px auto 0;
+    padding: 0 24px;
+    text-align: center;
+  }
+  .login-logo {
+    margin-bottom: 24px;
+  }
+  .kick {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--azul-lit);
+    font-weight: 700;
+    margin: 0 0 12px;
+  }
+  h1 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    margin: 0 0 12px;
+  }
+  .lead {
+    font-family: var(--sans);
+    color: var(--muted-on-dark);
+    font-style: italic;
+    font-size: 0.92rem;
+    margin: 0 0 28px;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: left;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  input {
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 11px 14px;
+    color: var(--ink);
+  }
+  .error {
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #b4433a;
+    background: rgba(180, 67, 58, 0.1);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 0;
+  }
+  form :global(.glass) {
+    align-self: center;
+    margin-top: 4px;
+  }
+</style>

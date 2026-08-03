@@ -1,0 +1,562 @@
+---
+/*
+  Home v5 — portada de la maqueta aprobada (src/pages/maqueta.astro, ahora retirada)
+  con Nav/Footer/SEO reales de BaseLayout y el formulario conectado a /api/lead.
+  Ritmo de color: azul (hero) -> plata líquida (.01, la casa) -> claro (.02/.03,
+  lectura) -> azul (.04, servicios) -> blanco (.05, datos) -> azul (.06, CTA).
+*/
+import GlassButton from "./GlassButton.astro";
+import { servicios as todos } from "../data/servicios";
+
+// En la home solo entran los tres primeros. El resto vive en /servicios.
+const destacados = todos.slice(0, 3);
+---
+
+<section class="f-azul hero row12">
+  <h1 class="logo-h1">
+    <span class="scr">the</span><span class="hvy">STUDIO</span><span class="scr">by</span><span class="hvy">ATIS</span>
+  </h1>
+  <div class="ticker">
+    <div class="mv">
+      <span>Comunicación · Marketing · IA · En Canarias · Demostramos, no prometemos ·</span>
+      <span>Comunicación · Marketing · IA · En Canarias · Demostramos, no prometemos ·</span>
+    </div>
+  </div>
+  <div class="hero-foot">
+    <span>Consultoría para negocios que ya valen</span>
+    <span>Canarias</span>
+  </div>
+</section>
+
+<div class="reel" id="reel">
+  <div class="reel-liquid"><i class="l1"></i><i class="l2"></i><i class="l3"></i></div>
+  <div class="reel-stage" id="reelStage">
+    <div class="reel-kick">El punto de partida · .01</div>
+    <div class="reel-phrase reel-p1">Tu negocio ya vale.</div>
+    <div class="reel-house" id="reelHouse">
+      <img class="r0" src="/negocio/casa-00-dark.webp" alt="Tu negocio, todavía apagado" />
+      <img class="r1" src="/negocio/casa-30.webp" alt="" />
+      <img class="r2" src="/negocio/casa-70.webp" alt="" />
+      <img class="r3" src="/negocio/casa-100-vivid.webp" alt="Tu negocio con su marca activada" />
+    </div>
+    <div class="reel-phrase reel-p2">Vamos a que se note.</div>
+  </div>
+</div>
+
+<section class="f-claro field-pad row12" data-reveal>
+  <span class="field-tag" style="color:var(--azul)">.02</span>
+  <div class="read">
+    <p class="k">Por qué existimos</p>
+    <h2>Tu negocio de siempre, con las herramientas de los más grandes.</h2>
+    <p>
+      Creemos que los negocios locales no deberían quedarse atrás por falta de recursos. Por eso,
+      hemos diseñado un sistema que democratiza la estrategia, la inteligencia artificial y la
+      comunicación.
+    </p>
+    <p>
+      Nuestro objetivo es que el negocio canario de toda la vida tenga exactamente las mismas
+      oportunidades para competir, y ganar, que una gran multinacional.
+    </p>
+    <p>
+      Todo empieza por conocerte. Entendemos tus necesidades y diseñamos un plan integral a tu
+      medida. Combinamos tecnología y estrategia para impulsar tu rentabilidad, haciendo que tu
+      negocio logre <span class="em on-light">mucho más, por menos</span>.
+    </p>
+    <p class="read-cta">
+      <GlassButton href="/contacto">Quiero que me ayudéis a crecer</GlassButton>
+    </p>
+  </div>
+</section>
+
+<section class="f-claro row12" style="padding-top:0; padding-bottom: calc(var(--row)*.45)" data-reveal>
+  <span class="field-tag" style="color:var(--azul)">.03</span>
+  <div class="read right">
+    <p class="k">Cómo lo hacemos</p>
+    <h2>Un proceso, sin humo.</h2>
+    <p><span class="em on-light">Te auditamos.</span> No como un examen, sino como quien te escucha antes de opinar. Miramos tu negocio con datos y entendemos qué necesitas, quién eres y qué te frena.</p>
+    <p><span class="em on-light">Lo diseñamos contigo.</span> No una plantilla genérica. Un plan hecho a la medida de tu negocio, de tu gente y de tu momento.</p>
+    <p><span class="em on-light">Lo implementamos de la mano.</span> Sin dejarte solo con la tecnología. Te explicamos cada paso mientras lo hacemos.</p>
+    <p class="read-cta">
+      <a class="inline-link" href="/como-trabajamos">Ver el método completo, paso a paso</a>
+    </p>
+  </div>
+</section>
+
+<section class="f-azul row12 field-cards">
+  <span class="field-tag">.04</span>
+  <div class="cells">
+    <div class="head-cell">
+      <p class="k">Qué hacemos</p>
+      <h2>Servicios.</h2>
+      <a class="head-link" href="/servicios">Ver los siete</a>
+    </div>
+    {destacados.map((s, i) => (
+      <a class="cell" href={`/servicios/${s.slug}`}>
+        <span class="n">{String(i + 1).padStart(2, "0")}</span>
+        <span class="ct">{s.title}</span>
+        <span class="cp">{s.card}</span>
+        <img class="isla-in" src={s.isla} alt="" loading="lazy" />
+      </a>
+    ))}
+  </div>
+</section>
+
+<section class="f-blanco row12 field-cards">
+  <span class="field-tag" style="color:var(--azul)">.05</span>
+  <div class="datos">
+    <div class="head-cell"><p class="k">Los datos</p><h2>No hablamos por hablar.</h2></div>
+    <div class="dato">
+      <p class="big">80%</p>
+      <span class="q">cómo evitar que los pacientes falten a la cita</span>
+      <span class="a">Un recordatorio automático por WhatsApp corta los no-shows hasta ese porcentaje.</span>
+    </div>
+    <div class="dato">
+      <p class="big">x21</p>
+      <span class="q">pierdo clientes por no responder a tiempo</span>
+      <span class="a">Contestar en menos de 5 minutos multiplica por 21 tus opciones de cerrar.</span>
+    </div>
+    <div class="dato">
+      <p class="big">30%</p>
+      <span class="q">por qué no aceptan mi presupuesto</span>
+      <span class="a">No es el precio, es la confianza. Automatizar el seguimiento sube la aceptación hasta un 30%.</span>
+    </div>
+  </div>
+</section>
+
+<div class="cta-wrap">
+  <div class="cta-screen" id="ctaScreen">
+    <div class="cta-inner">
+      <p class="k2">.06 · Tu plan gratis</p>
+      <h2>Vamos a que se note.</h2>
+      <p>Déjame tu correo y te mando un plan gratis, hecho para ti. Sin compromiso.</p>
+      <form class="ctaform" id="ctaform" action="/api/lead" method="post">
+        <div class="ctaform-fila">
+          <input
+            type="email"
+            name="email"
+            placeholder="tu@correo.com"
+            aria-label="Tu correo"
+            required
+          />
+          <GlassButton type="submit" withDot={false}>Pídeme mi plan</GlassButton>
+        </div>
+        <textarea
+          class="ctaform-msg"
+          name="message"
+          rows="2"
+          placeholder="Cuéntanos qué necesitas (opcional)"
+          aria-label="Cuéntanos qué necesitas"
+        ></textarea>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .hero {
+    padding: calc(var(--row) * 1.1) 0 0;
+    overflow: hidden;
+  }
+  .logo-h1 {
+    grid-column: 1/13;
+    margin: 0;
+    padding: 0 20px;
+    line-height: 0.86;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.06em;
+    font-weight: 400;
+    white-space: nowrap;
+    color: var(--plata-clara);
+  }
+  .logo-h1 .scr {
+    font-family: var(--script);
+    font-size: calc(var(--logo, 10vw) * 0.62);
+  }
+  .logo-h1 .hvy {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: var(--logo, 10vw);
+    letter-spacing: -0.035em;
+  }
+  .ticker {
+    grid-column: 1/13;
+    margin-top: calc(var(--row) * 0.6);
+    overflow: hidden;
+    border-top: 1px solid rgba(238, 241, 247, 0.28);
+    border-bottom: 1px solid rgba(238, 241, 247, 0.28);
+  }
+  .ticker .mv {
+    display: inline-flex;
+    white-space: nowrap;
+    animation: slide 32s linear infinite;
+    padding: 12px 0;
+  }
+  .ticker span {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    padding-right: 52px;
+    color: var(--plata-clara);
+  }
+  @keyframes slide {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .hero-foot {
+    grid-column: 1/13;
+    padding: 14px 20px calc(var(--row) * 0.6);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: rgba(238, 241, 247, 0.72);
+  }
+
+  /* .01 REEL: la casa cruza pintándose, la frase se parte, sobre plata líquida */
+  .reel {
+    height: 300vh;
+    position: relative;
+    background: var(--plata-mid);
+  }
+  .reel-liquid {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  .reel-liquid i {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+  }
+  .reel-liquid .l1 { width: 55vw; height: 70vh; left: -10vw; top: 5vh; background: radial-gradient(circle, #f4f6fa, rgba(244, 246, 250, 0) 66%); animation: lv1 16s ease-in-out infinite; }
+  .reel-liquid .l2 { width: 48vw; height: 66vh; right: -8vw; top: 20vh; background: radial-gradient(circle, #7a828f, rgba(122, 130, 143, 0) 62%); animation: lv2 20s ease-in-out infinite; }
+  .reel-liquid .l3 { width: 45vw; height: 60vh; left: 30vw; bottom: 0; background: radial-gradient(circle, #eef1f7, rgba(238, 241, 247, 0) 62%); animation: lv3 24s ease-in-out infinite; }
+  @keyframes lv1 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(14vw, 4vh) scale(1.2); } }
+  @keyframes lv2 { 0%, 100% { transform: translate(0, 0) scale(1.1); } 50% { transform: translate(-12vw, -3vh) scale(0.9); } }
+  @keyframes lv3 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-16vw, 3vh) scale(1.2); } }
+  .reel-stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .reel-house {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(56vw, 660px);
+    aspect-ratio: 1370 / 919;
+    transform: translate(calc(-50% + var(--rx, 26) * 1vw), -50%);
+  }
+  .reel-house img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .reel-house .r1 { opacity: var(--o30, 0); }
+  .reel-house .r2 { opacity: var(--o70, 0); }
+  .reel-house .r3 { opacity: var(--o100, 0); }
+  .reel-phrase {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40vw;
+    padding: 0 20px;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 3vw;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .reel-p1 { left: 3vw; opacity: var(--p1, 1); }
+  .reel-p2 { right: 3vw; text-align: right; opacity: var(--p2, 0); }
+  .reel-kick {
+    position: absolute;
+    top: calc(50% - 5vw);
+    left: 3vw;
+    padding: 0 20px;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--azul);
+    opacity: var(--p1, 1);
+  }
+
+  /* .06 CTA a pantalla completa, entra como diapositiva */
+  .cta-wrap {
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-screen {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    background: var(--azul);
+    color: var(--plata-clara);
+    clip-path: inset(var(--cta-clip, 100%) 0 0 0);
+    transition: clip-path 1s cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  .cta-screen.in {
+    --cta-clip: 0%;
+  }
+  .cta-inner {
+    max-width: 640px;
+    padding: 0 24px;
+    transform: translateY(var(--cta-y, 40px));
+    opacity: var(--cta-o, 0);
+    transition: transform 1s 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 1s 0.2s ease;
+  }
+  .cta-screen.in .cta-inner {
+    --cta-y: 0px;
+    --cta-o: 1;
+  }
+  .cta-inner .k2 {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: #c9d3f5;
+    margin: 0 0 20px;
+  }
+  .cta-inner h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin: 0 0 20px;
+  }
+  .cta-inner p {
+    color: rgba(238, 241, 247, 0.78);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin: 0 auto 28px;
+    max-width: 42ch;
+  }
+  .ctaform {
+    display: flex;
+    flex-direction: column;
+    max-width: 520px;
+    margin: 0 auto;
+    gap: 12px;
+  }
+  .ctaform-fila {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+  }
+  .ctaform input {
+    flex: 1 1 auto;
+    min-width: 0; /* sin esto el input no encoge y empuja al botón */
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.96);
+    padding: 16px;
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+  /* El botón mantiene el cristal completo (mismo lenguaje que el resto de la web) */
+  .ctaform :global(.glass) {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 16px 26px;
+    font-size: 0.78rem;
+  }
+  /*
+    Campo de "qué necesitas": visible por defecto (si el JS no llega a
+    ejecutarse, sigue siendo un campo normal y usable). El script lo colapsa
+    al cargar y lo abre en cuanto tocas el correo, para no abrumar de entrada.
+  */
+  .ctaform-msg {
+    width: 100%;
+    resize: none;
+    box-sizing: border-box;
+    max-height: 120px;
+    opacity: 1;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.96);
+    padding: 14px 16px;
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    color: var(--ink);
+    transition: max-height 0.4s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.3s ease,
+      padding 0.4s ease, border-width 0.3s ease;
+  }
+  .ctaform.compacto .ctaform-msg {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
+  }
+
+  .read-cta {
+    margin-top: 28px;
+  }
+  .inline-link {
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--azul);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(51, 75, 164, 0.4);
+    padding-bottom: 3px;
+  }
+  .inline-link:hover {
+    border-bottom-color: var(--azul);
+  }
+  .head-link {
+    margin-top: 18px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #c9d3f5;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(201, 211, 245, 0.45);
+    padding-bottom: 3px;
+    align-self: flex-start;
+  }
+  .head-link:hover {
+    color: #fff;
+    border-bottom-color: #fff;
+  }
+
+  @media (max-width: 900px) {
+    .reel-house { width: 62vw; }
+    .reel-phrase { font-size: 7vw; width: 70vw; }
+    /*
+      El wordmark del hero pasa de una línea horizontal (encogida por JS
+      para que quepa) a dos líneas verticales, como el logo compacto del
+      menú: cabe más grande sin comprimir el texto en una sola fila.
+    */
+    .logo-h1 {
+      display: inline-grid;
+      grid-template-columns: auto auto;
+      column-gap: 0.2em;
+      row-gap: 0;
+      justify-content: center;
+      justify-items: end;
+      white-space: normal;
+    }
+    .logo-h1 .scr {
+      font-size: clamp(1.6rem, 8vw, 2.4rem);
+    }
+    .logo-h1 .hvy {
+      font-size: clamp(2.4rem, 13vw, 3.6rem);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reel { height: auto; }
+    .reel-stage { position: static; height: auto; padding: 10vh 0; }
+    .reel-house { position: relative; transform: none; margin: 0 auto; }
+    .reel-house .r3 { opacity: 1; }
+    .reel-p1, .reel-kick { opacity: 0; }
+    .reel-p2 { opacity: 1; position: static; text-align: center; margin: 20px auto; }
+    .cta-screen { clip-path: none; }
+    .cta-inner { transform: none; opacity: 1; }
+  }
+</style>
+
+<script>
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+  const ramp = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+  // logo llena el ancho
+  const h1 = document.querySelector<HTMLElement>(".logo-h1");
+  const fitLogo = () => {
+    if (!h1) return;
+    // En móvil el wordmark es de dos líneas (tamaño fijo por CSS), no hace falta encogerlo.
+    if (matchMedia("(max-width: 900px)").matches) {
+      h1.style.removeProperty("--logo");
+      return;
+    }
+    const base = innerWidth * 0.1;
+    h1.style.setProperty("--logo", base + "px");
+    const kids = Array.from(h1.children) as HTMLElement[];
+    const words = kids.reduce((s, k) => s + k.getBoundingClientRect().width, 0);
+    const gaps = (kids.length - 1) * base * 0.06;
+    const avail = h1.clientWidth - 40;
+    if (words > 0) h1.style.setProperty("--logo", (base * (avail / (words + gaps))).toFixed(2) + "px");
+  };
+  if (document.fonts) document.fonts.ready.then(fitLogo);
+  fitLogo();
+  addEventListener("resize", fitLogo);
+
+  if (!reduce) {
+    const reel = document.getElementById("reel");
+    const stage = document.getElementById("reelStage");
+    if (reel && stage) {
+      const reelUpdate = () => {
+        const r = reel.getBoundingClientRect();
+        const total = reel.offsetHeight - innerHeight;
+        const p = total > 0 ? clamp01(-r.top / total) : 0;
+        stage.style.setProperty("--rx", lerp(22, -22, p).toFixed(2));
+        stage.style.setProperty("--o30", ramp(p, 0.1, 0.3).toFixed(3));
+        stage.style.setProperty("--o70", ramp(p, 0.28, 0.48).toFixed(3));
+        stage.style.setProperty("--o100", ramp(p, 0.46, 0.66).toFixed(3));
+        stage.style.setProperty("--p1", (1 - ramp(p, 0.18, 0.4)).toFixed(3));
+        stage.style.setProperty("--p2", ramp(p, 0.52, 0.74).toFixed(3));
+      };
+
+      let ticking = false;
+      let idle = 0;
+      const loop = () => {
+        reelUpdate();
+        if (idle++ < 3) requestAnimationFrame(loop);
+        else ticking = false;
+      };
+      const kick = () => {
+        idle = 0;
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(loop);
+        }
+      };
+      reelUpdate();
+      addEventListener("scroll", kick, { passive: true });
+      addEventListener("resize", kick, { passive: true });
+    }
+
+    const cta = document.getElementById("ctaScreen");
+    if (cta) {
+      new IntersectionObserver(
+        (es, o) => {
+          es.forEach((e) => {
+            if (e.isIntersecting) {
+              cta.classList.add("in");
+              o.disconnect();
+            }
+          });
+        },
+        { threshold: 0.35 }
+      ).observe(cta);
+    }
+
+    // El campo "qué necesitas" se abre al tocar el correo, no de entrada.
+    const ctaform = document.getElementById("ctaform");
+    const ctaEmail = ctaform?.querySelector<HTMLInputElement>('input[type="email"]');
+    if (ctaform && ctaEmail) {
+      ctaform.classList.add("compacto");
+      ctaEmail.addEventListener("focus", () => ctaform.classList.remove("compacto"), { once: true });
+    }
+  }
+</script>

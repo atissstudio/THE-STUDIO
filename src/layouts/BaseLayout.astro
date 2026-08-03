@@ -3,14 +3,18 @@ import "../styles/tokens.css";
 import SEO from "../components/SEO.astro";
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
+import Loader from "../components/Loader.astro";
 
 interface Props {
   title: string;
   description: string;
   path: string;
   image?: string;
+  noindex?: boolean;
+  /* La pantalla de carga solo tiene sentido en la entrada al sitio (la home) */
+  showLoader?: boolean;
 }
-const { title, description, path, image } = Astro.props;
+const { title, description, path, image, noindex = false, showLoader = false } = Astro.props;
 
 // LocalBusiness JSON-LD con solo los campos verificados.
 // Sin address/telephone: no hay dato real documentado — no se inventa (regla de CLAUDE.md).
@@ -54,7 +58,7 @@ const breadcrumbLd =
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <SEO title={title} description={description} path={path} image={image} />
+    <SEO title={title} description={description} path={path} image={image} noindex={noindex} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -76,10 +80,19 @@ const breadcrumbLd =
         </linearGradient>
       </defs>
     </svg>
+    {showLoader && <Loader />}
     <Nav />
-    <main>
+    {/*
+      #page se desplaza hacia abajo cuando se abre el menú (clase .dropped) y
+      lleva margin-bottom para dejar ver el pie, que va fijo por detrás.
+    */}
+    <main id="page">
       <slot />
     </main>
     <Footer />
+    <script>
+      import { revelarTexto } from "../scripts/reveal";
+      revelarTexto();
+    </script>
   </body>
 </html>

@@ -4,8 +4,9 @@ interface Props {
   description: string;
   path: string;
   image?: string;
+  noindex?: boolean;
 }
-const { title, description, path, image = "/og-default.jpg" } = Astro.props;
+const { title, description, path, image = "/og-default.jpg", noindex = false } = Astro.props;
 const site = Astro.site ?? new URL("https://the-studio-atis.vercel.app");
 const canonicalURL = new URL(path, site);
 const imageURL = new URL(image, site);
@@ -14,6 +15,7 @@ const imageURL = new URL(image, site);
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonicalURL} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
 
 <meta property="og:type" content="website" />
 <meta property="og:title" content={title} />

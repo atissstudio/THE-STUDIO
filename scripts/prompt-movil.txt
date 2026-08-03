@@ -1,0 +1,26 @@
+Vamos a adaptar the-studio-web a móvil. Lee CLAUDE.md entero antes de nada
+(§4 sistema de diseño, §6 estado actual). El escritorio está terminado y
+verificado, esta sesión es solo móvil.
+
+Quiero que el scroll en móvil funcione como diapositivas: cada sección
+desliza a pantalla completa (con ajuste/snap), no un scroll continuo normal.
+Es el 83% de nuestro tráfico (INV-07), así que esto bloquea publicar.
+
+Antes de escribir nada:
+1. Revisa el sistema de diapositivas que ya existe en
+   src/pages/como-trabajamos.astro (busca ".proceso.is-slides" y el script
+   al final del archivo). Dime si ese patrón sirve como base para el resto
+   de páginas, o si hay que hacer uno distinto y por qué.
+2. Revisa qué reglas @media (max-width: 900px) ya existen en cada
+   componente y página, para no duplicar lo que ya está.
+3. src/components/SobreAtisHistoria.astro reproduce 3 vídeos con
+   scroll-scrubbing (~2,5 MB cada uno). En móvil eso es pesado para datos
+   móviles. Ya existe un fallback de "menos movimiento" que los pone en
+   bucle normal en vez de scroll-scrubbing (@media prefers-reduced-motion) —
+   pregúntame si quiero ese mismo comportamiento en móvil, no lo decidas
+   sin más.
+
+Sigue las reglas de CLAUDE.md §5 (confirmar antes de tocar archivos,
+ediciones quirúrgicas, avisar de coste antes de algo grande) y §3 (nunca
+inventar datos). Antes de escribir código, explícame en un párrafo el
+plan y espera mi confirmación.

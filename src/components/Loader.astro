@@ -1,0 +1,133 @@
+---
+/*
+  Pantalla de carga de la maqueta aprobada: campo azul a sangre y el logo que
+  se traza de izquierda a derecha. Una vez trazado, el logo queda parpadeando
+  y la pantalla espera a que el usuario deslice (rueda, touch, tecla o clic)
+  para retirarse. No se quita sola (cambio pedido 2026-08-03).
+
+  Mientras espera, bloquea el scroll de la página real para que no se mueva
+  por debajo. Con "menos movimiento" activado, no se muestra: nada que esperar.
+*/
+---
+
+<div id="loader" aria-hidden="true">
+  <p class="mark">
+    <span class="scr">the</span> <span class="hvy">STUDIO</span>
+    <span class="scr">by</span> <span class="hvy">ATIS</span>
+  </p>
+</div>
+
+<style>
+  #loader {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: var(--azul);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    transition: transform 0.9s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  #loader.done {
+    transform: translateY(-101%);
+  }
+  #loader .mark {
+    color: var(--plata-clara);
+    white-space: nowrap;
+    line-height: 1;
+    margin: 0;
+    -webkit-mask-image: linear-gradient(90deg, #000 0 0);
+    mask-image: linear-gradient(90deg, #000 0 0);
+    -webkit-mask-size: 0% 100%;
+    mask-size: 0% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    /*
+      Las dos animaciones van juntas desde el principio, nunca una sustituyendo
+      a la otra. El parpadeo arranca justo cuando el trazado termina (0.3s + 1.5s
+      = 1.8s de retraso). Antes el parpadeo se aplicaba cambiando la propiedad
+      "animation" entera al llegar a #loader.en-espera, lo que reemplazaba el
+      trazado y con él se perdía el mask-size:100% que mantenía en pantalla
+      (fill-mode: forwards solo sostiene su valor mientras esa animación sigue
+      activa) — el logo no parpadeaba, directamente desaparecía.
+    */
+    animation: trazar 1.5s cubic-bezier(0.45, 0, 0.15, 1) 0.3s forwards,
+      parpadeo 1.8s ease-in-out 1.8s infinite;
+  }
+  @keyframes trazar {
+    to {
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+    }
+  }
+  /* Sutil, no un parpadeo agresivo: entre opaco y semi-transparente */
+  @keyframes parpadeo {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+  #loader .scr {
+    font-family: var(--script);
+    font-size: clamp(1.6rem, 3vw, 3rem);
+  }
+  #loader .hvy {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: clamp(2.6rem, 5vw, 5rem);
+    letter-spacing: -0.03em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #loader {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const loader = document.getElementById("loader");
+
+  if (loader && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const html = document.documentElement;
+    const overflowPrevio = html.style.overflow;
+    html.style.overflow = "hidden"; // la página real no se mueve mientras se espera
+
+    let salido = false;
+    const salir = () => {
+      if (salido) return;
+      salido = true;
+      loader.classList.add("done");
+      quitarEscuchas();
+      // El scroll de la página real se queda bloqueado hasta que el loader
+      // termine de deslizar del todo (ver "transitionend" más abajo). Antes se
+      // desbloqueaba en el mismo instante del gesto, así que la home ya
+      // arrancaba a moverse mientras el loader todavía se estaba yendo: se
+      // veían las dos cosas deslizando a la vez. Ahora primero termina de
+      // salir la pantalla de carga, y solo entonces empieza a responder la home.
+    };
+
+    const gestos = ["wheel", "touchstart", "keydown", "click"] as const;
+    const quitarEscuchas = () => {
+      gestos.forEach((ev) => removeEventListener(ev, salir));
+    };
+    gestos.forEach((ev) => addEventListener(ev, salir, { passive: true }));
+
+    // Una vez fuera de pantalla deja de existir, para que no capture clics,
+    // y es entonces cuando se libera el scroll de la home.
+    loader.addEventListener(
+      "transitionend",
+      (e) => {
+        if (e.propertyName !== "transform") return;
+        html.style.overflow = overflowPrevio;
+        loader.remove();
+      },
+      { once: true }
+    );
+  } else {
+    loader?.remove();
+  }
+</script>

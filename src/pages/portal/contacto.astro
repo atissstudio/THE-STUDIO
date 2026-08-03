@@ -1,0 +1,151 @@
+---
+import PortalLayout from "../../layouts/PortalLayout.astro";
+import GlassButton from "../../components/GlassButton.astro";
+---
+
+<PortalLayout title="Contacto — Portal de cliente" path="/portal/contacto" userName="Cliente demo">
+  <a href="/portal" class="back">← Portal</a>
+  <p class="kick">Ejemplo — sin envío real</p>
+  <h1>Contacto</h1>
+  <p class="lead">Agenda una llamada o mándanos un mensaje directo. Te respondemos en 24-48h.</p>
+
+  <div class="options">
+    <div class="option">
+      <span class="option-label">Agendar llamada</span>
+      <p class="option-desc">Elige un hueco de 30 minutos con tu consultor asignado.</p>
+      <GlassButton type="button">Ver disponibilidad</GlassButton>
+    </div>
+
+    <div class="option">
+      <span class="option-label">Mandar un mensaje</span>
+      <form id="msg-form">
+        <label>
+          Mensaje
+          <textarea rows="4" placeholder="Cuéntanos qué necesitas..." required></textarea>
+        </label>
+        <GlassButton type="submit">Enviar</GlassButton>
+      </form>
+      <p id="sent" class="sent" hidden>Mensaje enviado — te responderemos pronto. (demo, no se envía de verdad)</p>
+    </div>
+  </div>
+</PortalLayout>
+
+<script>
+  const form = document.getElementById("msg-form");
+  const sent = document.getElementById("sent");
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    sent.hidden = false;
+    form.reset();
+  });
+</script>
+
+<style>
+  .back {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted-on-dark);
+    text-decoration: none;
+    margin: 20px 0 8px;
+  }
+  .back:hover {
+    color: var(--azul-lit);
+  }
+  .kick {
+    font-family: var(--sans);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--azul-lit);
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+  h1 {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.6rem, 4vw, 2.1rem);
+    margin: 0 0 8px;
+  }
+  .lead {
+    font-family: var(--sans);
+    color: var(--muted-on-dark);
+    font-style: italic;
+    font-size: 0.92rem;
+    margin: 0 0 28px;
+  }
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 640px) {
+    .options {
+      grid-template-columns: 1fr;
+    }
+  }
+  .option {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 12px 30px -22px rgba(37, 55, 111, 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .option-label {
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 1rem;
+    color: var(--ink);
+  }
+  .option-desc {
+    font-family: var(--sans);
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin: 0;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  textarea {
+    font-family: var(--sans);
+    font-size: 0.92rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 11px 14px;
+    color: var(--ink);
+    resize: vertical;
+  }
+  .sent {
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--azul-deep);
+    background: rgba(51, 75, 164, 0.1);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 0;
+  }
+</style>

@@ -1,105 +1,200 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import PageHero from "../components/PageHero.astro";
-import PainCarousel from "../components/PainCarousel.astro";
 import GlassButton from "../components/GlassButton.astro";
 
-const painCards = [
+/*
+  Datos citados a nuestra propia investigación de mercado (INV-01, INV-02).
+  No son resultados de clientes de The Studio. Ver la nota de transparencia.
+  Nunca añadir aquí una cifra que no venga de una fuente documentada.
+*/
+const datos = [
   {
     sector: "Dental",
+    big: "80%",
+    query: "Cómo evito que los pacientes falten a la cita",
     text: "Pierdes entre el 20 y el 30% de tus pacientes al año por falta de seguimiento. Un recordatorio automático por WhatsApp reduce los no-shows hasta un 80%.",
     source: "INV-01 / INV-02",
   },
   {
     sector: "Dental",
+    big: "30%",
+    query: "Por qué no aceptan mis presupuestos",
     text: "Solo aceptas entre el 35 y el 50% de los presupuestos que propones. El seguimiento automático sube la aceptación hasta un 30%.",
     source: "INV-01",
   },
   {
     sector: "Dental",
-    text: "Un paciente vale de media 2.160€ para tu clínica. Captarlo cuesta 65-135€ — automatizar el seguimiento se recupera en el primer mes.",
+    big: "2.160€",
+    query: "Cuánto vale de verdad un paciente",
+    text: "Un paciente vale de media 2.160€ para tu clínica. Captarlo cuesta entre 65 y 135€. Automatizar el seguimiento se recupera en el primer mes.",
     source: "INV-01",
   },
   {
     sector: "Reformas",
+    big: "x21",
+    query: "Cuánto tardo en contestar a un lead",
     text: "Más de la mitad de los leads se pierden por no responder a tiempo. Contactar en menos de 5 minutos multiplica por 21 las posibilidades de cerrar.",
     source: "INV-01 (HBR)",
   },
   {
     sector: "Reformas",
-    text: "Tu margen neto ronda el 3-7%. Cada presupuesto que se pierde por falta de seguimiento es margen que no vuelve.",
+    big: "3-7%",
+    query: "Cuánto margen se me escapa",
+    text: "Tu margen neto ronda el 3 y el 7%. Cada presupuesto que se pierde por falta de seguimiento es margen que no vuelve.",
     source: "INV-02",
   },
   {
     sector: "Reformas",
-    text: "Un presupuesto desglosado y rápido sube la aceptación — en un comprador racional, la confianza pesa más que el precio.",
+    big: "Confianza",
+    query: "Precio o confianza, qué pesa más",
+    text: "Un presupuesto desglosado y rápido sube la aceptación. En un comprador racional, la confianza pesa más que el precio.",
     source: "INV-02",
   },
 ];
 ---
 
 <BaseLayout
-  title="Casos — The Studio, by Atis"
-  description="Resultados y datos reales del sector que trabajamos, citados a nuestra propia investigación de mercado."
+  title="Los datos. No hablamos por hablar"
+  description="Datos reales del sector que trabajamos, citados a nuestra propia investigación de mercado. Sin resultados inventados y sin humo."
   path="/casos"
 >
-  <PageHero kicker="Resultados" title="No hablamos por hablar">
-    <p class="lead">Datos reales del sector, citados a nuestra propia investigación.</p>
-  </PageHero>
-
-  <section class="carousel-wrap">
-    <PainCarousel cards={painCards} />
+  <section class="f-azul hero-field row12">
+    <div class="hero-inner">
+      <p class="k">Los datos</p>
+      <h1>No hablamos por hablar.</h1>
+      <p class="lead">
+        Datos reales del sector, citados a nuestra propia investigación de mercado. Lo que no podemos
+        respaldar, no lo contamos.
+      </p>
+    </div>
   </section>
 
-  <section class="block panel">
-    <p class="note">
-      <b>Nota de transparencia:</b> los casos con clientes reales de The Studio están en proceso de documentar
-      con cifras verificadas. Hasta entonces, mostramos datos citados a nuestra propia investigación
-      de mercado (INV-01, INV-02) en vez de inventar resultados que no podemos respaldar.
-    </p>
+  <section class="f-blanco row12 rejilla">
+    {
+      datos.map((d) => (
+        <article class="celda">
+          <span class="sector">{d.sector}</span>
+          <p class="big">{d.big}</p>
+          <span class="q">{d.query}</span>
+          <span class="a">{d.text}</span>
+          <span class="src">Fuente, {d.source}</span>
+        </article>
+      ))
+    }
   </section>
 
-  <section class="block cta-block">
-    <p>¿Quieres ver qué números saldrían en tu caso?</p>
-    <GlassButton href="/contacto">Pídeme tu plan gratis</GlassButton>
+  <section class="f-claro field-pad row12" data-reveal>
+    <span class="field-tag" style="color:var(--azul)">.02</span>
+    <div class="read">
+      <p class="k">Nota de transparencia</p>
+      <h2>Todavía no enseñamos casos de clientes. Por una razón.</h2>
+      <p>
+        Los casos con clientes reales de The Studio están en proceso de documentar con cifras
+        verificadas. Hasta entonces, mostramos datos citados a nuestra propia investigación de
+        mercado en vez de inventar resultados que no podemos respaldar.
+      </p>
+      <p>
+        <span class="em on-light">Demostrar, no prometer.</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="f-azul closer row12">
+    <div class="closer-inner">
+      <p class="k">Tu plan gratis</p>
+      <h2>¿Quieres ver qué números saldrían en tu caso?</h2>
+      <p>Cuéntanos qué necesitas y hacemos los cálculos con tus propios datos.</p>
+      <GlassButton href="/contacto">Quiero que me ayudéis a crecer</GlassButton>
+      <p class="sidelinks">
+        <a href="/servicios/auditoria">La auditoría</a>
+        <a href="/como-trabajamos">Cómo trabajamos</a>
+        <a href="/servicios">Servicios</a>
+      </p>
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-  .lead {
-    font-size: 1.05rem;
-    color: var(--muted);
-    text-align: center;
+  .rejilla {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid rgba(17, 21, 32, 0.14);
+    padding: 0;
   }
-  .carousel-wrap {
-    padding: 20px 24px 40px;
+  .celda {
+    padding: 36px 34px 42px;
+    border-right: 1px solid rgba(17, 21, 32, 0.14);
+    border-bottom: 1px solid rgba(17, 21, 32, 0.14);
   }
-  .block {
-    max-width: 640px;
-    margin: 20px auto;
-    padding: 24px;
+  .celda:nth-child(3n + 3) {
+    border-right: 0;
   }
-  .panel {
-    background: var(--panel);
-    border: 1px solid rgba(51, 75, 164, 0.12);
-    border-radius: var(--radius-lg);
-  }
-  .note {
-    font-family: var(--sans);
-    font-size: 0.86rem;
-    color: var(--muted);
-    line-height: 1.6;
-    text-align: justify;
-    margin: 0;
-  }
-  .cta-block {
-    text-align: center;
-    padding: 20px 24px 64px;
-  }
-  .cta-block p {
-    font-family: var(--sans);
+  .sector {
+    display: block;
+    font-size: 0.62rem;
     font-weight: 700;
-    text-align: center;
-    margin-bottom: 16px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--azul);
+    margin-bottom: 18px;
+  }
+  .big {
+    font-weight: 800;
+    font-size: clamp(1.8rem, 3.1vw, 2.8rem);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: var(--azul);
+    margin: 0 0 16px;
+  }
+  .q {
+    display: block;
+    font-weight: 800;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .a {
+    display: block;
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+  .src {
+    display: block;
+    margin-top: 16px;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    opacity: 0.75;
+  }
+
+  .sidelinks {
+    margin: 26px 0 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .sidelinks a {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-on-dark);
+    text-decoration: none;
+  }
+  .sidelinks a:hover {
+    color: var(--azul-lit);
+  }
+
+  @media (max-width: 900px) {
+    .rejilla {
+      grid-template-columns: 1fr;
+    }
+    .celda {
+      border-right: 0;
+      padding: 30px 20px 36px;
+    }
   }
 </style>

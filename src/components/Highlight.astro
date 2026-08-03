@@ -1,8 +1,8 @@
 ---
 interface Props {
-  onDark?: boolean;
+  onLight?: boolean;
 }
-const { onDark = false } = Astro.props;
+const { onLight = false } = Astro.props;
 ---
 
-<span class:list={["em", { "on-dark": onDark }]}><slot /></span>
+<span class:list={["em", { "on-light": onLight }]}><slot /></span>

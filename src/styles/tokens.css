@@ -8,13 +8,18 @@
   --azul: #334ba4;
   --azul-deep: #25376f;
   --azul-lit: #6f86e0;
+  --navy: #0b1230; /* v5: solo el pie, no el lienzo entero */
+  --blanco: #f7f9fc; /* v5: campo de datos, distinto del claro de lectura */
   --ink: #111520; /* tinta de texto — nunca fondo */
   --muted: #5c6472;
   --line: #dce3f2;
   --panel: linear-gradient(160deg, #eaf1fe, #d5e2fb);
   --panel-strong: linear-gradient(160deg, #dbe6fc, #c1d4f7);
-  --plata-oscura: #565e6c; /* plata sobre fondo claro */
-  --plata-clara: #eef1f7; /* plata sobre fondo oscuro (acentos puntuales) */
+  --plata-oscura: #565e6c; /* plata sobre fondo claro (dentro de tarjetas) */
+  --plata-clara: #eef1f7; /* plata sobre fondo oscuro */
+  --plata-mid: #aeb5c2; /* v5: campo de plata líquida con textura */
+  --ink-on-dark: #f4f6fb; /* texto directo sobre azul u otro fondo oscuro, casi blanco */
+  --muted-on-dark: #a9b2cc; /* texto secundario directo sobre fondo oscuro */
 
   /* Tipografía — Helvetica es de pago; Arial es el sustituto libre (decisión 2026-07-10) */
   --sans: Arial, "Helvetica Neue", Helvetica, sans-serif;
@@ -30,10 +35,15 @@
   --space-7: 48px;
   --space-8: 64px;
 
-  /* Radios */
+  /* Radios — solo para controles (botones), nunca para tarjetas (v5: esquinas en pico) */
   --radius-sm: 12px;
   --radius-md: 18px;
   --radius-lg: 22px;
+
+  /* v5: rejilla de 12 columnas */
+  --row: 88px;
+  --menu-h: 44px; /* franja del menú */
+  --foot-h: 420px; /* hueco que deja la página para el pie que va detrás */
 }
 
 * {
@@ -48,39 +58,615 @@
   clip: rect(0, 0, 0, 0);
 }
 
-/* Liquid glass: blanco base + destellos de plata translúcidos y multidireccionales, sin negro */
+/*
+  v5 (2026-07-15): sustituye al lienzo azul marino degradado único (v4).
+  Ahora la página se divide en campos de color a sangre (.f-azul/.f-claro/.f-blanco/.f-navy,
+  ver más abajo) — el body es solo la base neutra entre ellos, nunca el propio fondo de marca.
+*/
 body {
   margin: 0;
-  background-color: #fcfcfd;
-  background-image: radial-gradient(50% 40% at 12% 8%, rgba(255, 255, 255, 0.9), transparent 65%),
-    radial-gradient(48% 42% at 88% 6%, rgba(196, 201, 209, 0.3), transparent 68%),
-    radial-gradient(55% 48% at 4% 48%, rgba(210, 214, 221, 0.24), transparent 66%),
-    radial-gradient(60% 50% at 97% 44%, rgba(200, 205, 213, 0.28), transparent 68%),
-    radial-gradient(52% 45% at 18% 88%, rgba(214, 218, 225, 0.26), transparent 65%),
-    radial-gradient(55% 46% at 84% 96%, rgba(196, 201, 209, 0.28), transparent 66%),
-    radial-gradient(70% 60% at 50% 50%, rgba(255, 255, 255, 0.8), transparent 72%);
-  background-attachment: fixed;
+  background: var(--navy); /* lo que se ve por detrás del pie */
   font-family: var(--sans);
   color: var(--ink);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* Resaltado — regla única del manual: manuscrita + negrita + plata adaptativa + 1pt más */
+/*
+  La página va por encima del pie, que está fijo detrás. Al llegar al final,
+  la página se levanta y lo descubre. `margin-bottom` reserva ese hueco.
+  (El menú, desde que ocupa la pantalla entera, ya no necesita empujar la
+  página hacia abajo para asomar por detrás: la cubre él mismo, directamente.)
+*/
+#page {
+  position: relative;
+  z-index: 2;
+  background: var(--blanco);
+  margin-top: var(--menu-h);
+  margin-bottom: var(--foot-h);
+  box-shadow: 0 40px 60px -30px rgba(0, 0, 0, 0.5);
+}
+
+/*
+  Coreografía de scroll (2026-07-10): el texto entra atenuado y se enciende
+  a medida que se desliza hacia arriba. Ligado al progreso real del scroll
+  (animation-timeline: view()), no a un temporizador — cuanto más rápido se
+  desliza, más rápido se enciende. Con @supports: si el navegador no lo
+  soporta, cae a un IntersectionObserver (ver BaseLayout.astro) que hace
+  el mismo efecto con una transición normal. Nunca queda contenido oculto:
+  el valor por defecto siempre es visible.
+*/
+.reveal {
+  opacity: 1;
+}
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: revealDim linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 35%;
+  }
+}
+@supports not (animation-timeline: view()) {
+  .reveal {
+    opacity: 0.35;
+    filter: brightness(0.55);
+    transition: opacity 0.6s ease, filter 0.6s ease;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+@keyframes revealDim {
+  from {
+    opacity: 0.35;
+    filter: brightness(0.55);
+  }
+  to {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}
+
+/*
+  Resaltado (actualizado 2026-07-10). Sustituye la regla única anterior
+  (manuscrita + plata + negrita). Ahora es Arial/Helvetica en negrita, mismo color
+  plata adaptativa y mismo +1pt de tamaño. La manuscrita queda solo para el logo
+  y elementos decorativos (firmas, citas puntuales), nunca para resaltar texto de cuerpo.
+*/
 .em {
-  font-family: var(--script);
-  font-weight: 700;
-  color: var(--plata-oscura);
+  font-family: var(--sans);
+  font-weight: 800;
+  color: var(--plata-clara);
   font-size: calc(1em + 1pt);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
   padding: 0 0.04em;
 }
-.em.on-dark {
-  color: var(--plata-clara);
-  text-shadow: 0 0 12px rgba(200, 212, 244, 0.7);
+.em.on-light {
+  color: var(--plata-oscura);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Subtítulos (nuevo, 2026-07-10): Arial cursiva, para distinguir de un resaltado puntual */
+.subtitle {
+  font-style: italic;
+  font-weight: 400;
 }
 
 .scr {
   font-family: var(--script);
   font-weight: 400;
+}
+
+/* ==========================================================================
+   Sistema v5 (2026-07-15): campos de color a sangre + rejilla de 12 + tarjetas
+   en pico. Ver CLAUDE.md §4 y la maqueta aprobada (src/pages/maqueta.astro).
+   Compartido por todas las páginas para no repetir esta base página a página.
+   ========================================================================== */
+
+.row12 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+/* Campos de color a sangre. De claro a oscuro al bajar; navy solo el pie. */
+.f-azul {
+  background: var(--azul);
+  color: var(--plata-clara);
+}
+.f-claro {
+  background: var(--plata-clara);
+  color: var(--ink);
+}
+.f-blanco {
+  background: var(--blanco);
+  color: var(--ink);
+}
+.f-navy {
+  background: var(--navy);
+  color: var(--plata-clara);
+}
+/* campo de plata líquida con textura, ver .liquid-field más abajo */
+.f-plata {
+  background: var(--plata-mid);
+  color: var(--ink);
+}
+
+.field-pad {
+  padding: calc(var(--row) * 1) 0;
+}
+
+/*
+  Campo cuyo contenido son tarjetas a sangre. Las tarjetas empiezan pegadas al
+  borde del campo, sin ninguna franja de color por encima.
+
+  La etiqueta (.04, .05) se coloca ENCIMA de la celda del enunciado, que tiene
+  el texto alineado abajo y por tanto la parte de arriba vacía. Así no ocupa
+  sitio propio ni pisa nada. Antes se probaron dos cosas que seguían dejando
+  hueco: banda con padding (80 px muertos) y franja propia (otros 45 px).
+*/
+.field-cards {
+  padding: 0;
+}
+.field-cards .field-tag {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  z-index: 2;
+}
+
+/*
+  Kicker de campo (".01", ".02"...). Absoluto a propósito: si participa de la
+  rejilla, cualquier bloque que ocupe 1/13 (tarjetas a sangre) se ve empujado a
+  una fila nueva y deja una banda vacía sobre él.
+*/
+.row12 {
+  position: relative;
+}
+.field-tag {
+  position: absolute;
+  top: 22px;
+  left: 20px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  opacity: 0.55;
+}
+
+/* Kicker de texto ("Por qué existimos", "Servicios"...) */
+.k {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--azul);
+  margin: 0 0 16px;
+}
+.f-azul .k,
+.f-navy .k {
+  color: #c9d3f5;
+}
+
+/* Lectura anclada a columnas — nunca un max-width centrado que rompa la rejilla */
+.read {
+  grid-column: 2/9;
+  padding: 0 20px;
+}
+.read.right {
+  grid-column: 5/12;
+  text-align: right;
+}
+.read.right p,
+.read.right h2 {
+  margin-left: auto;
+}
+/*
+  Tipografía de lectura (subida 2026-08-03). Antes el cuerpo iba a 1.02rem en
+  gris medio y se veía lavado. Ahora es más grande y en tinta casi negra, con
+  la contundencia de la referencia (visualidentity.studio).
+*/
+.read h2 {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: clamp(2.1rem, 3.6vw, 3.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  margin: 0 0 32px;
+  text-transform: none;
+  text-wrap: balance;
+  color: var(--ink);
+}
+.read p {
+  font-family: var(--sans);
+  font-size: clamp(1.08rem, 1.35vw, 1.32rem);
+  line-height: 1.6;
+  color: var(--ink);
+  margin: 0 0 20px;
+  text-align: left;
+  hyphens: none;
+}
+.f-azul .read h2,
+.f-navy .read h2 {
+  color: var(--plata-clara);
+}
+.f-azul .read p,
+.f-navy .read p {
+  color: rgba(238, 241, 247, 0.88);
+}
+
+/*
+  Revelado palabra a palabra (2026-08-03, referencia visualidentity.studio).
+  Las palabras entran atenuadas y algo bajas, y se aclaran y suben en cascada.
+  El JS que las parte está en src/scripts/reveal.ts.
+
+  Regla de oro: el estado por defecto es VISIBLE. Si el JS no llega a ejecutarse,
+  el texto se lee igual, solo que sin animación.
+*/
+.rv-w {
+  display: inline-block;
+  will-change: opacity, transform;
+}
+[data-reveal] :is(h2, p, .k) .rv-w,
+[data-reveal] :is(h2, p, .k).rv-bloque {
+  opacity: 0.12;
+  transform: translateY(0.45em);
+  transition: opacity 0.75s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.75s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: calc(var(--i, 0) * 26ms);
+}
+[data-reveal] :is(h2, p, .k).rv-on .rv-w,
+[data-reveal] :is(h2, p, .k).rv-on.rv-bloque {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-w,
+  .rv-bloque {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+@media print {
+  .rv-w,
+  .rv-bloque {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Tarjetas a sangre con esquinas en pico, enunciado como celda de la rejilla */
+.cells {
+  grid-column: 1/13;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1fr 1fr;
+  border-top: 1px solid rgba(238, 241, 247, 0.4);
+}
+.cells .head-cell {
+  color: var(--plata-clara);
+  border-color: rgba(238, 241, 247, 0.4);
+}
+.cells .head-cell .k {
+  color: #c9d3f5;
+}
+.cells .head-cell h2 {
+  color: var(--plata-clara);
+}
+.cell {
+  position: relative;
+  overflow: hidden;
+  border-right: 1px solid rgba(238, 241, 247, 0.4);
+  border-bottom: 1px solid rgba(238, 241, 247, 0.4);
+  padding: 40px 40px 52px;
+  text-decoration: none;
+  color: var(--plata-clara);
+  transition: color 0.35s ease;
+}
+.cell:last-child {
+  border-right: 0;
+}
+.cell .n {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  opacity: 0.6;
+  position: relative;
+  z-index: 2;
+}
+.cell .ct {
+  display: block;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 1.3rem;
+  margin: 10px 0 8px;
+  position: relative;
+  z-index: 2;
+}
+.cell .cp {
+  display: block;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  opacity: 0.88;
+  position: relative;
+  z-index: 2;
+}
+.cell .isla-in {
+  position: absolute;
+  inset: auto -8% -28% auto;
+  width: 70%;
+  opacity: 0;
+  transform: translate(28%, 38%) scale(0.7);
+  transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 1;
+}
+.cell:hover .isla-in {
+  opacity: 1;
+  transform: translate(6%, 12%) scale(1);
+}
+.cell:hover {
+  color: #fff;
+}
+
+/* variante clara (tarjetas de datos sobre .f-blanco / .f-claro) */
+.datos {
+  grid-column: 1/13;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1fr 1fr;
+  border-top: 1px solid rgba(17, 21, 32, 0.14);
+}
+.datos .head-cell {
+  color: var(--ink);
+  border-color: rgba(17, 21, 32, 0.14);
+}
+.dato {
+  position: relative;
+  padding: 44px 40px 52px;
+  border-right: 1px solid rgba(17, 21, 32, 0.14);
+  border-bottom: 1px solid rgba(17, 21, 32, 0.14);
+}
+.dato:last-child {
+  border-right: 0;
+}
+.dato .big {
+  font-weight: 800;
+  font-size: clamp(2rem, 3.6vw, 3.2rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--azul);
+  margin: 0 0 16px;
+}
+.dato .q {
+  display: block;
+  font-weight: 800;
+  font-size: 0.84rem;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.dato .a {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.head-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 40px;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+}
+.head-cell h2 {
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.5rem, 1.8vw, 2rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+/*
+  Botón de cristal sobre campo oscuro. El .glass por defecto lleva tinta azul
+  oscura sobre cristal claro, que sobre el campo azul o el navy se vuelve
+  ilegible (1.62:1 medido). Sobre oscuro se invierte: plata sólida, tinta navy.
+*/
+/* El .glass del componente va con estilo de Astro, hay que cualificar por
+   elemento para ganarle en especificidad sin recurrir a !important. */
+/*
+  Corregido 2026-08-03: esto ponía un color SÓLIDO (plata-clara opaca) en vez
+  de mantener el cristal. Sobre un fondo opaco el desenfoque no se ve (no hay
+  nada translúcido detrás de qué desenfocar), así que casi ningún botón de la
+  web se veía como cristal, porque casi todos los CTA viven sobre f-azul (los
+  cierres "Tu plan gratis" de cada página). Ahora sigue siendo cristal, solo
+  que con tinte claro en vez de azul, para leerse sobre fondo oscuro.
+*/
+.f-azul a.glass,
+.f-azul button.glass,
+.f-navy a.glass,
+.f-navy button.glass,
+.cta-screen a.glass,
+.cta-screen button.glass,
+.portal-main a.glass,
+.portal-main button.glass {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  box-shadow: 0 16px 34px -14px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.f-azul a.glass:hover,
+.f-azul button.glass:hover,
+.f-navy a.glass:hover,
+.f-navy button.glass:hover,
+.cta-screen a.glass:hover,
+.cta-screen button.glass:hover,
+.portal-main a.glass:hover,
+.portal-main button.glass:hover {
+  background: rgba(255, 255, 255, 0.26);
+  box-shadow: 0 22px 44px -14px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.f-azul .glass .dot,
+.f-navy .glass .dot,
+.cta-screen .glass .dot,
+.portal-main .glass .dot {
+  background: linear-gradient(135deg, #ffffff, #c9cfdb);
+}
+
+/* El logo va dentro de un <a>; sin esto hereda el azul de enlace del navegador */
+a:has(.logo) {
+  color: inherit;
+}
+
+/* Panel a pico (sustituye a los radios generosos v4) */
+.panel-v5 {
+  border: 1px solid rgba(51, 75, 164, 0.14);
+  background: #fff;
+}
+
+/* Hero de página interior: campo azul a sangre, titular en caja normal */
+.hero-field {
+  padding: calc(var(--row) * 1.5) 0 calc(var(--row) * 1);
+}
+.hero-field .hero-inner {
+  grid-column: 2/11;
+  padding: 0 20px;
+}
+.hero-field h1 {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: clamp(2rem, 4.4vw, 3.3rem);
+  line-height: 1.03;
+  letter-spacing: -0.025em;
+  margin: 0 0 20px;
+  text-transform: none;
+  text-wrap: balance;
+}
+.hero-field .lead {
+  font-size: 1.1rem;
+  line-height: 1.65;
+  color: rgba(238, 241, 247, 0.82);
+  max-width: 60ch;
+  margin: 0;
+}
+
+/* Lista de puntos dentro de una tarjeta, sin bolitas, separada por líneas */
+.pointlist {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+.pointlist li {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  padding: 9px 0;
+  border-top: 1px solid rgba(17, 21, 32, 0.12);
+}
+.f-azul .pointlist li,
+.f-navy .pointlist li {
+  border-top-color: rgba(238, 241, 247, 0.28);
+}
+
+/* Cierre de página: CTA en campo azul a sangre */
+.closer {
+  padding: calc(var(--row) * 1.1) 0;
+  text-align: center;
+}
+.closer .closer-inner {
+  grid-column: 3/11;
+  padding: 0 20px;
+}
+.closer h2 {
+  font-family: var(--sans);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.7rem, 3.4vw, 2.8rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  margin: 0 0 16px;
+}
+.closer p {
+  color: rgba(238, 241, 247, 0.78);
+  font-size: 1.02rem;
+  line-height: 1.6;
+  margin: 0 auto 26px;
+  max-width: 46ch;
+}
+
+@media (max-width: 900px) {
+  .hero-field .hero-inner,
+  .closer .closer-inner {
+    grid-column: 1/13;
+  }
+}
+
+@media (max-width: 900px) {
+  .read,
+  .read.right {
+    grid-column: 1/13;
+    padding: 0 20px;
+    text-align: left;
+  }
+  .read.right p {
+    text-align: justify;
+    text-align-last: left;
+  }
+  .cells,
+  .datos {
+    grid-template-columns: 1fr;
+  }
+  .field-tag {
+    display: none;
+  }
+}
+
+/*
+  Móvil: el scroll avanza como diapositivas, una sección de color por
+  pantalla, con ajuste (snap). Es el 83% del tráfico (INV-07). Sin JS: el
+  navegador resuelve el ajuste solo a partir de scroll-snap-type/align.
+  Se engancha por clase de campo (.f-azul/.f-claro/.f-blanco/.f-navy,
+  .hero-field, .closer), así que cualquier página montada sobre esos
+  campos entra automáticamente, sin tocarla una a una.
+*/
+@media (max-width: 900px) {
+  /*
+    proximity, no mandatory (2026-08-04): con "mandatory", páginas que solo
+    tienen un tramo de snap lejos del principio (como /sobre-atis, con el
+    bloque de vídeo de 880vh sin marcar como campo) forzaban el scroll a ese
+    único punto nada más cargar, dejando la página abierta por el final.
+    "proximity" solo ajusta cuando el scroll ya se detiene cerca de un
+    campo, sin forzar saltos.
+  */
+  html {
+    scroll-snap-type: y proximity;
+  }
+  .f-azul,
+  .f-claro,
+  .f-blanco,
+  .f-navy {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    min-height: 100vh;
+  }
+  /* prefers-reduced-motion: el salto de diapositivas también es movimiento brusco */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-snap-type: none;
+    }
+  }
+
+  /*
+    La franja de navegación ya no vive arriba en móvil (ahora flota abajo,
+    ver Nav.astro), así que #page no necesita reservarle hueco superior.
+  */
+  #page {
+    margin-top: 0;
+  }
 }

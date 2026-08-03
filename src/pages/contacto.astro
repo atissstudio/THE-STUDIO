@@ -1,123 +1,241 @@
 ---
+export const prerender = false;
+
 import BaseLayout from "../layouts/BaseLayout.astro";
-import PageHero from "../components/PageHero.astro";
 import GlassButton from "../components/GlassButton.astro";
-import Highlight from "../components/Highlight.astro";
 
 const ok = Astro.url.searchParams.get("ok") === "1";
 const error = Astro.url.searchParams.get("error") === "1";
 ---
 
 <BaseLayout
-  title="Contacto — The Studio, by Atis"
-  description="Pide tu plan gratis: cuéntanos tu negocio y te decimos, sin compromiso, por dónde empezaríamos."
+  title="Contacto. Cuéntanos qué necesitas y vemos por dónde empezar"
+  description="Ponte en contacto con nosotros, cuéntanos qué necesitas y vemos juntos por dónde empezar. Sin compromisos y sin jerga técnica. Nos adaptamos al ritmo de tu negocio."
   path="/contacto"
 >
-  <PageHero kicker="Contacto" title="Pídeme tu plan gratis">
-    <p class="lead">
-      Déjame tu correo y te mando un <Highlight>plan gratis</Highlight>, hecho para ti. Sin compromiso.
-    </p>
-  </PageHero>
-
-  <section class="form-wrap">
-    {ok && <p class="notice ok">Recibido — te escribimos en breve con tu plan gratis.</p>}
-    {error && <p class="notice error">Algo ha fallado al enviarlo. Prueba otra vez o escríbenos directamente.</p>}
-    <form action="/api/lead" method="post">
-      <label>
-        Tu nombre
-        <input type="text" name="name" required />
-      </label>
-      <label>
-        Tu correo
-        <input type="email" name="email" placeholder="tu@correo.com" required />
-      </label>
-      <label>
-        Tu negocio
-        <input type="text" name="business" />
-      </label>
-      <label>
-        Cuéntanos brevemente qué te trae por aquí (opcional)
-        <textarea name="message" rows="4"></textarea>
-      </label>
-      <GlassButton type="submit">Envíamelo</GlassButton>
-      <p class="privacy">
-        Solo usamos tu correo para enviarte el plan y hablar contigo — nunca lo compartimos con
-        terceros.
+  <section class="f-azul hero-field row12">
+    <div class="hero-inner">
+      <p class="k">Contacto</p>
+      <h1>¿Hablamos?</h1>
+      <p class="lead">
+        Ponte en contacto con nosotros, cuéntanos qué necesitas y vemos juntos por dónde empezar. Sin
+        compromisos y sin jerga técnica. Nos adaptamos al ritmo de tu negocio.
       </p>
-    </form>
+    </div>
+  </section>
+
+  <section class="f-claro row12 zona">
+    <span class="field-tag" style="color:var(--azul)">.01</span>
+
+    <div class="col-form">
+      {ok && <p class="notice ok">Recibido. Te escribimos en breve con tu plan gratis.</p>}
+      {
+        error && (
+          <p class="notice error">
+            Algo ha fallado al enviarlo. Prueba otra vez o escríbenos directamente.
+          </p>
+        )
+      }
+
+      <p class="k">Pídeme tu plan gratis</p>
+      <h2>Déjanos tus datos y te decimos por dónde empezaríamos.</h2>
+
+      <form action="/api/lead" method="post">
+        <label>
+          Tu nombre
+          <input type="text" name="name" required />
+        </label>
+        <label>
+          Tu correo
+          <input type="email" name="email" placeholder="tu@correo.com" required />
+        </label>
+        <label>
+          Tu negocio
+          <input type="text" name="business" />
+        </label>
+        <label>
+          Cuéntanos brevemente qué te trae por aquí
+          <textarea name="message" rows="4"></textarea>
+        </label>
+
+        <label class="consent">
+          <input type="checkbox" name="consent" required />
+          <span>
+            He leído y acepto la <a href="/legal/privacidad">política de privacidad</a>. Usaremos tus
+            datos solo para responderte.
+          </span>
+        </label>
+
+        <GlassButton type="submit">Quiero que me ayudéis a crecer</GlassButton>
+      </form>
+    </div>
+
+    <aside class="col-aside">
+      <p class="k">Qué pasa después</p>
+      <ul class="pointlist">
+        <li>Leemos lo que nos cuentas y miramos tu negocio por encima.</li>
+        <li>Te respondemos con una primera lectura, por escrito y sin coste.</li>
+        <li>Si te encaja, nos sentamos y hacemos la auditoría completa.</li>
+      </ul>
+      <p class="aside-note">
+        No compartimos tus datos con terceros y no te vamos a meter en ninguna lista de correo.
+      </p>
+    </aside>
+  </section>
+
+  <section class="f-azul closer row12">
+    <div class="closer-inner">
+      <p class="k">Mientras tanto</p>
+      <h2>Mira cómo trabajamos.</h2>
+      <p>Si prefieres verlo antes de escribir, todo el método está explicado paso a paso.</p>
+      <p class="sidelinks">
+        <a href="/como-trabajamos">Cómo trabajamos</a>
+        <a href="/servicios">Servicios</a>
+        <a href="/sobre-atis">Sobre Atis</a>
+      </p>
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-  .lead {
-    font-size: 1.05rem;
-    color: var(--muted);
-    text-align: center;
-    max-width: 44ch;
-    margin: 0 auto;
+  .zona {
+    padding: calc(var(--row) * 1) 0;
+    align-items: start;
   }
-  .form-wrap {
-    max-width: 480px;
-    margin: 30px auto 64px;
-    padding: 0 24px;
+  .col-form {
+    grid-column: 2/8;
+    padding: 0 20px;
+  }
+  .col-aside {
+    grid-column: 9/12;
+    padding: 0 20px;
+  }
+  .col-form h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: clamp(1.5rem, 2.3vw, 2.1rem);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    margin: 0 0 28px;
   }
   form {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    align-items: flex-start;
   }
   label {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    width: 100%;
     font-family: var(--sans);
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     font-weight: 700;
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.1em;
   }
-  input,
+  input[type="text"],
+  input[type="email"],
   textarea {
     font-family: var(--sans);
     font-size: 0.95rem;
     font-weight: 400;
     text-transform: none;
     letter-spacing: normal;
-    background: rgba(255, 255, 255, 0.75);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 11px 14px;
+    background: #fff;
+    border: 1px solid rgba(17, 21, 32, 0.18);
+    padding: 12px 14px;
     color: var(--ink);
+  }
+  input:focus,
+  textarea:focus {
+    outline: 2px solid var(--azul);
+    outline-offset: -1px;
   }
   textarea {
     resize: vertical;
   }
+  .consent {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 0.78rem;
+    font-weight: 400;
+    line-height: 1.55;
+    margin-top: 4px;
+  }
+  .consent input {
+    margin-top: 3px;
+    flex: none;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--azul);
+  }
+  .consent a {
+    color: var(--azul);
+  }
+
+  .col-aside .pointlist li {
+    color: var(--muted);
+  }
+  .aside-note {
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--muted);
+    margin: 22px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid rgba(17, 21, 32, 0.12);
+  }
+
   .notice {
     font-family: var(--sans);
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    text-align: center;
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin: 0 0 20px;
+    padding: 14px 16px;
+    margin: 0 0 24px;
+    border-left: 3px solid;
   }
   .notice.ok {
     background: rgba(51, 75, 164, 0.1);
+    border-color: var(--azul);
     color: var(--azul-deep);
   }
   .notice.error {
-    background: rgba(180, 67, 58, 0.1);
-    color: #b4433a;
+    background: rgba(176, 58, 42, 0.1);
+    border-color: #b03a2a;
+    color: #8c2b1e;
   }
-  .privacy {
-    font-family: var(--sans);
-    font-size: 0.76rem;
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: normal;
-    color: var(--muted);
-    text-align: center;
-    margin: 4px 0 0;
+
+  .sidelinks {
+    margin: 8px 0 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .sidelinks a {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-on-dark);
+    text-decoration: none;
+  }
+  .sidelinks a:hover {
+    color: var(--azul-lit);
+  }
+
+  @media (max-width: 900px) {
+    .col-form,
+    .col-aside {
+      grid-column: 1/13;
+    }
+    .col-aside {
+      margin-top: 40px;
+    }
   }
 </style>

@@ -1,165 +1,532 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import PageHero from "../components/PageHero.astro";
-import Highlight from "../components/Highlight.astro";
 import GlassButton from "../components/GlassButton.astro";
 
-const steps = [
+const pasos = [
   {
-    n: "1",
-    title: "Auditoría — la puerta de entrada",
-    body: "Miramos tu negocio con datos y te decimos la verdad: qué te frena, con números, sin humo.",
+    n: "01",
+    title: "Te auditamos",
+    lead: "No damos un paso sin conocerte a ti y a tu mercado.",
+    puntos: [
+      "Investigamos a fondo tu mercado y sector.",
+      "Analizamos quiénes son realmente tus clientes.",
+      "Estudiamos los movimientos de tus competidores.",
+      "Te analizamos a ti para entender tu esencia y tu valor único.",
+    ],
   },
   {
-    n: "2",
-    title: "La cuña — un primer resultado, rápido",
-    body: "De la auditoría sale la oferta más atractiva y de ROI más obvio para tu caso: normalmente, una solución de IA que te quita un trabajo pesado concreto. No va preestablecida — sale de tu negocio, no de un catálogo.",
+    n: "02",
+    title: "Proponemos un plan integral",
+    lead: "Analizamos tus necesidades y oportunidades para tomar decisiones objetivas y estratégicas.",
+    puntos: [
+      "Cruzamos toda la información de la auditoría.",
+      "Encontramos el hueco en el mercado donde puedes destacar.",
+      "Diseñamos la estrategia exacta para aprovechar esa oportunidad.",
+    ],
   },
   {
-    n: "3",
-    title: "Demostrar — con tus números",
-    body: "Un primer resultado medible, con tus propios datos. Así se gana la confianza: demostrando, no prometiendo.",
+    n: "03",
+    title: "Implementamos soluciones",
+    lead: "Desarrollamos sistemas que aseguren un retorno de tu inversión prolongado en el tiempo.",
+    puntos: [
+      "Pasamos de la teoría a la acción.",
+      "Ejecutamos la estrategia diseñada paso a paso.",
+      "Ponemos a funcionar las herramientas que tu negocio necesita para crecer.",
+    ],
   },
   {
-    n: "4",
-    title: "Escalar — hacia la consultoría completa",
-    body: "Una vez dentro, subimos hacia comunicación + marketing + IA completos, siempre explicando el porqué de cada paso.",
+    n: "04",
+    title: "Te acompañamos y enseñamos",
+    lead: "Sabemos que nadie conoce tu negocio como tú. Por eso, queremos darte el control.",
+    puntos: [
+      "No nos guardamos secretos empresariales.",
+      "Te explicamos el porqué detrás de cada decisión.",
+      "Te enseñamos el cómo hacerlo para que tengas total independencia.",
+    ],
   },
 ];
 ---
 
 <BaseLayout
-  title="Cómo trabajamos — The Studio, by Atis"
-  description="Nuestro método: auditoría, una cuña de IA con ROI rápido, demostrar con tus números y escalar hacia la consultoría completa."
+  title="Cómo trabajamos. Auditoría, plan, implementación y acompañamiento"
+  description="Nuestra forma de trabajar, paso a paso. Te auditamos, proponemos un plan integral, implementamos las soluciones y te enseñamos a mantenerlas por tu cuenta."
   path="/como-trabajamos"
 >
-  <PageHero kicker="Cómo trabajamos" title="Un proceso, sin humo.">
-    <p class="lead">Empezamos pequeño, demostramos con tus números y escalamos contigo.</p>
-  </PageHero>
-
-  <section class="steps">
-    {
-      steps.map((step) => (
-        <div class="step">
-          <span class="n">{step.n}</span>
-          <div>
-            <h2>{step.title}</h2>
-            <p>{step.body}</p>
-          </div>
-        </div>
-      ))
-    }
+  <section class="f-azul hero-field row12">
+    <div class="hero-inner">
+      <p class="k">Cómo trabajamos</p>
+      <h1>Nuestra forma de trabajar, paso a paso.</h1>
+      <p class="lead">Empezamos por conocerte. Terminamos enseñándote a hacerlo sin nosotros.</p>
+    </div>
   </section>
 
-  <section class="block panel">
-    <h2>Por qué empezamos por la IA</h2>
-    <p>
-      Es novedosa, tiene ROI inmediato, es tangible y quita trabajo pesado — fácil de demostrar en
-      semanas, no en meses. Nos aleja de las agencias que solo venden leads: nosotros{" "}
-      <Highlight>devolvemos tiempo</Highlight> y enseñamos, porque la pedagogía es el puente hacia
-      la confianza.
-    </p>
+  {/* Linterna: solo esta página, sigue al ratón, ver estilo y script al final */}
+  <div id="linterna" aria-hidden="true"></div>
+
+  {/*
+    Los cuatro pasos, encadenados como diapositivas por el propio scroll.
+    El HTML de partida es una lista normal y legible. La clase .is-slides la
+    pone el JS, así que si el JS no llega a ejecutarse la página se lee igual,
+    apilada, sin nada oculto.
+  */}
+  <section class="f-claro proceso" id="proceso" style={`--pasos:${pasos.length}`}>
+    <div class="stage" id="procesoStage">
+      <ol class="pistas" aria-hidden="true">
+        {pasos.map((p) => (
+          <li>
+            <span class="pistas-n">{p.n}</span>
+            <span class="pistas-t">{p.title}</span>
+          </li>
+        ))}
+      </ol>
+
+      {
+        pasos.map((paso) => (
+          <article class="paso">
+            <div class="paso-izq">
+              <span class="pn">{paso.n}</span>
+              <h2>{paso.title}</h2>
+              <p class="paso-lead">{paso.lead}</p>
+            </div>
+            <div class="paso-der">
+              <p class="paso-k">En esta fase</p>
+              <ul>
+                {paso.puntos.map((p) => (
+                  <li>{p}</li>
+                ))}
+              </ul>
+            </div>
+          </article>
+        ))
+      }
+    </div>
   </section>
 
-  <section class="block">
-    <h2>Dos modos de entrega</h2>
-    <p>
-      <b>Sobre la marcha:</b> resolvemos problemas concretos uno a uno, demostrando ROI en cada paso.
-      Es la forma de entrar con un comprador racional y con criterio.
-    </p>
-    <p>
-      <b>Plan estratégico completo:</b> auditamos todo y montamos un plan de comunicación que pone
-      bases y estrategia. Es a donde escalamos una vez ganada la confianza.
-    </p>
-  </section>
-
-  <section class="block cta-block">
-    <p>¿Empezamos por tu auditoría?</p>
-    <GlassButton href="/contacto">Pídeme tu plan gratis</GlassButton>
+  <section class="f-azul closer row12">
+    <div class="closer-inner">
+      <p class="k">Tu plan gratis</p>
+      <h2>¿Empezamos por tu auditoría?</h2>
+      <p>Cuéntanos qué necesitas y vemos juntos por dónde empezar. Sin compromisos.</p>
+      <GlassButton href="/contacto">Quiero que me ayudéis a crecer</GlassButton>
+      <p class="sidelinks">
+        <a href="/servicios/auditoria">Ver la auditoría</a>
+        <a href="/servicios">Todos los servicios</a>
+        <a href="/casos">Los datos</a>
+      </p>
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-  .steps {
-    max-width: 680px;
-    margin: 30px auto;
-    padding: 0 24px;
+  /* ---------- Estado base, sin JS: lista apilada y legible ---------- */
+  .proceso {
+    position: relative;
+  }
+  .paso {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    padding: calc(var(--row) * 0.7) 0;
+    border-bottom: 1px solid rgba(17, 21, 32, 0.14);
+  }
+  .paso-izq {
+    grid-column: 2/6;
+    padding: 0 20px;
+  }
+  .paso-der {
+    grid-column: 7/12;
+    padding: 0 20px;
+  }
+  .pn {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--azul);
+    margin-bottom: 14px;
+  }
+  .paso h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: clamp(2rem, 3.4vw, 3.2rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    margin: 0 0 18px;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .paso-lead {
+    font-size: clamp(1.22rem, 1.7vw, 1.55rem);
+    line-height: 1.5;
+    color: var(--muted);
+    margin: 0;
+  }
+  .paso-k {
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--azul);
+    margin: 0 0 22px;
+  }
+  .paso-der ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .paso-der li {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: clamp(1.15rem, 1.9vw, 1.9rem);
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    padding: 16px 0;
+    border-top: 1px solid rgba(17, 21, 32, 0.12);
+  }
+  .pistas {
+    display: none;
+  }
+
+  /* ---------- Modo diapositivas, lo enciende el JS ---------- */
+  .proceso.is-slides {
+    height: calc(var(--pasos) * 130vh);
+    border-bottom: 1px solid rgba(17, 21, 32, 0.14);
+  }
+  .proceso.is-slides .stage {
+    position: sticky;
+    top: var(--menu-h);
+    height: calc(100vh - var(--menu-h));
+    overflow: hidden;
+    display: grid;
+    align-content: center;
+  }
+  /*
+    Cada diapositiva flota hacia arriba al entrar y sigue flotando hacia arriba
+    al salir (como un carrusel vertical), en vez de un simple cruce de opacidad
+    que se sentía plano. .pasado son las que ya se vieron, ya se han ido arriba.
+  */
+  .proceso.is-slides .paso {
+    grid-row: 1;
+    grid-column: 1;
+    align-content: center;
+    border-bottom: 0;
+    padding: 0 0 0 190px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(48px);
+    transition: opacity 0.5s ease, transform 0.65s cubic-bezier(0.2, 0.75, 0.2, 1);
+  }
+  .proceso.is-slides .paso.pasado {
+    transform: translateY(-48px);
+  }
+  .proceso.is-slides .paso.activo {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  /*
+    Los puntos, dentro del paso ya visible, flotan hacia arriba de uno en uno.
+    Recorrido más largo (antes 16px) para que se note como un gesto propio,
+    no como un simple parpadeo, y sin que compita con la entrada del paso.
+  */
+  .proceso.is-slides .paso-der li {
+    opacity: 0.12;
+    transform: translateY(34px);
+    transition: opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .proceso.is-slides .paso-der li.on {
+    opacity: 1;
+    transform: none;
+  }
+  /*
+    La linterna también ilumina los puntos aún apagados, aunque no se haya
+    llegado a ellos con el scroll: una clase aparte de ".on" (que es la del
+    scroll) para que no se pisen entre sí. Transición más corta, de linterna
+    real, no del ritmo pausado del scroll.
+  */
+  .proceso.is-slides .paso-der li.iluminado {
+    opacity: 1;
+    transform: none;
+    transition-duration: 0.2s;
+  }
+
+  /*
+    Índice vertical, todo el lado izquierdo de arriba a abajo, con el título
+    de cada capítulo. Empieza por debajo del menú (top: var(--menu-h), heredado
+    del .stage) y no invade su franja.
+  */
+  .proceso.is-slides .pistas {
     display: flex;
     flex-direction: column;
-    gap: 22px;
-  }
-  .step {
-    display: flex;
-    gap: 18px;
-    align-items: flex-start;
-  }
-  .n {
-    flex: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    background: var(--azul);
-    color: #fff;
-    font-family: var(--sans);
-    font-weight: 800;
-    font-size: 0.9rem;
-    display: grid;
-    place-items: center;
-  }
-  .step h2 {
-    font-family: var(--sans);
-    font-weight: 800;
-    text-transform: uppercase;
-    font-size: 1rem;
-    margin: 4px 0 6px;
-    color: var(--ink);
-  }
-  .step p {
-    font-family: var(--sans);
-    color: #3a4250;
-    line-height: 1.6;
+    justify-content: space-between;
+    grid-row: 1;
+    grid-column: 1;
+    align-self: stretch;
+    justify-self: start;
+    width: 170px;
     margin: 0;
-    text-align: justify;
+    padding: 56px 0 56px 20px;
+    list-style: none;
   }
-  .block {
-    max-width: 680px;
-    margin: 20px auto;
-    padding: 24px;
-    text-align: left;
+  .proceso.is-slides .pistas li {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: rgba(17, 21, 32, 0.32);
+    transition: color 0.4s ease;
   }
-  .block h2 {
-    font-family: var(--sans);
-    font-weight: 800;
-    text-transform: uppercase;
-    font-size: 1.2rem;
-    margin: 0 0 12px;
-  }
-  .block p {
-    font-family: var(--sans);
-    color: #3a4250;
-    line-height: 1.6;
-    text-align: justify;
-    margin: 0 0 12px;
-  }
-  .panel {
-    background: var(--panel);
-    border: 1px solid rgba(51, 75, 164, 0.12);
-    border-radius: var(--radius-lg);
-    max-width: 728px;
-  }
-  .lead {
-    font-size: 1.05rem;
-    color: var(--muted);
-    text-align: center;
-  }
-  .cta-block {
-    text-align: center;
-    padding: 30px 24px 64px;
-  }
-  .cta-block p {
-    font-family: var(--sans);
+  .proceso.is-slides .pistas-n {
+    font-size: 0.68rem;
     font-weight: 700;
-    margin-bottom: 16px;
-    text-align: center;
+    letter-spacing: 0.2em;
+  }
+  .proceso.is-slides .pistas-t {
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1.3;
+    max-width: 15ch;
+  }
+  .proceso.is-slides .pistas li.activo {
+    color: var(--azul);
+  }
+
+  .sidelinks {
+    margin: 26px 0 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .sidelinks a {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-on-dark);
+    text-decoration: none;
+  }
+  .sidelinks a:hover {
+    color: var(--azul-lit);
+  }
+
+  @media (max-width: 900px) {
+    .paso-izq,
+    .paso-der {
+      grid-column: 1/13;
+    }
+    .paso-der {
+      margin-top: 26px;
+    }
+    /*
+      Esta sección ya tiene su propio scroll interno (lista apilada en
+      móvil, ver script al final). No entra en el snap de diapositivas
+      general de tokens.css: forzarla a una sola pantalla cortaría los
+      4 pasos a la mitad.
+    */
+    .proceso {
+      scroll-snap-align: none;
+      min-height: 0;
+    }
+  }
+
+  /*
+    Linterna (2026-08-03, retintada). Un círculo que sigue al ratón, solo en
+    esta página. Antes era siempre un blanco con mix-blend-mode:overlay, que
+    sobre los campos claros de la página (la mayoría) no se notaba casi nada:
+    blanco-sobre-blanco en overlay apenas cambia el resultado. Ahora se tiñe
+    de azul sobre los campos claros (para que destaque sobre blanco) y de
+    plata sobre los campos oscuros (azul/navy), decidido por JS según qué
+    campo hay bajo el cursor en cada momento.
+  */
+  #linterna {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    /*
+      Solo se transiciona la opacidad. Si el "background" (que incluye la
+      posición del círculo) también transicionase, el navegador perseguiría
+      el punto real del cursor con retraso en cada fotograma, y el resultado
+      se ve igual de "a tirones" que el bug de layout que había antes.
+    */
+    transition: opacity 0.4s ease;
+    background: radial-gradient(
+      280px circle at var(--lx, 50%) var(--ly, 50%),
+      rgba(51, 75, 164, 0.16),
+      rgba(51, 75, 164, 0) 70%
+    );
+    mix-blend-mode: multiply;
+  }
+  #linterna.on {
+    opacity: 1;
+  }
+  /* Sobre campo oscuro (azul/navy): plata clara con "screen", para aclarar en vez de oscurecer */
+  #linterna.sobre-oscuro {
+    background: radial-gradient(
+      280px circle at var(--lx, 50%) var(--ly, 50%),
+      rgba(238, 241, 247, 0.22),
+      rgba(238, 241, 247, 0) 70%
+    );
+    mix-blend-mode: screen;
+  }
+  @media (max-width: 900px), (hover: none) {
+    #linterna {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #linterna {
+      display: none;
+    }
   }
 </style>
+
+<script>
+  /*
+    Diapositivas guiadas por el scroll. Cada paso ocupa un tramo del recorrido y,
+    dentro de su tramo, sus puntos se encienden de uno en uno. Es la animación
+    que va guiando la lectura de la página.
+
+    Solo se enciende si hay sitio en pantalla y el usuario no ha pedido menos
+    movimiento. En cualquier otro caso queda la lista apilada, que se lee igual.
+  */
+  const seccion = document.getElementById("proceso");
+  const stage = document.getElementById("procesoStage");
+
+  if (seccion && stage) {
+    const pasos = Array.from(stage.querySelectorAll<HTMLElement>(".paso"));
+    const pistas = Array.from(stage.querySelectorAll<HTMLElement>(".pistas li"));
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+    const cabe = matchMedia("(min-width: 901px) and (min-height: 620px)");
+
+    const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+    let activo = -1;
+
+    function pintar() {
+      const r = seccion!.getBoundingClientRect();
+      const total = seccion!.offsetHeight - window.innerHeight;
+      const p = total > 0 ? clamp01(-r.top / total) : 0;
+
+      // En qué paso estamos, y cuánto llevamos recorrido dentro de él.
+      const bruto = p * pasos.length;
+      const i = Math.min(pasos.length - 1, Math.floor(bruto));
+      const dentro = clamp01(bruto - i);
+
+      if (i !== activo) {
+        pasos.forEach((el, n) => {
+          el.classList.toggle("activo", n === i);
+          el.classList.toggle("pasado", n < i);
+        });
+        pistas.forEach((el, n) => el.classList.toggle("activo", n === i));
+        activo = i;
+      }
+
+      // Los puntos del paso activo flotan hacia arriba repartidos por su tramo.
+      const puntos = Array.from(pasos[i].querySelectorAll<HTMLElement>("li"));
+      puntos.forEach((li, n) => {
+        const umbral = 0.1 + (0.68 * n) / Math.max(1, puntos.length - 1);
+        li.classList.toggle("on", dentro >= umbral);
+      });
+    }
+
+    let pendiente = false;
+    const alScroll = () => {
+      if (pendiente) return;
+      pendiente = true;
+      requestAnimationFrame(() => {
+        pintar();
+        pendiente = false;
+      });
+    };
+
+    function aplicarModo() {
+      const activar = cabe.matches && !reduce.matches;
+      seccion!.classList.toggle("is-slides", activar);
+      if (activar) {
+        activo = -1;
+        pintar();
+        window.addEventListener("scroll", alScroll, { passive: true });
+      } else {
+        window.removeEventListener("scroll", alScroll);
+        // De vuelta a la lista apilada: nada atenuado ni oculto.
+        pasos.forEach((el) => el.classList.remove("activo", "pasado"));
+        stage!.querySelectorAll("li").forEach((li) => li.classList.remove("on"));
+      }
+    }
+
+    aplicarModo();
+    cabe.addEventListener("change", aplicarModo);
+    reduce.addEventListener("change", aplicarModo);
+    window.addEventListener("resize", alScroll, { passive: true });
+  }
+
+  /*
+    Linterna que sigue al ratón, solo en esta página, tintada según el campo
+    de debajo. El movimiento iba a tirones porque `elementFromPoint` fuerza un
+    recálculo de layout, y se llamaba en CADA evento "mousemove" (que dispara
+    muchas más veces por segundo de las que la pantalla puede pintar). Ahora
+    solo se guarda la última posición en el evento, y todo el trabajo real
+    (mover la linterna, mirar qué campo hay debajo) se hace una vez por
+    fotograma con requestAnimationFrame, como el resto de scroll de la página.
+  */
+  const linterna = document.getElementById("linterna");
+  if (linterna && matchMedia("(hover: hover)").matches) {
+    let apagarTimer: ReturnType<typeof setTimeout>;
+    let ultimoX = 0;
+    let ultimoY = 0;
+    let pendiente = false;
+
+    const pintarLinterna = () => {
+      linterna.style.setProperty("--lx", `${ultimoX}px`);
+      linterna.style.setProperty("--ly", `${ultimoY}px`);
+
+      const debajo = document.elementFromPoint(ultimoX, ultimoY);
+      const campo = debajo?.closest(".f-azul, .f-navy, .f-claro, .f-blanco");
+      const oscuro = !!campo && (campo.classList.contains("f-azul") || campo.classList.contains("f-navy"));
+      linterna.classList.toggle("sobre-oscuro", oscuro);
+
+      /*
+        La linterna también enciende los puntos de "en esta fase" que aún
+        están apagados esperando su turno de scroll: si el cursor pasa cerca,
+        se ven igual, sin tener que desplazarse hasta llegar a ellos.
+      */
+      const margen = 70;
+      document.querySelectorAll<HTMLElement>(".paso.activo .paso-der li").forEach((li) => {
+        const r = li.getBoundingClientRect();
+        const cerca =
+          ultimoX > r.left - margen &&
+          ultimoX < r.right + margen &&
+          ultimoY > r.top - margen &&
+          ultimoY < r.bottom + margen;
+        li.classList.toggle("iluminado", cerca);
+      });
+
+      pendiente = false;
+    };
+
+    document.addEventListener(
+      "mousemove",
+      (e) => {
+        ultimoX = e.clientX;
+        ultimoY = e.clientY;
+        linterna.classList.add("on");
+        clearTimeout(apagarTimer);
+        // Se apaga si el ratón se queda quieto, para no dejar un cerco fijo.
+        apagarTimer = setTimeout(() => linterna.classList.remove("on"), 1200);
+
+        if (!pendiente) {
+          pendiente = true;
+          requestAnimationFrame(pintarLinterna);
+        }
+      },
+      { passive: true }
+    );
+    document.addEventListener("mouseleave", () => {
+      linterna.classList.remove("on");
+      document.querySelectorAll(".iluminado").forEach((li) => li.classList.remove("iluminado"));
+    });
+  }
+</script>
