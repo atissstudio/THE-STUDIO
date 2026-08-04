@@ -258,8 +258,15 @@ const modulo = {
     }
   }
 
-  /* Sin scroll-scrubbing (menos movimiento, o JS que no llega a arrancar): flujo normal, vídeo en bucle */
-  @media (prefers-reduced-motion: reduce) {
+  /*
+    Sin scroll-scrubbing (menos movimiento, móvil, o JS que no llega a
+    arrancar): flujo normal, vídeo en bucle. En móvil se desactivó el
+    scroll-scrubbing el 2026-08-04: "buscar" un fotograma de vídeo en
+    cada pixel de scroll es de lo más pesado que se le puede pedir a un
+    teléfono, y hacía que el scroll de esta página en concreto se sintiera
+    mucho más lento que el resto.
+  */
+  @media (prefers-reduced-motion: reduce), (max-width: 900px) {
     .historia {
       height: auto;
     }
@@ -300,7 +307,10 @@ const modulo = {
   const stage = document.getElementById("historiaStage");
   const moduloTexto = document.getElementById("moduloTexto");
 
-  if (historia && stage && moduloTexto && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const sinScrubbing =
+    matchMedia("(prefers-reduced-motion: reduce)").matches || matchMedia("(max-width: 900px)").matches;
+
+  if (historia && stage && moduloTexto && !sinScrubbing) {
     const escenas = Array.from(stage.querySelectorAll<HTMLElement>(".escena"));
     const videos = escenas.map((e) => e.querySelector<HTMLVideoElement>("video")!);
     const ultima = escenas.length - 1; // índice de "El nacimiento de Atis"
