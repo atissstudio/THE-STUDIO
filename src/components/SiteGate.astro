@@ -136,6 +136,17 @@
     if (localStorage.getItem(KEY) === "1") {
       gate.remove();
     } else {
+      /*
+        Mientras la cortina está puesta, la página real no debe poder
+        moverse por debajo. Sin esto, en móvil, al enfocar el campo de
+        contraseña el teclado empuja el documento y se ve la home
+        asomando detrás (el input queda "por encima" del scroll bloqueado
+        que ya usa Loader.astro para el mismo problema).
+      */
+      const html = document.documentElement;
+      const overflowPrevio = html.style.overflow;
+      html.style.overflow = "hidden";
+
       const form = document.getElementById("gateForm") as HTMLFormElement;
       const input = document.getElementById("gatePass") as HTMLInputElement;
       const error = document.getElementById("gateError") as HTMLParagraphElement;
@@ -145,7 +156,14 @@
         if (input.value.trim().toUpperCase() === PASS) {
           localStorage.setItem(KEY, "1");
           gate.classList.add("done");
-          gate.addEventListener("transitionend", () => gate.remove(), { once: true });
+          gate.addEventListener(
+            "transitionend",
+            () => {
+              html.style.overflow = overflowPrevio;
+              gate.remove();
+            },
+            { once: true }
+          );
         } else {
           error.hidden = false;
           input.value = "";

@@ -417,9 +417,15 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
       height: 56px;
       border-radius: 18px;
       border-bottom: 0;
-      background: rgba(255, 255, 255, 0.62);
-      backdrop-filter: blur(20px) saturate(1.6);
-      -webkit-backdrop-filter: blur(20px) saturate(1.6);
+      /*
+        Sin backdrop-filter en móvil (2026-08-04): un desenfoque de cristal
+        sobre un elemento fijo obliga al teléfono a recalcularlo en cada
+        fotograma de scroll — de las cosas más caras que se le puede pedir a
+        una GPU de móvil, y hacía que el scroll de toda la web se notara
+        pesado. Fondo más sólido en su lugar: se pierde el cristal, gana la
+        fluidez.
+      */
+      background: rgba(255, 255, 255, 0.92);
       box-shadow: 0 16px 34px -14px rgba(51, 75, 164, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.85);
     }
     #menubar .mark {
