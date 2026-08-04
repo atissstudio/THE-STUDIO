@@ -231,40 +231,19 @@ const modulo = {
     transform: translate(-50%, -50%) scale(1);
   }
 
-  @media (max-width: 900px) {
-    .escena-texto {
-      left: 20px;
-      right: 20px;
-      top: auto;
-      bottom: 8vh;
-      max-width: none;
-      transform: translateY(16px);
-    }
-    .escena:nth-child(even) .escena-texto {
-      left: 20px;
-      right: 20px;
-      transform: translateY(16px);
-    }
-    .escena.activa .escena-texto {
-      transform: translateY(0);
-    }
-    .modulo-texto {
-      width: calc(100vw - 40px);
-      padding: 30px 26px;
-      transform: translate(-50%, -50%) scale(0.94);
-    }
-    .modulo-texto.activa {
-      transform: translate(-50%, -50%) scale(1);
-    }
-  }
-
   /*
     Sin scroll-scrubbing (menos movimiento, móvil, o JS que no llega a
     arrancar): flujo normal, vídeo en bucle. En móvil se desactivó el
-    scroll-scrubbing el 2026-08-04: "buscar" un fotograma de vídeo en
-    cada pixel de scroll es de lo más pesado que se le puede pedir a un
-    teléfono, y hacía que el scroll de esta página en concreto se sintiera
-    mucho más lento que el resto.
+    scroll-scrubbing el 2026-08-04 (buscar un fotograma de vídeo en cada
+    pixel de scroll es carísimo en un teléfono) y, con eso resuelto, cada
+    escena pasa a ser una diapositiva de pantalla completa con el vídeo
+    de fondo (formato "stories", el que cualquiera reconoce de un móvil),
+    dentro del mismo scroll-snap que ya usa el resto de la web — solo
+    hace falta marcarla con scroll-snap-align, la mecánica ya la pone
+    tokens.css. El módulo final deja de compartir el vídeo de la última
+    escena (en esta maqueta no había forma limpia de reutilizarlo fuera
+    del "stage" pegado) y pasa a ser su propia diapositiva, en degradado
+    azul a navy, con la tarjeta grande centrada.
   */
   @media (prefers-reduced-motion: reduce), (max-width: 900px) {
     .historia {
@@ -278,26 +257,61 @@ const modulo = {
       position: relative;
       opacity: 1;
       visibility: visible;
-      height: 70vh;
-      min-height: 420px;
-      border-bottom: 1px solid rgba(238, 241, 247, 0.14);
+      height: 100vh;
+      min-height: 560px;
+      scroll-snap-align: start;
+    }
+    .escena-texto {
+      left: 20px;
+      right: 20px;
+      top: auto;
+      bottom: 9vh;
+      max-width: none;
+      opacity: 1;
+      transform: none;
+    }
+    .escena:nth-child(even) .escena-texto {
+      left: 20px;
+      right: 20px;
     }
     .modulo-texto {
       position: relative;
       left: auto;
       top: auto;
-      margin: 48px auto;
-      transform: none;
-    }
-    /*
-      La tarjeta solo se enciende con la clase "activa", que en este modo el
-      JS no llega a poner (no hay tramo "activo" cuando todo se ve a la vez).
-      Sin esto el texto se quedaría invisible para siempre. Nunca se oculta.
-    */
-    .escena-texto,
-    .modulo-texto {
+      height: 100vh;
+      min-height: 560px;
+      width: auto;
+      max-width: none;
+      margin: 0;
+      padding: 0 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       opacity: 1;
       transform: none;
+      scroll-snap-align: start;
+      background: linear-gradient(175deg, var(--azul), var(--navy) 82%);
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+
+  /* Deriva lenta del vídeo (tipo "Ken Burns"): solo con margen de movimiento */
+  @media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+    .escena-video {
+      animation: derivaLenta 18s ease-in-out infinite;
+    }
+  }
+  @keyframes derivaLenta {
+    0%,
+    100% {
+      transform: scale(1.28) translate(3%, -3%);
+    }
+    50% {
+      transform: scale(1.35) translate(1%, -1.5%);
     }
   }
 </style>
