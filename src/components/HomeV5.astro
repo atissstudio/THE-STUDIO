@@ -439,8 +439,45 @@ const destacados = todos.slice(0, 3);
   }
 
   @media (max-width: 900px) {
-    .reel-house { width: 62vw; }
-    .reel-phrase { font-size: 7vw; width: 70vw; }
+    /*
+      En escritorio la casa cruza de lado a lado y el texto vive a su
+      izquierda/derecha. En móvil no hay ancho para las dos cosas a la vez
+      sin que se pisen, así que la casa se queda centrada y se anima en
+      vertical (sube/baja un poco con el scroll, ver --ry en el script),
+      con la primera frase arriba del todo y la segunda abajo del todo,
+      aprovechando el alto de la pantalla en vez del ancho.
+    */
+    .reel-house {
+      width: 58vw;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, calc(-50% + var(--ry, 0) * 1vh));
+    }
+    .reel-kick {
+      top: 9vh;
+      left: 0;
+      right: 0;
+      text-align: center;
+      padding: 0 24px;
+    }
+    .reel-phrase {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: auto;
+      transform: none;
+      width: auto;
+      padding: 0 24px;
+      text-align: center;
+      font-size: 8vw;
+    }
+    .reel-p1 {
+      top: 14vh;
+    }
+    .reel-p2 {
+      bottom: 10vh;
+      text-align: center;
+    }
     /*
       El wordmark del hero pasa de una línea horizontal (encogida por JS
       para que quepa) a dos líneas verticales, como el logo compacto del
@@ -449,17 +486,28 @@ const destacados = todos.slice(0, 3);
     .logo-h1 {
       display: inline-grid;
       grid-template-columns: auto auto;
-      column-gap: 0.2em;
+      column-gap: 0.15em;
       row-gap: 0;
+      align-items: baseline;
       justify-content: center;
       justify-items: end;
       white-space: normal;
-    }
-    .logo-h1 .scr {
-      font-size: clamp(1.6rem, 8vw, 2.4rem);
+      padding: 0 10px;
+      width: 100%;
+      box-sizing: border-box;
+      /*
+        Mismas proporciones que el logo vertical de la barra (Logo.astro
+        .vertical): la manuscrita ("the"/"by") va más grande que la
+        negrita ("STUDIO"/"ATIS"), no al revés. Antes estaba invertido y
+        se veía descolocado. Casi a sangre: solo 10px de margen.
+      */
+      --hvy: clamp(2rem, 11.5vw, 3rem);
     }
     .logo-h1 .hvy {
-      font-size: clamp(2.4rem, 13vw, 3.6rem);
+      font-size: var(--hvy);
+    }
+    .logo-h1 .scr {
+      font-size: calc(var(--hvy) * 1.35);
     }
   }
   @media (prefers-reduced-motion: reduce) {
