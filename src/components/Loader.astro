@@ -36,8 +36,15 @@
     white-space: nowrap;
     line-height: 1;
     margin: 0;
-    -webkit-mask-image: linear-gradient(90deg, #000 0 0);
-    mask-image: linear-gradient(90deg, #000 0 0);
+    /*
+      Degradado bien formado (2026-08-05). Antes era `linear-gradient(90deg,
+      #000 0 0)`: los dos topes en la misma posición, o sea un degradado de
+      longitud cero. Los navegadores no lo resuelven igual — en WebKit puede
+      dar una máscara vacía o a medias, y de ahí que el logo se viera cortado
+      en Safari. Con dos topes en 0% y 100% la máscara es sólida sin ambigüedad.
+    */
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 100%);
+    mask-image: linear-gradient(90deg, #000 0%, #000 100%);
     -webkit-mask-size: 0% 100%;
     mask-size: 0% 100%;
     -webkit-mask-repeat: no-repeat;
@@ -70,14 +77,21 @@
       opacity: 0.55;
     }
   }
+  /*
+    El cuerpo se ata al ancho de pantalla, no a un mínimo fijo. Antes el mínimo
+    del clamp (2.6rem) mandaba en cualquier móvil, así que el logo medía siempre
+    291 px fuese cual fuese el ancho: en un teléfono estrecho no cabía y, con el
+    overflow:hidden del propio loader, se cortaba. Ahora ocupa el 84% del ancho
+    en cualquier pantalla y no se sale nunca.
+  */
   #loader .scr {
     font-family: var(--script);
-    font-size: clamp(1.6rem, 3vw, 3rem);
+    font-size: clamp(0.98rem, 7.4vw, 3rem);
   }
   #loader .hvy {
     font-family: var(--sans);
     font-weight: 800;
-    font-size: clamp(2.6rem, 5vw, 5rem);
+    font-size: clamp(1.6rem, 12vw, 5rem);
     letter-spacing: -0.03em;
   }
 
