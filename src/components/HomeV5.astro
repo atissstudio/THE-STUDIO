@@ -15,6 +15,8 @@ const destacados = todos.slice(0, 3);
 <section class="f-azul hero row12">
   <h1 class="logo-h1">
     <span class="scr">the</span><span class="hvy">STUDIO</span><span class="scr">by</span><span class="hvy">ATIS</span>
+    {/* En móvil manda el logo vertical oficial del manual, no una recreación con texto */}
+    <img class="logo-img" src="/logo/perfil-blanco.svg" alt="the STUDIO by ATIS" width="252" height="133" />
   </h1>
   <div class="ticker">
     <div class="mv">
@@ -180,6 +182,10 @@ const destacados = todos.slice(0, 3);
     font-size: var(--logo, 10vw);
     letter-spacing: -0.035em;
   }
+  /* Solo móvil: en escritorio manda el wordmark horizontal, ajustado por JS */
+  .logo-h1 .logo-img {
+    display: none;
+  }
   .ticker {
     grid-column: 1/13;
     margin-top: calc(var(--row) * 0.6);
@@ -216,8 +222,15 @@ const destacados = todos.slice(0, 3);
   }
 
   /* .01 REEL: la casa cruza pintándose, la frase se parte, sobre plata líquida */
+  /*
+    Alto del tramo de scroll de la casa. Bajado de 300vh a 240vh el 2026-08-05:
+    la coreografía terminaba al 74% del recorrido y quedaban unos 80vh de
+    scroll muerto con todo ya quieto, así que el campo de plata se sentía
+    larguísimo y roto. Ahora el reparto de la animación (abajo, en el script)
+    llega casi al final del tramo y no sobra desierto.
+  */
   .reel {
-    height: 300vh;
+    height: 240vh;
     position: relative;
     background: var(--plata-mid);
   }
@@ -479,47 +492,41 @@ const destacados = todos.slice(0, 3);
       text-align: center;
     }
     /*
-      El wordmark del hero pasa de una línea horizontal (encogida por JS
-      para que quepa) a dos líneas verticales, como el logo compacto del
-      menú: cabe más grande sin comprimir el texto en una sola fila.
+      En móvil el wordmark deja de recrearse con texto y pasa a ser el logo
+      vertical OFICIAL del manual (design/logo/perfil-*, recortado al trazo en
+      public/logo/perfil-blanco.svg).
+
+      Por qué: la versión de texto intentaba imitar el logo con una rejilla de
+      dos columnas y no da la talla. En el logo real las dos palabras gruesas
+      van escalonadas hacia la derecha (NO comparten borde izquierdo) y la
+      manuscrita se SOLAPA sobre la negrita: eso no se reproduce con dos
+      columnas, se salga por donde se salga. Usando el SVG oficial, el logo es
+      el logo, sin reinterpretaciones.
+
+      Va casi a sangre (16px por lado), como el horizontal en escritorio.
+      El texto sigue en el <h1> para buscadores y lectores de pantalla, solo
+      que oculto a la vista.
     */
     .logo-h1 {
-      display: grid;
-      grid-template-columns: auto auto;
-      column-gap: 0.15em;
-      row-gap: 0;
-      align-items: baseline;
-      justify-content: center;
-      white-space: normal;
-      padding: 0 10px;
+      display: block;
+      padding: 0 16px;
       width: 100%;
       box-sizing: border-box;
-      /*
-        Mismas proporciones que el logo vertical de la barra (Logo.astro
-        .vertical): la manuscrita ("the"/"by") va más grande que la
-        negrita ("STUDIO"/"ATIS"), no al revés. Antes estaba invertido y
-        se veía descolocado. Casi a sangre: solo 10px de margen.
-      */
-      --hvy: clamp(2rem, 11.5vw, 3rem);
+      white-space: normal;
     }
-    /*
-      Las dos filas se alinean por la mitad, no las dos a la derecha
-      (corregido 2026-08-05): la manuscrita cierra contra la negrita y las dos
-      palabras gruesas comparten borde izquierdo, como el logo vertical de la
-      barra. Antes las dos columnas iban a la derecha y "ATIS", más corta que
-      "STUDIO", quedaba muy metida: el borde izquierdo salía escalonado.
-      La manuscrita lleva interlineado corto porque Pinyon tiene unos trazos
-      altísimos y, sin recortarlo, abría un hueco enorme entre las dos filas.
-    */
+    .logo-h1 .scr,
     .logo-h1 .hvy {
-      font-size: var(--hvy);
-      line-height: 0.95;
-      justify-self: start;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
-    .logo-h1 .scr {
-      font-size: calc(var(--hvy) * 1.25);
-      line-height: 0.78;
-      justify-self: end;
+    .logo-h1 .logo-img {
+      display: block;
+      width: 100%;
+      height: auto;
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -570,11 +577,13 @@ const destacados = todos.slice(0, 3);
         const total = reel.offsetHeight - innerHeight;
         const p = total > 0 ? clamp01(-r.top / total) : 0;
         stage.style.setProperty("--rx", lerp(22, -22, p).toFixed(2));
-        stage.style.setProperty("--o30", ramp(p, 0.1, 0.3).toFixed(3));
-        stage.style.setProperty("--o70", ramp(p, 0.28, 0.48).toFixed(3));
-        stage.style.setProperty("--o100", ramp(p, 0.46, 0.66).toFixed(3));
-        stage.style.setProperty("--p1", (1 - ramp(p, 0.18, 0.4)).toFixed(3));
-        stage.style.setProperty("--p2", ramp(p, 0.52, 0.74).toFixed(3));
+        // Tramos estirados para que la casa acabe de pintarse al 80% y la frase
+        // cierre al 92%: antes todo terminaba al 74% y el resto era scroll vacío.
+        stage.style.setProperty("--o30", ramp(p, 0.1, 0.32).toFixed(3));
+        stage.style.setProperty("--o70", ramp(p, 0.3, 0.56).toFixed(3));
+        stage.style.setProperty("--o100", ramp(p, 0.54, 0.8).toFixed(3));
+        stage.style.setProperty("--p1", (1 - ramp(p, 0.2, 0.46)).toFixed(3));
+        stage.style.setProperty("--p2", ramp(p, 0.6, 0.92).toFixed(3));
       };
 
       let ticking = false;
