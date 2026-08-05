@@ -43,7 +43,13 @@
   /* v5: rejilla de 12 columnas */
   --row: 88px;
   --menu-h: 44px; /* franja del menú */
-  --foot-h: 420px; /* hueco que deja la página para el pie que va detrás */
+  /*
+    Hueco que deja la página para el pie que va detrás. Bajado de 420 a 300 el
+    2026-08-05: el contenido real del pie mide 268 px, así que sobraban más de
+    100 de vacío que se sumaban al aire del último campo de color y dejaban un
+    desierto justo antes del cierre.
+  */
+  --foot-h: 300px;
 }
 
 * {
@@ -647,8 +653,13 @@ a:has(.logo) {
 }
 
 /* Cierre de página: CTA en campo azul a sangre */
+/*
+  El cierre llevaba el mismo relleno arriba que abajo, y abajo se sumaba al
+  hueco del pie: quedaban 172 px muertos tras la última línea. Se recorta por
+  abajo, que es donde molesta, y se mantiene arriba para que el campo respire.
+*/
 .closer {
-  padding: calc(var(--row) * 1.1) 0;
+  padding: calc(var(--row) * 1.1) 0 calc(var(--row) * 0.62);
   text-align: center;
 }
 .closer .closer-inner {
