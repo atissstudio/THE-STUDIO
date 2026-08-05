@@ -18,16 +18,7 @@ const destacados = todos.slice(0, 3);
     {/* En móvil manda el logo vertical oficial del manual, no una recreación con texto */}
     <img class="logo-img" src="/logo/perfil-blanco.svg" alt="the STUDIO by ATIS" width="252" height="133" />
   </h1>
-  <div class="ticker">
-    <div class="mv">
-      <span>Comunicación · Marketing · IA · En Canarias · Demostramos, no prometemos ·</span>
-      <span>Comunicación · Marketing · IA · En Canarias · Demostramos, no prometemos ·</span>
-    </div>
-  </div>
-  <div class="hero-foot">
-    <span>Consultoría para negocios que ya valen</span>
-    <span>Canarias</span>
-  </div>
+  <p class="claim">la puta primera cooperativa creativa</p>
 </section>
 
 <div class="reel" id="reel">
@@ -155,9 +146,22 @@ const destacados = todos.slice(0, 3);
 </div>
 
 <style>
+  /*
+    Portada (rehecha 2026-08-05). Antes el logo vivía en un hueco casi cuadrado
+    con relleno de sobra arriba y abajo, y debajo colgaban una cinta rotatoria y
+    una franja de datos que dejaban el campo azul descosido por los bordes.
+
+    Ahora la portada es un campo azul que llena la pantalla de arriba abajo, con
+    el logo y el claim como único contenido, centrados en bloque: el hueco del
+    logo es un rectángulo ancho, no un cuadrado, y todo sube hacia el centro
+    óptico en vez de quedar flotando.
+  */
   .hero {
-    padding: calc(var(--row) * 1.1) 0 0;
+    min-height: 100svh;
+    /* Sube al centro óptico: centrado exacto se ve caído hacia abajo */
+    padding: 0 0 9vh;
     overflow: hidden;
+    align-content: center;
   }
   .logo-h1 {
     grid-column: 1/13;
@@ -170,6 +174,21 @@ const destacados = todos.slice(0, 3);
     gap: 0.06em;
     font-weight: 400;
     white-space: nowrap;
+    color: var(--plata-clara);
+  }
+  /*
+    El claim en cursiva de Arial, no en la manuscrita: el manual reserva
+    Pinyon Script para el logo y la decoración, nunca para texto.
+  */
+  .claim {
+    grid-column: 1/13;
+    margin: calc(var(--row) * 0.5) 0 0;
+    padding: 0 20px;
+    text-align: center;
+    font-family: var(--sans);
+    font-style: italic;
+    font-size: clamp(1rem, 2.1vw, 1.5rem);
+    letter-spacing: 0.01em;
     color: var(--plata-clara);
   }
   .logo-h1 .scr {
@@ -186,41 +205,9 @@ const destacados = todos.slice(0, 3);
   .logo-h1 .logo-img {
     display: none;
   }
-  .ticker {
-    grid-column: 1/13;
-    margin-top: calc(var(--row) * 0.6);
-    overflow: hidden;
-    border-top: 1px solid rgba(238, 241, 247, 0.28);
-    border-bottom: 1px solid rgba(238, 241, 247, 0.28);
-  }
-  .ticker .mv {
-    display: inline-flex;
-    white-space: nowrap;
-    animation: slide 32s linear infinite;
-    padding: 12px 0;
-  }
-  .ticker span {
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.24em;
-    padding-right: 52px;
-    color: var(--plata-clara);
-  }
-  @keyframes slide {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-  .hero-foot {
-    grid-column: 1/13;
-    padding: 14px 20px calc(var(--row) * 0.6);
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.64rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    color: rgba(238, 241, 247, 0.72);
-  }
-
+  
+  
+  
   /* .01 REEL: la casa cruza pintándose, la frase se parte, sobre plata líquida */
   /*
     Alto del tramo de scroll de la casa. Bajado de 300vh a 240vh el 2026-08-05:
