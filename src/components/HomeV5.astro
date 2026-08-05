@@ -243,13 +243,23 @@ const destacados = todos.slice(0, 3);
     height: 100vh;
     overflow: hidden;
   }
+  /*
+    Ancho y recorrido recortados el 2026-08-05 porque la casa "se dejaba de
+    ver" en escritorio. Con los valores anteriores (56vw y ±22vw de recorrido)
+    los extremos daban exactamente 0 px de margen en una pantalla de 1180 px y
+    28 px en una de 1280 — o sea, en un portátil normal la casa llegaba pegada
+    al borde y el overflow:hidden del escenario la cortaba. Con 50vw y ±16vw
+    quedan 106 px y 125 px de aire en esas mismas pantallas.
+  */
   .reel-house {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: min(56vw, 660px);
+    width: min(50vw, 620px);
     aspect-ratio: 1370 / 919;
-    transform: translate(calc(-50% + var(--rx, 26) * 1vw), -50%);
+    /* El valor por defecto es el inicio del recorrido, por si el JS aún no ha
+       pintado: antes era 26, más lejos todavía que el propio recorrido. */
+    transform: translate(calc(-50% + var(--rx, 16) * 1vw), -50%);
   }
   .reel-house img {
     position: absolute;
@@ -563,7 +573,8 @@ const destacados = todos.slice(0, 3);
         const r = reel.getBoundingClientRect();
         const total = reel.offsetHeight - innerHeight;
         const p = total > 0 ? clamp01(-r.top / total) : 0;
-        stage.style.setProperty("--rx", lerp(22, -22, p).toFixed(2));
+        // ±16, no ±22: ver el comentario de .reel-house sobre los márgenes.
+        stage.style.setProperty("--rx", lerp(16, -16, p).toFixed(2));
         // Tramos estirados para que la casa acabe de pintarse al 80% y la frase
         // cierre al 92%: antes todo terminaba al 74% y el resto era scroll vacío.
         stage.style.setProperty("--o30", ramp(p, 0.1, 0.32).toFixed(3));
@@ -573,23 +584,25 @@ const destacados = todos.slice(0, 3);
         stage.style.setProperty("--p2", ramp(p, 0.6, 0.92).toFixed(3));
       };
 
-      let ticking = false;
-      let idle = 0;
-      const loop = () => {
-        reelUpdate();
-        if (idle++ < 3) requestAnimationFrame(loop);
-        else ticking = false;
-      };
-      const kick = () => {
-        idle = 0;
-        if (!ticking) {
-          ticking = true;
-          requestAnimationFrame(loop);
-        }
+      /*
+        Acelerador simple por fotograma, el mismo patrón que usa el
+        archipiélago. Sustituye a una máquina de estados con contador de reposo
+        que guardaba un `ticking` que, si no volvía a false, dejaba de repintar
+        para siempre. No está demostrado que llegara a pasar, pero no aporta
+        nada frente a esto y sí tiene por dónde romperse.
+      */
+      let pendiente = false;
+      const alScroll = () => {
+        if (pendiente) return;
+        pendiente = true;
+        requestAnimationFrame(() => {
+          reelUpdate();
+          pendiente = false;
+        });
       };
       reelUpdate();
-      addEventListener("scroll", kick, { passive: true });
-      addEventListener("resize", kick, { passive: true });
+      addEventListener("scroll", alScroll, { passive: true });
+      addEventListener("resize", alScroll, { passive: true });
     }
 
     const cta = document.getElementById("ctaScreen");
