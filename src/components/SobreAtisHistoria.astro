@@ -341,8 +341,15 @@ const luces = [
     queda fijo de fondo, encendido, sin coreografía de cámara.
   */
   @media (prefers-reduced-motion: reduce), (max-width: 900px) {
+    /*
+      El snap vive aquí, no en tokens.css. El resto del sitio pasó a scroll
+      libre el 2026-08-05 (seguía al dedo mal), y la historia es el único sitio
+      donde la diapositiva es intencionada: cada escena se mira entera.
+      Sin `scroll-snap-stop: always`, para poder pasar de largo si se quiere.
+    */
     .historia {
       height: auto;
+      scroll-snap-type: y proximity;
     }
     .stage {
       position: static;

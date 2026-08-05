@@ -67,6 +67,15 @@ export function revelarTexto() {
     que al volver a subir y bajar ya no pasaba nada. Ahora, cuando el bloque
     sale del todo de pantalla se vuelve a atenuar, y se reproduce cada vez.
   */
+  /*
+    En móvil el bloque se revela más adentro (cuando ya ha subido hasta el
+    tercio inferior), no nada más asomar por el borde. Junto a la separación
+    de casi un tercio de pantalla entre párrafos (tokens.css), es lo que hace
+    que cada gesto de scroll traiga el párrafo siguiente ya animado, en vez de
+    encenderlos todos de golpe al entrar la sección.
+  */
+  const movil = matchMedia("(max-width: 900px)").matches;
+
   const io = new IntersectionObserver(
     (entradas) => {
       entradas.forEach((e) => {
@@ -74,8 +83,7 @@ export function revelarTexto() {
         else if (e.intersectionRatio === 0) apagar(e.target);
       });
     },
-    // Arranca cuando el bloque ya ha entrado un poco, no justo al asomar.
-    { threshold: [0, 0.2], rootMargin: "0px 0px -8% 0px" }
+    { threshold: [0, 0.2], rootMargin: movil ? "0px 0px -28% 0px" : "0px 0px -8% 0px" }
   );
 
   bloques.forEach((el) => io.observe(el));
