@@ -427,16 +427,46 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
       background: rgba(255, 255, 255, 0.92);
       box-shadow: 0 16px 34px -14px rgba(51, 75, 164, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.85);
     }
+    /*
+      El logo de la barra vuelve a ser HORIZONTAL en móvil (2026-08-05) y se
+      lleva más ancho de la píldora. Apilado en dos líneas quedaba pequeño y
+      con aire de sobra a los lados; en una línea aprovecha todo el hueco
+      central y se lee mucho mayor.
+    */
+    /*
+      Los tres elementos comparten fila explícitamente. El logo ocupa las doce
+      columnas para poder centrarse en la barra entera (y no en un tramo, que
+      lo dejaba descentrado), y sin fijar la fila el navegador empujaba "Menú"
+      y el icono de cuenta a filas nuevas para evitar el solape.
+    */
+    #menubar .toggle,
+    #menubar .account,
     #menubar .mark {
-      grid-column: 5/9;
+      grid-row: 1;
     }
-    /* En móvil el logo va en vertical (dos líneas), cabe mejor en la píldora */
+    #menubar .mark {
+      grid-column: 1/13;
+      justify-self: center;
+    }
     #menubar .mark-h {
-      display: none;
+      display: inline-flex;
+    }
+    /*
+      !important porque Logo.astro escribe su `size` como estilo en línea, y en
+      línea gana a la hoja. Es el único sitio donde hace falta pasar por encima
+      de la prop del componente: la barra de móvil quiere el logo mucho mayor
+      que el de escritorio, y ambos usan la misma instancia.
+    */
+    #menubar .mark-h :global(.logo) {
+      /*
+        1.16rem es lo máximo que cabe sin tocar "Menú" ni el icono de cuenta:
+        entre los dos quedan 186 px libres en una pantalla de 375, y a este
+        cuerpo el logo mide 158. Antes iba a 0.92rem (135 px) y sobraba aire.
+      */
+      font-size: 1.08rem !important;
     }
     #menubar .mark-v {
-      display: grid;
-      place-items: center;
+      display: none;
     }
 
     /*
