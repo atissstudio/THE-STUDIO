@@ -70,7 +70,16 @@ body {
   color: var(--ink);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  /*
+    `clip`, no `hidden` (2026-08-05). `overflow-x: hidden` convierte al body en
+    un contenedor de scroll, y eso ROMPE `position: sticky` en todo lo que
+    cuelga de él: los escenarios anclados (la casa de la home, la historia de
+    Sobre Atis, los pasos de Cómo trabajamos) dejaban de engancharse, se iban
+    hacia arriba con el scroll y detrás quedaba el campo de color vacío.
+    `clip` recorta igual pero no crea contenedor de scroll, así que sticky
+    vuelve a funcionar.
+  */
+  overflow-x: clip;
 }
 
 /*

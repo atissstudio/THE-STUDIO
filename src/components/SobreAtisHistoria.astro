@@ -1,157 +1,113 @@
 ---
 /*
-  "Sobre Atis" — la historia contada con el archipiélago de plata (2026-08-05).
+  "Sobre Atis" — el mar, las islas y el zoom (2026-08-05, rehecho).
 
-  Sustituye a la versión de vídeo. Los tres vídeos generados se retiraron por
-  decisión de Alejandro (no daban el nivel) y además la sección estaba rota: el
-  scroll-scrubbing dejaba una pantalla azul vacía de 6.336 px antes de que
-  apareciese nada.
+  Una sola diapositiva anclada durante toda la sección: el mar de fondo
+  (degradado azul oscuro a negro) con las ocho islas encima, minimalistas,
+  pequeñas pero visibles, en su posición geográfica REAL (proyectada desde
+  longitud y latitud, no colocada a ojo).
 
-  Ahora el protagonista es el elemento gráfico propio de la marca, las islas en
-  plata líquida (public/plata/, manual §Islas de plata). Ventajas sobre el
-  vídeo: es material propio e irrepetible, pesa una fracción (se ahorran 7,3 MB)
-  y encaja con el manual en vez de competir con él.
+  Cada escena viaja y hace zoom sobre una isla concreta hasta que la plata
+  llena la pantalla como campo plano, y ahí el texto se lee en NEGRO. La
+  última no hace zoom: sale del fondo, alejándose hasta descubrir el mar
+  entero.
 
-  Las ocho islas van en su posición geográfica REAL: se calculan a partir de
-  longitud y latitud de cada una y se proyectan sobre el lienzo, para que el
-  archipiélago se reconozca de un vistazo y no sea una constelación inventada.
+  Por qué el fondo acaba en plata PLANA y no en la isla ampliada: para que una
+  isla llene la pantalla haría falta ampliar su imagen unas 5,4 veces, y se
+  vería el pixelado. Cruzando a plata plana antes de llegar, el desenfoque no
+  aparece nunca y además es lo que se pidió.
 
-  Se conserva la "película por diapositivas": el escenario queda pegado
-  mientras el scroll consume cada tramo, con las tarjetas de cristal
-  alternando de lado.
+  Igual en móvil y en escritorio: son transformaciones y opacidades, baratas
+  también en un teléfono.
 */
 
 interface Isla {
   n: string;
-  nombre: string;
   f: string;
   x: number;
   y: number;
   w: number;
 }
 
-// x/y = porcentaje del lienzo, proyectado desde lon/lat reales.
-// w = ancho en % del lienzo, proporcional al tamaño real de cada isla.
 const islas: Isla[] = [
-  { n: "el-hierro", nombre: "El Hierro", f: "isla-08", x: 6.0, y: 82.0, w: 9 },
-  { n: "la-palma", nombre: "La Palma", f: "isla-06", x: 8.9, y: 42.4, w: 8 },
-  { n: "la-gomera", nombre: "La Gomera", f: "isla-07", x: 20.7, y: 66.6, w: 7.5 },
-  { n: "tenerife", nombre: "Tenerife", f: "isla-05", x: 33.4, y: 57.8, w: 22 },
-  { n: "gran-canaria", nombre: "Gran Canaria", f: "isla-01", x: 52.9, y: 71.0, w: 13 },
-  { n: "fuerteventura", nombre: "Fuerteventura", f: "isla-02", x: 77.4, y: 53.4, w: 19 },
-  { n: "lanzarote", nombre: "Lanzarote", f: "isla-03", x: 91.1, y: 24.8, w: 12 },
-  { n: "la-graciosa", nombre: "La Graciosa", f: "isla-04", x: 94.0, y: 16.0, w: 4.5 },
+  { n: "el-hierro", f: "isla-08", x: 6.0, y: 82.0, w: 9 },
+  { n: "la-palma", f: "isla-06", x: 8.9, y: 42.4, w: 8 },
+  { n: "la-gomera", f: "isla-07", x: 20.7, y: 66.6, w: 7.5 },
+  { n: "tenerife", f: "isla-05", x: 33.4, y: 57.8, w: 22 },
+  { n: "gran-canaria", f: "isla-01", x: 52.9, y: 71.0, w: 13 },
+  { n: "fuerteventura", f: "isla-02", x: 77.4, y: 53.4, w: 19 },
+  { n: "lanzarote", f: "isla-03", x: 91.1, y: 24.8, w: 12 },
+  { n: "la-graciosa", f: "isla-04", x: 94.0, y: 16.0, w: 4.5 },
 ];
 
+const pos = Object.fromEntries(islas.map((i) => [i.n, i]));
+
 /*
-  El texto es un actor más de la coreografía, no un pie de foto: cambia de
-  sitio, de tamaño y de intensidad según lo que cuenta, y resalta las palabras
-  que sostienen cada escena.
-
-  El copy es el de Alejandro, palabra por palabra. Lo único que se añade es
-  el resaltado de palabras que ya estaban: no se reescribe nada.
-
-  `sitio` decide en qué esquina se compone, siempre en el hueco que deja el
-  archipiélago (que cae en diagonal de abajo-izquierda a arriba-derecha), para
-  que texto e islas no se pisen nunca.
+  Las tres escenas hacen zoom sobre las tres islas mayores: son las que
+  aguantan la ampliación con menos pixelado y las que cualquiera reconoce.
+  La cuarta se aleja.
 */
 const escenas = [
   {
     titulo: "El éxodo",
-    sitio: "arriba-izq",
-    // De paraíso a vacío: "apagarse" se apaga de verdad, "vuelo" se va.
-    html: `Crecimos en un <b class="viva">paraíso</b>. Pero un paraíso que, poco a poco, veíamos <b class="apaga">apagarse</b>. Los que querían oportunidades y se lo podían permitir, volaban apenados dejando atrás su tierra y a sus familias. Nosotros fuimos parte de ese <b class="apaga">vuelo</b>.`,
+    isla: "tenerife",
+    html: `Crecimos en un <b>paraíso</b>. Pero un paraíso que, poco a poco, veíamos <b>apagarse</b>. Los que querían oportunidades y se lo podían permitir, volaban apenados dejando atrás su tierra y a sus familias. Nosotros fuimos parte de ese vuelo.`,
   },
   {
     titulo: "El retorno",
-    sitio: "abajo-izq",
-    html: `Pero decidimos <b class="viva">volver</b>. Volver con todo lo aprendido en la maleta. No queríamos seguir buscando oportunidades fuera, queríamos traerlas <b class="viva">a casa</b> para devolver a las islas todo lo que han hecho por nosotros.`,
+    isla: "gran-canaria",
+    html: `Pero decidimos <b>volver</b>. Volver con todo lo aprendido en la maleta. No queríamos seguir buscando oportunidades fuera, queríamos traerlas <b>a casa</b> para devolver a las islas todo lo que han hecho por nosotros.`,
   },
   {
     titulo: "El nacimiento de Atis",
-    sitio: "arriba-der",
-    html: `Así nació <b class="viva">Atis Studio</b>. Más que una empresa, somos una <b class="viva">cooperativa</b>. Un proyecto <b class="viva">modular</b> creado para dar soluciones a las adversidades de Canarias. Creemos que un negocio solo es verdaderamente exitoso si gana en lo económico, pero también en lo <b class="viva">social, cultural y medioambiental</b>.`,
+    isla: "fuerteventura",
+    html: `Así nació <b>Atis Studio</b>. Más que una empresa, somos una <b>cooperativa</b>. Un proyecto <b>modular</b> creado para dar soluciones a las adversidades de Canarias. Creemos que un negocio solo es verdaderamente exitoso si gana en lo económico, pero también en lo <b>social, cultural y medioambiental</b>.`,
   },
 ];
 
-const modulo = {
-  kicker: "El primer paso",
-  titulo: "Nuestra primera misión, the Studio.",
+const cierre = {
+  titulo: "El primer paso",
+  h2: "Nuestra primera misión, the Studio.",
   parrafos: [
     "Para cambiar las cosas, empezamos por los nuestros. Hemos creado una agencia que democratiza el marketing, la estrategia y la inteligencia artificial.",
     "Le damos al negocio canario de toda la vida las herramientas de las multinacionales para que vuelva a competir y ganar.",
   ],
 };
 
-// Las luces que se van (escena 1) y vuelven (escena 2). Salen de las islas
-// habitadas más pobladas, que es de donde de verdad se emigra.
-const luces = [
-  { x: 33.4, y: 57.8, d: 0 },
-  { x: 52.9, y: 71.0, d: 0.9 },
-  { x: 77.4, y: 53.4, d: 1.7 },
-  { x: 91.1, y: 24.8, d: 2.4 },
-  { x: 8.9, y: 42.4, d: 3.1 },
-];
-
-// Cada isla con su vecina real, de oeste a este: la cadena del archipiélago.
-const enlaces = (() => {
-  const cadena = [
-    "el-hierro",
-    "la-gomera",
-    "la-palma",
-    "tenerife",
-    "gran-canaria",
-    "fuerteventura",
-    "lanzarote",
-    "la-graciosa",
-  ];
-  const pos = Object.fromEntries(islas.map((i) => [i.n, i]));
-  const pares: { x1: number; y1: number; x2: number; y2: number }[] = [];
-  // La Gomera enlaza con El Hierro y con La Palma, y sigue hacia Tenerife.
-  for (let k = 0; k < cadena.length - 1; k++) {
-    const a = pos[cadena[k]];
-    const b = pos[cadena[k + 1]];
-    pares.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y });
-  }
-  return pares;
-})();
+const tramos = escenas.length + 1;
 ---
 
-<section id="historia" class="historia" style={`--tramos:${escenas.length + 1}`}>
-  <div class="stage" id="historiaStage">
-    <div class="mapa" aria-hidden="true">
+<section id="historia" class="historia" style={`--tramos:${tramos}`}>
+  <div class="escenario" id="escenario">
+    <!-- El mar: degradado azul oscuro a negro -->
+    <div class="mar"></div>
+
+    <!-- Las islas, en su sitio real -->
+    <div class="mapa" id="mapa" aria-hidden="true">
       {
-        islas.map((i, n) => (
+        islas.map((i) => (
           <img
             class={`isla isla-${i.n}`}
             src={`/plata/${i.f}.webp`}
             alt=""
             loading="lazy"
-            style={`--x:${i.x}%; --y:${i.y}%; --w:${i.w}%; --i:${n}`}
+            style={`--x:${i.x}%; --y:${i.y}%; --w:${i.w}%`}
           />
         ))
       }
-      {luces.map((l) => <i class="luz" style={`--lx:${l.x}%; --ly:${l.y}%; --ld:${l.d}s`} />)}
-
-      {/*
-        La red de la cooperativa: une cada isla con su vecina, de oeste a este.
-        Se dibuja sola en la escena 3, que es donde el texto dice "somos una
-        cooperativa" y "proyecto modular". Antes no había nada que expresara eso.
-      */}
-      <svg class="red" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        {enlaces.map((e, n) => (
-          <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} pathLength="1" style={`--n:${n}`} />
-        ))}
-      </svg>
     </div>
 
+    <!-- Campo de plata plana: toma el relevo al final del zoom -->
+    <div class="plata" id="plata"></div>
+
     <p class="sr-only">
-      El archipiélago canario, con las ocho islas en su posición real, dibujado en plata líquida.
+      El archipiélago canario, con las ocho islas en su posición real, dibujado en plata líquida sobre
+      el mar.
     </p>
 
     {
       escenas.map((e, i) => (
-        <article class={`escena en-${e.sitio}`} data-escena={i}>
+        <article class="escena" data-escena={i}>
           <div class="texto">
             <span class="k">{e.titulo}</span>
             <p set:html={e.html} />
@@ -160,429 +116,30 @@ const enlaces = (() => {
       ))
     }
 
-    <div class="modulo" id="moduloTexto">
-      <div class="tarjeta grande">
-        <span class="k">{modulo.kicker}</span>
-        <h2>{modulo.titulo}</h2>
-        {modulo.parrafos.map((p) => <p>{p}</p>)}
+    <article class="escena cierre" data-escena={escenas.length}>
+      <div class="texto">
+        <span class="k">{cierre.titulo}</span>
+        <h2>{cierre.h2}</h2>
+        {cierre.parrafos.map((p) => <p>{p}</p>)}
       </div>
-    </div>
+    </article>
   </div>
 </section>
 
-<style>
-  .historia {
-    position: relative;
-    height: calc(var(--tramos) * 200vh);
-    background: var(--navy);
-  }
-  .stage {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow: hidden;
-    /* Halo azul que respira detrás del archipiélago: da profundidad sin tapar */
-    background:
-      radial-gradient(70% 55% at 50% 45%, rgba(51, 75, 164, 0.5), transparent 70%),
-      var(--navy);
-  }
-
-  /* ── El archipiélago ───────────────────────────────────────── */
-  .mapa {
-    position: absolute;
-    inset: 0;
-    /*
-      El mapa entero se mueve y escala con el scroll (--mx/--my/--ms), que es lo
-      que da la sensación de cámara: en el éxodo se aleja, en el retorno se
-      acerca, y al final se recoloca.
-    */
-    transform: translate(var(--mx, 0%), var(--my, 0%)) scale(var(--ms, 1));
-    transition: transform 1.1s cubic-bezier(0.22, 0.7, 0.2, 1);
-  }
-  .isla {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
-    width: var(--w);
-    height: auto;
-    /*
-      --on la enciende (0 apagada, 1 encendida). Se enciende una a una, de oeste
-      a este, cuando entra la escena del retorno.
-    */
-    opacity: calc(0.2 + 0.8 * var(--on, 0));
-    filter: saturate(calc(0.15 + 0.85 * var(--on, 0))) brightness(calc(0.55 + 0.45 * var(--on, 0)));
-    transform: translate(-50%, -50%) scale(calc(0.94 + 0.06 * var(--on, 0)));
-    transition:
-      opacity 0.9s ease,
-      filter 0.9s ease,
-      transform 0.9s cubic-bezier(0.22, 0.7, 0.2, 1);
-    transition-delay: calc(var(--i) * 0.075s);
-    will-change: transform, opacity;
-  }
-  /* Latido lento, solo cuando la isla está encendida: la plata parece viva */
-  .stage.vivo .isla {
-    animation: respira 7s ease-in-out infinite;
-    animation-delay: calc(var(--i) * -0.9s);
-  }
-  @keyframes respira {
-    0%,
-    100% {
-      translate: 0 0;
-    }
-    50% {
-      translate: 0 -0.7%;
-    }
-  }
-
-  /* ── La red de la cooperativa ──────────────────────────────── */
-  .red {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    pointer-events: none;
-  }
-  .red line {
-    stroke: rgba(201, 211, 245, 0.55);
-    stroke-width: 0.18;
-    vector-effect: non-scaling-stroke;
-    /*
-      Se dibuja de oeste a este con --red (0 a 1), que mueve el scroll: cada
-      tramo entra un poco después que el anterior, así que la red se teje
-      mientras se lee "somos una cooperativa".
-    */
-    stroke-dasharray: 1;
-    stroke-dashoffset: calc(1 - clamp(0, (var(--red, 0) * 8) - var(--n), 1));
-    opacity: calc(clamp(0, (var(--red, 0) * 8) - var(--n), 1));
-  }
-
-  /* ── Las luces que se van y vuelven ────────────────────────── */
-  .luz {
-    position: absolute;
-    left: var(--lx);
-    top: var(--ly);
-    width: 7px;
-    height: 7px;
-    margin: -3.5px 0 0 -3.5px;
-    border-radius: 50%;
-    background: #eef1f7;
-    box-shadow: 0 0 14px 3px rgba(201, 211, 245, 0.9);
-    opacity: 0;
-    pointer-events: none;
-  }
-  /* Escena 1: se marchan hacia arriba y se apagan */
-  .stage.exodo .luz {
-    animation: sale 4.6s ease-in infinite;
-    animation-delay: var(--ld);
-  }
-  @keyframes sale {
-    0% {
-      opacity: 0;
-      transform: translate(0, 0) scale(0.6);
-    }
-    12% {
-      opacity: 1;
-      transform: translate(0, -4vh) scale(1);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(6vw, -62vh) scale(0.35);
-    }
-  }
-  /* Escena 2: vuelven, y al llegar se quedan */
-  .stage.retorno .luz {
-    animation: vuelve 4.2s cubic-bezier(0.3, 0.7, 0.2, 1) infinite;
-    animation-delay: var(--ld);
-  }
-  @keyframes vuelve {
-    0% {
-      opacity: 0;
-      transform: translate(8vw, -66vh) scale(0.35);
-    }
-    18% {
-      opacity: 1;
-    }
-    82% {
-      opacity: 1;
-      transform: translate(0, 0) scale(1);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(0, 0) scale(2.4);
-    }
-  }
-
-  /* ── Tarjetas de texto ─────────────────────────────────────── */
-  .escena,
-  .modulo {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    align-content: center;
-    padding: 0 6%;
-    pointer-events: none;
-  }
-  /*
-    Sin caja. La tarjeta de cristal competía con las islas (las dos
-    translúcidas y brillantes) y encajonaba el texto. Ahora el texto se compone
-    directamente sobre el campo, en el hueco que deja el archipiélago, y es él
-    quien se mueve, crece y se ilumina: un actor más de la coreografía.
-    Escala e intensidad las manda el scroll vía --t-escala y --t-op.
-  */
-  .escena {
-    align-content: center;
-  }
-  .en-arriba-izq {
-    align-content: start;
-    justify-items: start;
-    padding-top: 14vh;
-  }
-  .en-abajo-izq {
-    align-content: end;
-    justify-items: start;
-    padding-bottom: 16vh;
-  }
-  .en-arriba-der {
-    align-content: start;
-    justify-items: end;
-    text-align: right;
-    padding-top: 14vh;
-  }
-  .texto {
-    max-width: 34ch;
-    opacity: 0;
-    transform: translateY(20px) scale(0.97);
-    transition:
-      opacity 0.8s ease,
-      transform 0.9s cubic-bezier(0.2, 0.75, 0.2, 1);
-  }
-  .escena.activa .texto {
-    opacity: var(--t-op, 1);
-    transform: translateY(0) scale(var(--t-escala, 1));
-  }
-  .tarjeta {
-    max-width: 620px;
-    padding: 44px 48px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(22px) saturate(1.5);
-    -webkit-backdrop-filter: blur(22px) saturate(1.5);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    box-shadow:
-      0 24px 60px -28px rgba(0, 0, 0, 0.6),
-      inset 0 1px 0 rgba(255, 255, 255, 0.28);
-    opacity: 0;
-    transform: translateY(18px);
-    transition:
-      opacity 0.75s ease,
-      transform 0.75s cubic-bezier(0.2, 0.75, 0.2, 1);
-  }
-  .modulo.activa .tarjeta {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  /* Palabras resaltadas: son el latido de cada escena */
-  .texto b {
-    font-weight: 800;
-    color: #fff;
-    transition:
-      color 0.8s ease,
-      opacity 0.8s ease,
-      text-shadow 0.8s ease;
-  }
-  .texto b.viva {
-    text-shadow: 0 0 26px rgba(201, 211, 245, 0.85);
-  }
-  /* "apagarse" y "vuelo" se apagan de verdad conforme avanza el éxodo */
-  .texto b.apaga {
-    color: var(--plata-clara);
-    opacity: calc(1 - 0.62 * var(--t-apaga, 0));
-    text-shadow: none;
-  }
-  .texto .k,
-  .tarjeta .k {
-    display: block;
-    font-family: var(--sans);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--plata-clara);
-    opacity: 0.8;
-    margin: 0 0 16px;
-  }
-  .tarjeta p,
-  .texto p {
-    font-family: var(--sans);
-    font-size: clamp(1.05rem, 1.8vw, 1.35rem);
-    line-height: 1.55;
-    color: #fff;
-    margin: 0 0 14px;
-    text-wrap: pretty;
-  }
-  .tarjeta p:last-child,
-  .texto p:last-child {
-    margin-bottom: 0;
-  }
-  /* Sin caja detrás, el texto necesita algo de peso para leerse sobre el campo */
-  .texto p,
-  .texto .k {
-    text-shadow: 0 2px 24px rgba(6, 10, 28, 0.85);
-  }
-  .texto p {
-    font-size: clamp(1.15rem, 2.05vw, 1.6rem);
-  }
-  .modulo {
-    justify-items: center;
-  }
-  .tarjeta.grande {
-    max-width: 620px;
-    width: min(88vw, 620px);
-    padding: 48px 52px;
-  }
-  .tarjeta.grande h2 {
-    font-family: var(--sans);
-    font-weight: 800;
-    font-size: clamp(1.6rem, 2.6vw, 2.3rem);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
-    color: #fff;
-    margin: 0 0 18px;
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  /*
-    Móvil y "menos movimiento": cada escena es una diapositiva a pantalla
-    completa dentro del scroll-snap que ya usa el resto del sitio. El mapa se
-    queda fijo de fondo, encendido, sin coreografía de cámara.
-  */
-  @media (prefers-reduced-motion: reduce), (max-width: 900px) {
-    /*
-      El snap vive aquí, no en tokens.css. El resto del sitio pasó a scroll
-      libre el 2026-08-05 (seguía al dedo mal), y la historia es el único sitio
-      donde la diapositiva es intencionada: cada escena se mira entera.
-      Sin `scroll-snap-stop: always`, para poder pasar de largo si se quiere.
-    */
-    .historia {
-      height: auto;
-      scroll-snap-type: y proximity;
-    }
-    .stage {
-      position: static;
-      height: auto;
-      overflow: visible;
-    }
-    /*
-      El mapa se queda pegado de fondo y NO ocupa sitio en el flujo: el
-      margen inferior negativo, del mismo alto que él, hace que las
-      diapositivas empiecen justo arriba y pasen por encima. Sin este truco
-      habría que subir cada panel con márgenes negativos y se apilaban unas
-      sobre otras (pasó, y se veían las cuatro tarjetas a la vez).
-    */
-    .mapa {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      margin-bottom: -100vh;
-      inset: auto;
-      transform: none;
-    }
-    .isla {
-      opacity: 1;
-      filter: none;
-      transform: translate(-50%, -50%);
-      transition: none;
-    }
-    .escena,
-    .modulo {
-      position: relative;
-      inset: auto;
-      min-height: 100vh;
-      scroll-snap-align: start;
-      padding: 0 20px;
-    }
-    .tarjeta,
-    .texto {
-      max-width: none;
-      opacity: 1;
-      transform: none;
-    }
-    /*
-      En móvil no hay hueco lateral que aprovechar: el archipiélago ocupa el
-      ancho entero. Las tres escenas se componen igual, abajo, para que el
-      texto no caiga nunca encima de las islas.
-    */
-    .escena,
-    .en-arriba-izq,
-    .en-abajo-izq,
-    .en-arriba-der {
-      align-content: end;
-      justify-items: stretch;
-      text-align: left;
-      padding: 0 20px 16vh;
-    }
-    .luz {
-      display: none;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .stage.vivo .isla {
-      animation: none;
-    }
-  }
-</style>
-
-<script>
+<script define:vars={{ escenas, pos, tramos }}>
   const historia = document.getElementById("historia");
-  const stage = document.getElementById("historiaStage");
+  const escenario = document.getElementById("escenario");
+  const mapa = document.getElementById("mapa");
 
-  const sinCoreografia =
-    matchMedia("(prefers-reduced-motion: reduce)").matches || matchMedia("(max-width: 900px)").matches;
+  if (historia && escenario && mapa && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const paneles = Array.from(escenario.querySelectorAll(".escena"));
+    const clamp01 = (n) => Math.min(1, Math.max(0, n));
+    const tramo = (p, a, b) => clamp01((p - a) / (b - a));
+    const lerp = (a, b, t) => a + (b - a) * t;
 
-  if (historia && stage && !sinCoreografia) {
-    const escenas = Array.from(stage.querySelectorAll<HTMLElement>(".escena"));
-    const modulo = stage.querySelector<HTMLElement>(".modulo")!;
-    const islas = Array.from(stage.querySelectorAll<HTMLElement>(".isla"));
-    const paneles = [...escenas, modulo];
-    const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
-
-    /*
-      COREOGRAFÍA. Cada gesto sale de una frase concreta del texto, y avanza
-      con el scroll DENTRO de cada escena, no solo al saltar de una a otra
-      (que era el fallo: mientras leías no ocurría nada ligado a lo que leías).
-
-      Escena 1 · "Crecimos en un paraíso... veíamos apagarse... volaban
-        dejando atrás su tierra": empieza TODO ENCENDIDO y se va apagando isla
-        por isla mientras lees; las luces se marchan al final del tramo.
-      Escena 2 · "decidimos volver... devolver a las islas todo lo que han
-        hecho por nosotros": vuelve una luz, aterriza, y desde ahí se encienden
-        las demás, de Tenerife hacia fuera.
-      Escena 3 · "somos una cooperativa... proyecto modular": las islas ya
-        encendidas se ENLAZAN entre sí; la red se teje de oeste a este.
-      Escena 4 · "nuestra primera misión": la red se sostiene y la cámara se
-        retira para dejar sitio a la tarjeta.
-    */
-
-    // Orden en que se apagan (escena 1): de las pequeñas y periféricas hacia
-    // las capitales, que son las últimas en vaciarse.
-    const ordenApagado = ["la-graciosa", "el-hierro", "la-gomera", "la-palma", "lanzarote", "fuerteventura", "gran-canaria", "tenerife"];
-    // Orden en que se encienden (escena 2): desde Tenerife hacia fuera.
-    const ordenEncendido = ["tenerife", "gran-canaria", "la-gomera", "la-palma", "fuerteventura", "el-hierro", "lanzarote", "la-graciosa"];
-
-    const porNombre = new Map(islas.map((el) => [el.className.replace("isla isla-", ""), el]));
-    const aplicar = (orden: string[], encendidas: number) =>
-      orden.forEach((n, k) => porNombre.get(n)?.style.setProperty("--on", k < encendidas ? "1" : "0"));
-
-    // Suaviza entre a y b dentro del avance p (0..1)
-    const tramo = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
+    // Zoom máximo por escena. No llega a llenar del todo: la plata plana
+    // remata el último trecho, y así nunca se ve el bitmap pixelado.
+    const ZOOM = 3.6;
 
     let activo = -1;
 
@@ -590,70 +147,35 @@ const enlaces = (() => {
       const r = historia.getBoundingClientRect();
       const total = historia.offsetHeight - innerHeight;
       const p = total > 0 ? clamp01(-r.top / total) : 0;
-      const bruto = p * paneles.length;
-      const i = Math.min(paneles.length - 1, Math.floor(bruto));
-      const dentro = clamp01(bruto - i); // avance DENTRO de la escena actual
+      const bruto = p * tramos;
+      const i = Math.min(tramos - 1, Math.floor(bruto));
+      const dentro = clamp01(bruto - i);
 
       if (i !== activo) {
         activo = i;
         paneles.forEach((el, n) => el.classList.toggle("activa", n === i));
-        stage.classList.toggle("exodo", i === 0);
-        stage.classList.toggle("retorno", i === 1);
-        stage.classList.toggle("vivo", i >= 1);
       }
 
-      if (i === 0) {
-        // Se apagan de 8 a 0 mientras se lee; las luces salen en la 2ª mitad.
-        aplicar(ordenApagado, Math.round(8 * (1 - tramo(dentro, 0.08, 0.78))));
-        stage.style.setProperty("--red", "0");
-        /*
-          Escala y desplazamiento calculados, no a ojo: con 0.74 y +15% ninguna
-          isla invade la columna de texto ni se sale del encuadre (comprobado
-          isla por isla sobre sus coordenadas).
-        */
-        stage.style.setProperty("--ms", `${0.78 - 0.04 * dentro}`);
-        stage.style.setProperty("--mx", "15%");
-        stage.style.setProperty("--my", `${4 + dentro * 2}%`);
-        // El texto se apaga con el paraíso: encoge y pierde fuerza.
-        stage.style.setProperty("--t-escala", `${1.06 - 0.14 * dentro}`);
-        stage.style.setProperty("--t-op", `${1 - 0.32 * tramo(dentro, 0.3, 1)}`);
-        stage.style.setProperty("--t-apaga", `${tramo(dentro, 0.15, 0.8)}`);
-      } else if (i === 1) {
-        // La luz aterriza pronto y desde ahí se encienden las demás.
-        aplicar(ordenEncendido, Math.round(8 * tramo(dentro, 0.2, 0.95)));
-        stage.style.setProperty("--red", "0");
-        stage.style.setProperty("--ms", `${0.72 + 0.05 * dentro}`);
-        // Texto abajo-izquierda: el archipiélago sube y se va a la derecha.
-        stage.style.setProperty("--mx", "15%");
-        stage.style.setProperty("--my", "-10%");
-        // El texto renace con las islas: crece y se aclara.
-        stage.style.setProperty("--t-escala", `${0.92 + 0.14 * dentro}`);
-        stage.style.setProperty("--t-op", `${0.7 + 0.3 * tramo(dentro, 0, 0.6)}`);
-        stage.style.setProperty("--t-apaga", "0");
-      } else if (i === 2) {
-        // Todas encendidas; se teje la red de la cooperativa.
-        aplicar(ordenEncendido, 8);
-        stage.style.setProperty("--red", `${tramo(dentro, 0.1, 0.85)}`);
-        stage.style.setProperty("--ms", `${0.74 + 0.04 * dentro}`);
-        // Texto arriba-derecha: el archipiélago se va a la izquierda y abajo.
-        stage.style.setProperty("--mx", "-15%");
-        stage.style.setProperty("--my", "6%");
-        // Ya asentado: el texto se sostiene y crece poco, sin estridencias.
-        stage.style.setProperty("--t-escala", `${0.98 + 0.06 * dentro}`);
-        stage.style.setProperty("--t-op", "1");
-        stage.style.setProperty("--t-apaga", "0");
+      const ultima = i === tramos - 1;
+
+      if (!ultima) {
+        // Viaja y amplía sobre su isla; la plata entra en la segunda mitad.
+        const isla = pos[escenas[i].isla];
+        mapa.style.setProperty("--ox", `${isla.x}%`);
+        mapa.style.setProperty("--oy", `${isla.y}%`);
+        mapa.style.setProperty("--z", `${lerp(1.15, ZOOM, tramo(dentro, 0, 0.62))}`);
+        escenario.style.setProperty("--plata-op", `${tramo(dentro, 0.42, 0.62)}`);
+        // El texto entra cuando la plata ya manda, para leerse en negro.
+        escenario.style.setProperty("--t-op", `${tramo(dentro, 0.52, 0.7)}`);
       } else {
-        // La red se queda puesta y la cámara se retira.
-        aplicar(ordenEncendido, 8);
-        stage.style.setProperty("--red", "1");
-        stage.style.setProperty("--ms", `${0.78 - 0.06 * dentro}`);
-        // Cierre: el archipiélago vuelve al centro, detrás de la tarjeta.
-        stage.style.setProperty("--mx", `${-15 + 15 * dentro}%`);
-        stage.style.setProperty("--my", `${6 - 8 * dentro}%`);
-        stage.style.setProperty("--t-escala", "1");
-        stage.style.setProperty("--t-op", "1");
-        stage.style.setProperty("--t-apaga", "0");
+        // Sale del fondo: la plata se retira y el mar se descubre entero.
+        mapa.style.setProperty("--ox", "50%");
+        mapa.style.setProperty("--oy", "50%");
+        mapa.style.setProperty("--z", `${lerp(2.4, 1, tramo(dentro, 0, 0.55))}`);
+        escenario.style.setProperty("--plata-op", `${1 - tramo(dentro, 0, 0.4)}`);
+        escenario.style.setProperty("--t-op", `${tramo(dentro, 0.35, 0.6)}`);
       }
+      escenario.classList.toggle("sobre-plata", !ultima);
     };
 
     let pendiente = false;
@@ -669,9 +191,177 @@ const enlaces = (() => {
     pintar();
     addEventListener("scroll", alScroll, { passive: true });
     addEventListener("resize", alScroll, { passive: true });
-  } else if (stage) {
-    // Sin coreografía: el archipiélago se ve entero y encendido desde el principio.
-    stage.querySelectorAll<HTMLElement>(".isla").forEach((el) => el.style.setProperty("--on", "1"));
-    stage.querySelectorAll<HTMLElement>(".escena, .modulo").forEach((el) => el.classList.add("activa"));
+  } else if (escenario) {
+    // Menos movimiento: mar y islas quietos, textos visibles en claro.
+    escenario.style.setProperty("--t-op", "1");
+    escenario.style.setProperty("--plata-op", "0");
+    escenario.querySelectorAll(".escena").forEach((el) => el.classList.add("activa"));
   }
 </script>
+
+<style>
+  .historia {
+    position: relative;
+    height: calc(var(--tramos) * 190svh);
+  }
+  .escenario {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  /* ── El mar ───────────────────────────────────────────────── */
+  .mar {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(120% 90% at 50% 18%, #16224e 0%, transparent 62%),
+      linear-gradient(180deg, #0b1230 0%, #060a1a 52%, #000 100%);
+  }
+
+  /* ── Las islas ────────────────────────────────────────────── */
+  .mapa {
+    position: absolute;
+    inset: 0;
+    transform-origin: var(--ox, 50%) var(--oy, 50%);
+    /*
+      Se amplía tomando como punto fijo la isla de turno (transform-origin) y
+      además se corre para dejarla en el centro de la pantalla. El translate va
+      antes que el scale para que sus porcentajes sean de la pantalla, no del
+      sistema ya escalado.
+    */
+    transform: translate(calc(50% - var(--ox, 50%)), calc(50% - var(--oy, 50%))) scale(var(--z, 1.15));
+    will-change: transform;
+  }
+  .isla {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--w);
+    height: auto;
+    transform: translate(-50%, -50%);
+    /* Minimalistas: la plata se lee, pero no compite con el texto */
+    filter: brightness(0.92) saturate(0.85);
+  }
+
+  /* ── El campo de plata plana ──────────────────────────────── */
+  .plata {
+    position: absolute;
+    inset: 0;
+    opacity: var(--plata-op, 0);
+    background:
+      radial-gradient(120% 100% at 30% 20%, #ffffff 0%, transparent 55%),
+      linear-gradient(160deg, #eef1f7 0%, #b9c0cc 46%, #eef1f7 100%);
+    pointer-events: none;
+  }
+
+  /* ── Los textos ───────────────────────────────────────────── */
+  .escena {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    padding: 0 7vw;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .escena.activa {
+    opacity: 1;
+  }
+  .texto {
+    max-width: 46ch;
+    text-align: center;
+    opacity: var(--t-op, 0);
+    transform: translateY(calc((1 - var(--t-op, 0)) * 16px));
+  }
+  /* Sobre la plata, tinta negra; sobre el mar, plata clara */
+  .escenario.sobre-plata .texto {
+    color: #0d0f14;
+  }
+  .texto {
+    color: var(--plata-clara);
+  }
+  .texto .k {
+    display: block;
+    font-family: var(--sans);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin: 0 0 18px;
+  }
+  .texto p {
+    font-family: var(--sans);
+    font-size: clamp(1.15rem, 2vw, 1.6rem);
+    line-height: 1.5;
+    margin: 0 0 14px;
+    text-wrap: pretty;
+    color: inherit;
+  }
+  .texto p:last-child {
+    margin-bottom: 0;
+  }
+  .texto b {
+    font-weight: 800;
+  }
+  .cierre h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin: 0 0 18px;
+    color: inherit;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 900px) {
+    .texto {
+      max-width: none;
+    }
+    .texto p {
+      font-size: clamp(1.1rem, 4.6vw, 1.45rem);
+    }
+  }
+
+  /* Menos movimiento: sin zoom ni plata, mar quieto y texto legible en claro */
+  @media (prefers-reduced-motion: reduce) {
+    .historia {
+      height: auto;
+    }
+    .escenario {
+      position: static;
+      height: auto;
+    }
+    .mapa {
+      position: relative;
+      height: 60svh;
+      transform: none;
+    }
+    .plata {
+      display: none;
+    }
+    .escena {
+      position: relative;
+      inset: auto;
+      opacity: 1;
+      min-height: auto;
+      padding: 8vh 7vw;
+    }
+    .texto {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
