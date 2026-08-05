@@ -7,7 +7,7 @@ interface Props {
   noindex?: boolean;
 }
 const { title, description, path, image = "/og-default.jpg", noindex = false } = Astro.props;
-const site = Astro.site ?? new URL("https://the-studio-atis.vercel.app");
+const site = Astro.site ?? new URL("https://the-studio-delta.vercel.app");
 const canonicalURL = new URL(path, site);
 const imageURL = new URL(image, site);
 ---

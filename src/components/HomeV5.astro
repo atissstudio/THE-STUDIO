@@ -484,13 +484,12 @@ const destacados = todos.slice(0, 3);
       menú: cabe más grande sin comprimir el texto en una sola fila.
     */
     .logo-h1 {
-      display: inline-grid;
+      display: grid;
       grid-template-columns: auto auto;
       column-gap: 0.15em;
       row-gap: 0;
       align-items: baseline;
       justify-content: center;
-      justify-items: end;
       white-space: normal;
       padding: 0 10px;
       width: 100%;
@@ -503,11 +502,24 @@ const destacados = todos.slice(0, 3);
       */
       --hvy: clamp(2rem, 11.5vw, 3rem);
     }
+    /*
+      Las dos filas se alinean por la mitad, no las dos a la derecha
+      (corregido 2026-08-05): la manuscrita cierra contra la negrita y las dos
+      palabras gruesas comparten borde izquierdo, como el logo vertical de la
+      barra. Antes las dos columnas iban a la derecha y "ATIS", más corta que
+      "STUDIO", quedaba muy metida: el borde izquierdo salía escalonado.
+      La manuscrita lleva interlineado corto porque Pinyon tiene unos trazos
+      altísimos y, sin recortarlo, abría un hueco enorme entre las dos filas.
+    */
     .logo-h1 .hvy {
       font-size: var(--hvy);
+      line-height: 0.95;
+      justify-self: start;
     }
     .logo-h1 .scr {
-      font-size: calc(var(--hvy) * 1.35);
+      font-size: calc(var(--hvy) * 1.25);
+      line-height: 0.78;
+      justify-self: end;
     }
   }
   @media (prefers-reduced-motion: reduce) {

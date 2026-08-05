@@ -55,7 +55,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
     {
       links.map((l) => (
         <a href={l.href} aria-current={isActive(l.href) ? "page" : undefined}>
-          {l.label}
+          <span>{l.label}</span>
         </a>
       ))
     }
@@ -91,7 +91,6 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
     <span class="mascota-label">Iniciar sesión</span>
   </a>
 
-  <p class="menu-tag">Consultoría de comunicación, marketing e IA para negocios en Canarias.</p>
 </div>
 
 <style>
@@ -209,7 +208,15 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
     justify-content: center;
     border-top: 1px solid rgba(238, 241, 247, 0.25);
   }
+  /*
+    La raya divisoria va en el enlace, que ocupa el ancho completo, para que
+    todas midan lo mismo. Antes el enlace era `width: fit-content` y cada raya
+    terminaba donde acababa su palabra, así que se veían escalonadas y
+    desiguales (corregido 2026-08-05). El subrayado de hover sigue ciñéndose
+    solo al texto: vive en el <span> de dentro, no en el enlace.
+  */
   .menu-links a {
+    display: block;
     padding: clamp(14px, 2.4vw, 26px) 4px;
     border-bottom: 1px solid rgba(238, 241, 247, 0.25);
     color: var(--plata-clara);
@@ -220,20 +227,25 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
     letter-spacing: -0.01em;
     font-size: clamp(1.8rem, 5vw, 4rem);
     line-height: 1.05;
-    width: fit-content;
+  }
+  .menu-links a span {
+    display: inline-block;
+    max-width: 100%;
     background-image: linear-gradient(90deg, #fff, #c9cfdb);
     background-size: 0% 3px;
     background-repeat: no-repeat;
     background-position: 0 100%;
     transition: background-size 0.35s ease;
   }
-  .menu-links a:hover,
-  .menu-links a:focus-visible {
+  .menu-links a:hover span,
+  .menu-links a:focus-visible span {
     background-size: 100% 3px;
   }
   .menu-links a[aria-current="page"] {
-    background-size: 100% 3px;
     color: #fff;
+  }
+  .menu-links a[aria-current="page"] span {
+    background-size: 100% 3px;
   }
 
   /* El muñeco ocupa el hueco de la derecha, línea divisoria con la retícula */
@@ -389,19 +401,6 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
     outline-offset: 2px;
   }
 
-  .menu-tag {
-    position: absolute;
-    left: 20px;
-    bottom: 26px;
-    grid-column: unset;
-    max-width: 32ch;
-    font-family: var(--sans);
-    font-size: 0.72rem;
-    color: rgba(238, 241, 247, 0.65);
-    line-height: 1.6;
-    margin: 0;
-  }
-
   @media (max-width: 900px) {
     /*
       Móvil: la franja deja de ser fija arriba y pasa a ser una píldora de
@@ -476,10 +475,6 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
     }
     .mascota-svg {
       width: 64px;
-    }
-    .menu-tag {
-      position: static;
-      margin-top: 28px;
     }
   }
 

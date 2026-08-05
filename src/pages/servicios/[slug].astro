@@ -3,14 +3,15 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import GlassButton from "../../components/GlassButton.astro";
 import { servicios } from "../../data/servicios";
 
-export function getStaticPaths() {
-  return servicios.map((servicio) => ({
-    params: { slug: servicio.slug },
-    props: { servicio },
-  }));
-}
-
-const { servicio } = Astro.props;
+/*
+  El servicio se busca por el slug de la URL, no por las props de
+  getStaticPaths. Al pasar el sitio a render en servidor (2026-08-05, para que
+  la cortina de acceso funcione), getStaticPaths deja de aplicarse y las props
+  llegan vacías: la página reventaba al leer `servicio.slug`. Buscarlo por el
+  parámetro funciona en los dos modos.
+*/
+const servicio = servicios.find((s) => s.slug === Astro.params.slug);
+if (!servicio) return new Response(null, { status: 404 });
 
 // Los otros servicios, para enlazar en horizontal desde cada página.
 const otros = servicios.filter((s) => s.slug !== servicio.slug).slice(0, 3);

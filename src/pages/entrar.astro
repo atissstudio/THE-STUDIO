@@ -1,0 +1,158 @@
+---
+import "../styles/tokens.css";
+import { COOKIE, huella } from "../middleware";
+
+export const prerender = false;
+
+let error = "";
+
+// Solo se acepta volver a rutas internas: un "volver" que empiece por "//" o
+// por "http" podría usarse para reenviar a otra web desde un enlace nuestro.
+const crudo = Astro.url.searchParams.get("volver") ?? "/";
+const volver = crudo.startsWith("/") && !crudo.startsWith("//") ? crudo : "/";
+
+const password = import.meta.env.SITE_GATE_PASSWORD;
+if (!password) return Astro.redirect(volver);
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const intento = String(form.get("password") ?? "").trim();
+
+  if (intento === password) {
+    Astro.cookies.set(COOKIE, await huella(password), {
+      path: "/",
+      httpOnly: true,
+      secure: import.meta.env.PROD,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+    return Astro.redirect(volver);
+  }
+  error = "Contraseña incorrecta, prueba otra vez.";
+}
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet" />
+    <title>Acceso — The Studio, by Atis</title>
+  </head>
+  <body class="gate-body">
+    <main class="gate">
+      <p class="mark">
+        <span class="scr">the</span> <span class="hvy">STUDIO</span>
+        <span class="scr">by</span> <span class="hvy">ATIS</span>
+      </p>
+      <p class="msg">Todavía en obras. Escribe la contraseña para entrar.</p>
+      <form method="POST" class="form">
+        <input
+          type="password"
+          name="password"
+          placeholder="Contraseña"
+          aria-label="Contraseña de acceso"
+          autocomplete="current-password"
+          autofocus
+        />
+        <button type="submit">Entrar</button>
+      </form>
+      {error && <p class="err">{error}</p>}
+    </main>
+
+    <style>
+      .gate-body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--azul);
+      }
+      .gate {
+        min-height: 100vh;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 22px;
+        text-align: center;
+        padding: 20px;
+      }
+      .mark {
+        color: var(--plata-clara);
+        white-space: nowrap;
+        line-height: 1;
+        margin: 0;
+      }
+      .mark .scr {
+        font-family: var(--script);
+        font-size: clamp(1.3rem, 2.6vw, 2.2rem);
+      }
+      .mark .hvy {
+        font-family: var(--sans);
+        font-weight: 800;
+        font-size: clamp(2rem, 4vw, 3.4rem);
+        letter-spacing: -0.03em;
+      }
+      .msg {
+        margin: 0;
+        font-family: var(--sans);
+        color: rgba(238, 241, 247, 0.78);
+        font-size: 0.95rem;
+        max-width: 34ch;
+      }
+      .form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .form input {
+        font-family: var(--sans);
+        font-size: 1rem;
+        padding: 12px 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(238, 241, 247, 0.3);
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        min-width: 200px;
+      }
+      .form input::placeholder {
+        color: rgba(238, 241, 247, 0.55);
+      }
+      .form input:focus-visible {
+        outline: 2px solid var(--plata-clara);
+        outline-offset: 2px;
+      }
+      .form button {
+        font-family: var(--sans);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        font-size: 0.9rem;
+        padding: 12px 22px;
+        border-radius: 14px;
+        border: 0;
+        cursor: pointer;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(16px) saturate(1.5);
+        -webkit-backdrop-filter: blur(16px) saturate(1.5);
+        box-shadow: 0 16px 34px -14px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+        transition: transform 0.2s ease, background 0.2s ease;
+      }
+      .form button:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.26);
+      }
+      .err {
+        margin: 0;
+        font-family: var(--sans);
+        color: #ffb4b4;
+        font-size: 0.85rem;
+      }
+    </style>
+  </body>
+</html>

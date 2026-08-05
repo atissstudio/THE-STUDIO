@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://the-studio-atis.vercel.app/sitemap-index.xml
+Disallow: /admin
+Disallow: /portal
+
+Sitemap: https://the-studio-delta.vercel.app/sitemap-index.xml

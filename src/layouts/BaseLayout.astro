@@ -4,7 +4,6 @@ import SEO from "../components/SEO.astro";
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
 import Loader from "../components/Loader.astro";
-import SiteGate from "../components/SiteGate.astro";
 
 interface Props {
   title: string;
@@ -24,13 +23,13 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "ProfessionalService",
   name: "The Studio, by Atis",
-  url: new URL(path, Astro.site ?? "https://the-studio-atis.vercel.app").toString(),
+  url: new URL(path, Astro.site ?? "https://the-studio-delta.vercel.app").toString(),
   description: "Consultoría de comunicación, marketing e IA para negocios en Canarias.",
   areaServed: "Canarias, España",
 };
 
 // Breadcrumbs JSON-LD, calculados a partir del path — solo en páginas internas (no home).
-const siteBase = Astro.site ?? new URL("https://the-studio-atis.vercel.app");
+const siteBase = Astro.site ?? new URL("https://the-studio-delta.vercel.app");
 const segments = path.split("/").filter(Boolean);
 const breadcrumbLd =
   segments.length > 0
@@ -81,7 +80,6 @@ const breadcrumbLd =
         </linearGradient>
       </defs>
     </svg>
-    <SiteGate />
     {showLoader && <Loader />}
     <Nav />
     {/*
