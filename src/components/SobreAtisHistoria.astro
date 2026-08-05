@@ -29,15 +29,21 @@ interface Isla {
   w: number;
 }
 
+/*
+  Anchos al 70% de la proporción real: con el tamaño anterior las islas
+  llenaban demasiado y las de los extremos se salían del encuadre. Así quedan
+  pequeñas pero perfectamente visibles, y el archipiélago entero respira
+  dentro de la pantalla, que es lo que se pidió.
+*/
 const islas: Isla[] = [
-  { n: "el-hierro", f: "isla-08", x: 6.0, y: 82.0, w: 9 },
-  { n: "la-palma", f: "isla-06", x: 8.9, y: 42.4, w: 8 },
-  { n: "la-gomera", f: "isla-07", x: 20.7, y: 66.6, w: 7.5 },
-  { n: "tenerife", f: "isla-05", x: 33.4, y: 57.8, w: 22 },
-  { n: "gran-canaria", f: "isla-01", x: 52.9, y: 71.0, w: 13 },
-  { n: "fuerteventura", f: "isla-02", x: 77.4, y: 53.4, w: 19 },
-  { n: "lanzarote", f: "isla-03", x: 91.1, y: 24.8, w: 12 },
-  { n: "la-graciosa", f: "isla-04", x: 94.0, y: 16.0, w: 4.5 },
+  { n: "el-hierro", f: "isla-08", x: 8.0, y: 80.0, w: 6.3 },
+  { n: "la-palma", f: "isla-06", x: 11.0, y: 44.0, w: 5.6 },
+  { n: "la-gomera", f: "isla-07", x: 22.0, y: 66.0, w: 5.25 },
+  { n: "tenerife", f: "isla-05", x: 34.0, y: 58.0, w: 15.4 },
+  { n: "gran-canaria", f: "isla-01", x: 52.5, y: 70.0, w: 9.1 },
+  { n: "fuerteventura", f: "isla-02", x: 75.0, y: 54.0, w: 13.3 },
+  { n: "lanzarote", f: "isla-03", x: 88.0, y: 27.0, w: 8.4 },
+  { n: "la-graciosa", f: "isla-04", x: 91.5, y: 19.0, w: 3.15 },
 ];
 
 const pos = Object.fromEntries(islas.map((i) => [i.n, i]));
@@ -137,9 +143,14 @@ const tramos = escenas.length + 1;
     const tramo = (p, a, b) => clamp01((p - a) / (b - a));
     const lerp = (a, b, t) => a + (b - a) * t;
 
-    // Zoom máximo por escena. No llega a llenar del todo: la plata plana
-    // remata el último trecho, y así nunca se ve el bitmap pixelado.
-    const ZOOM = 3.6;
+    /*
+      El zoom se calcula para cada isla, no es fijo: con un valor único
+      Tenerife llenaba el 79% de la pantalla y Gran Canaria, que es la mitad de
+      ancha, solo el 47% (medido). Cada una amplía hasta cubrir el mismo 95%,
+      y la plata plana remata el último trecho para que el bitmap no llegue a
+      verse pixelado.
+    */
+    const zoomDe = (isla) => Math.min(12, 95 / isla.w);
 
     let activo = -1;
 
@@ -159,14 +170,22 @@ const tramos = escenas.length + 1;
       const ultima = i === tramos - 1;
 
       if (!ultima) {
-        // Viaja y amplía sobre su isla; la plata entra en la segunda mitad.
+        /*
+          Cada escena ARRANCA en la vista general del mar y desde ahí viaja
+          hasta su isla: el punto de mira se interpola del centro (50/50) a la
+          isla a la vez que crece el zoom. Antes el punto de mira ya estaba
+          puesto en la isla desde el primer fotograma, así que el mapa aparecía
+          desplazado, las islas del este se salían por la derecha y la vista
+          del archipiélago entero no llegaba a verse nunca.
+        */
         const isla = pos[escenas[i].isla];
-        mapa.style.setProperty("--ox", `${isla.x}%`);
-        mapa.style.setProperty("--oy", `${isla.y}%`);
-        mapa.style.setProperty("--z", `${lerp(1.15, ZOOM, tramo(dentro, 0, 0.62))}`);
-        escenario.style.setProperty("--plata-op", `${tramo(dentro, 0.42, 0.62)}`);
+        const t = tramo(dentro, 0, 0.62);
+        mapa.style.setProperty("--ox", `${lerp(50, isla.x, t)}%`);
+        mapa.style.setProperty("--oy", `${lerp(50, isla.y, t)}%`);
+        mapa.style.setProperty("--z", `${lerp(1, zoomDe(isla), t)}`);
+        escenario.style.setProperty("--plata-op", `${tramo(dentro, 0.34, 0.58)}`);
         // El texto entra cuando la plata ya manda, para leerse en negro.
-        escenario.style.setProperty("--t-op", `${tramo(dentro, 0.52, 0.7)}`);
+        escenario.style.setProperty("--t-op", `${tramo(dentro, 0.48, 0.66)}`);
       } else {
         // Sale del fondo: la plata se retira y el mar se descubre entero.
         mapa.style.setProperty("--ox", "50%");
@@ -231,7 +250,7 @@ const tramos = escenas.length + 1;
       antes que el scale para que sus porcentajes sean de la pantalla, no del
       sistema ya escalado.
     */
-    transform: translate(calc(50% - var(--ox, 50%)), calc(50% - var(--oy, 50%))) scale(var(--z, 1.15));
+    transform: translate(calc(50% - var(--ox, 50%)), calc(50% - var(--oy, 50%))) scale(var(--z, 1));
     will-change: transform;
   }
   .isla {
@@ -292,6 +311,8 @@ const tramos = escenas.length + 1;
     text-transform: uppercase;
     opacity: 0.75;
     margin: 0 0 18px;
+    /* Hereda el color del bloque: el azul claro de .k global se perdía sobre la plata */
+    color: inherit;
   }
   .texto p {
     font-family: var(--sans);
