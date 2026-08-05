@@ -329,35 +329,65 @@ body {
 }
 
 /*
-  Móvil (2026-08-05): dos ajustes pedidos por Alejandro.
+  Lectura en móvil: una idea por pantalla (2026-08-05, rehecho).
 
-  1. Un párrafo por pantalla. Antes entraban dos o tres de golpe y "daba
-     pereza" ponerse a leer. Ahora cada párrafo se separa del siguiente casi
-     un tercio de pantalla, así que al bajar aparece de uno en uno, animado,
-     en vez de encontrarse el bloque entero ya puesto.
+  Primer intento, descartado: separar los párrafos con 46vh de margen. Cumplía
+  "uno por pantalla" pero se veía antinatural, porque lo que había entre
+  párrafos era hueco vacío, no composición.
 
-  2. Animación más sutil, pero presente. El salto de entrada y el atenuado
-     eran demasiado marcados en pantalla pequeña, donde el texto ocupa todo
-     el ancho y el movimiento se ve mucho más: la palabra sube menos, parte
-     de menos apagada y la cascada entre palabras va más rápida, para que
-     acompañe la lectura en vez de chocar con ella.
+  Como lo resuelven las webs móviles buenas, y como se hace aquí: cada tramo
+  de lectura ES una pantalla. El párrafo se centra vertical y la tipografía
+  crece hasta llenarla, así que ocupa la pantalla por tamaño, no por relleno.
+  Los tramos los agrupa reveal.ts (el enunciado con su titular, y después cada
+  párrafo); si el JS no llega, el texto se queda en flujo normal y legible.
+
+  100svh, no 100vh: en el móvil la barra del navegador se pliega al bajar, y
+  con vh la altura cambia a mitad de gesto y el texto pega un salto. svh usa
+  la altura pequeña, la estable.
 */
 @media (max-width: 900px) {
-  [data-reveal] .read p:not(:last-child) {
-    margin-bottom: 46vh;
+  .rv-panel {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    scroll-snap-align: center;
+  }
+  .rv-panel > * {
+    margin-bottom: 0;
+  }
+  .rv-panel > .k {
+    margin-bottom: 18px;
+  }
+  /* El cuerpo crece para llenar la pantalla: es lo que hace que sea uno */
+  [data-reveal] .rv-panel > p {
+    font-size: clamp(1.4rem, 6.2vw, 1.9rem);
+    line-height: 1.45;
+  }
+  [data-reveal] .rv-panel > p.k {
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+  [data-reveal] .rv-panel > h2 {
+    font-size: clamp(2.2rem, 9.5vw, 3rem);
   }
   /*
-    El párrafo que todavía no toca queda casi invisible (0.14), no a medio
-    encender: así, aunque asome por abajo, no compite con el que se está
-    leyendo y la pantalla se siente de un solo párrafo. El movimiento en sí
-    es corto y rápido, que es lo que se pidió suavizar.
+    Ajuste suave al parar (proximity, y SIN scroll-snap-stop): el dedo manda
+    durante todo el gesto y se puede pasar de largo de un impulso; solo cuando
+    el scroll se detiene cerca de un tramo, este se acaba de encajar. El
+    `stop: always` de la versión vieja era lo que hacía que peleara.
   */
+  html:has(.rv-panel) {
+    scroll-snap-type: y proximity;
+  }
+  /* Movimiento corto y rápido: en pantalla pequeña el texto ocupa todo el
+     ancho y un salto largo se ve mucho más */
   [data-reveal] :is(h2, p, .k) .rv-w,
   [data-reveal] :is(h2, p, .k).rv-bloque {
-    opacity: 0.14;
-    transform: translateY(0.24em);
-    transition-duration: 0.6s;
-    transition-delay: calc(var(--i, 0) * 16ms);
+    opacity: 0.16;
+    transform: translateY(0.22em);
+    transition-duration: 0.55s;
+    transition-delay: calc(var(--i, 0) * 15ms);
   }
 }
 

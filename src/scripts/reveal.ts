@@ -46,8 +46,43 @@ function partirEnPalabras(el: HTMLElement) {
   return n;
 }
 
+/*
+  Agrupa cada bloque de lectura en "tramos" de una pantalla (solo móvil).
+
+  Un tramo es una unidad de lectura: el enunciado corto con su titular van
+  juntos, y después cada párrafo va solo. Lo hace el JS porque el marcado de
+  .read es una lista plana de hermanos (.k, h2, p, p, p) compartida por muchas
+  páginas, y agrupar hermanos no se puede solo con CSS sin tocar todas.
+
+  Si esto no llega a ejecutarse, no se rompe nada: sin .rv-panel el texto
+  se queda en flujo normal, que es exactamente como se ve en escritorio.
+*/
+function agruparEnTramos(read: HTMLElement) {
+  const hijos = Array.from(read.children) as HTMLElement[];
+  if (!hijos.length) return;
+
+  let tramo: HTMLElement | null = null;
+  const abrir = () => {
+    tramo = document.createElement("div");
+    tramo.className = "rv-panel";
+    read.appendChild(tramo);
+    return tramo;
+  };
+
+  for (const hijo of hijos) {
+    // El enunciado abre tramo y se queda con el titular que venga detrás.
+    const abreTramo = hijo.classList.contains("k") || !tramo || hijo.tagName !== "H2";
+    if (abreTramo && !(tramo && hijo.tagName === "H2")) abrir();
+    tramo!.appendChild(hijo);
+  }
+}
+
 export function revelarTexto() {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  if (matchMedia("(max-width: 900px)").matches) {
+    document.querySelectorAll<HTMLElement>("[data-reveal] .read").forEach(agruparEnTramos);
+  }
 
   const bloques = document.querySelectorAll<HTMLElement>(SELECTOR);
   if (!bloques.length) return;
