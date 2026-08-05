@@ -1,5 +1,11 @@
 ---
 import PortalLayout from "../../layouts/PortalLayout.astro";
+import { requireClient } from "../../lib/requireClient";
+
+export const prerender = false;
+
+const { redirect, cliente } = await requireClient(Astro);
+if (redirect) return redirect;
 
 const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun"];
 const inversion = [400, 400, 600, 600, 600, 600];
@@ -22,7 +28,7 @@ const totalRetorno = retorno.reduce((a, b) => a + b, 0);
 const roi = Math.round(((totalRetorno - totalInversion) / totalInversion) * 100);
 ---
 
-<PortalLayout title="Gráficos financieros — Portal de cliente" path="/portal/financieros" userName="Cliente demo">
+<PortalLayout title="Gráficos financieros — Portal de cliente" path="/portal/financieros" userName={cliente!.nombre}>
   <a href="/portal" class="back">← Portal</a>
   <p class="kick">Ejemplo — cifras de demostración</p>
   <h1>Gráficos financieros</h1>

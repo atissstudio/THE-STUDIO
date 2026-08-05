@@ -7,40 +7,35 @@ export const prerender = false;
 const { redirect, supabase, cliente } = await requireClient(Astro);
 if (redirect) return redirect;
 
-const { data: documentos } = await supabase!
-  .from("documentos")
-  .select("id, titulo, tipo, storage_path, publicado_at")
+const { data: facturas } = await supabase!
+  .from("facturas")
+  .select("id, numero, concepto, importe, estado, fecha_emision, fecha_vencimiento")
   .eq("cliente_id", cliente!.id)
-  .order("publicado_at", { ascending: false });
-
-const conEnlaces = await Promise.all(
-  (documentos ?? []).map(async (doc) => {
-    const { data } = await supabase!.storage.from("documentos").createSignedUrl(doc.storage_path, 60 * 10);
-    return { ...doc, url: data?.signedUrl ?? null };
-  })
-);
+  .order("fecha_emision", { ascending: false });
 ---
 
-<PortalLayout title="Informes — Portal de cliente" path="/portal/informes" userName={cliente!.nombre}>
+<PortalLayout title="Facturas — Portal de cliente" path="/portal/facturas" userName={cliente!.nombre}>
   <a href="/portal" class="back">← Portal</a>
-  <h1>Informes</h1>
-  <p class="lead">Los documentos y entregas que te hemos hecho llegar hasta ahora.</p>
+  <h1>Facturas</h1>
+  <p class="lead">El estado de tus facturas con The Studio.</p>
 
-  {!conEnlaces.length ? (
-    <p class="empty">Todavía no hay documentos publicados.</p>
+  {!facturas?.length ? (
+    <p class="empty">Todavía no hay facturas.</p>
   ) : (
     <ul class="list">
-      {conEnlaces.map((doc) => (
+      {facturas.map((f) => (
         <li>
           <div>
-            <span class="name">{doc.titulo}</span>
-            <span class="date">{new Date(doc.publicado_at).toLocaleDateString("es-ES")}</span>
+            <span class="name">{f.numero} — {f.concepto}</span>
+            <span class="date">
+              Emitida el {new Date(f.fecha_emision).toLocaleDateString("es-ES")}
+              {f.fecha_vencimiento ? ` · vence el ${new Date(f.fecha_vencimiento).toLocaleDateString("es-ES")}` : ""}
+            </span>
           </div>
-          {doc.url ? (
-            <a href={doc.url} class="type" target="_blank" rel="noopener">Descargar</a>
-          ) : (
-            <span class="type">{doc.tipo}</span>
-          )}
+          <div class="amount-wrap">
+            <span class="amount">{Number(f.importe).toFixed(2)} €</span>
+            <span class={`type badge-${f.estado}`}>{f.estado}</span>
+          </div>
         </li>
       ))}
     </ul>
@@ -110,6 +105,17 @@ const conEnlaces = await Promise.all(
     font-size: 0.78rem;
     margin-top: 4px;
   }
+  .amount-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .amount {
+    font-family: var(--sans);
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 0.95rem;
+  }
   .type {
     font-family: var(--sans);
     font-size: 0.7rem;
@@ -121,6 +127,7 @@ const conEnlaces = await Promise.all(
     border-radius: 20px;
     padding: 5px 12px;
     white-space: nowrap;
-    text-decoration: none;
   }
+  .badge-pagada { color: #1e6b3a; background: rgba(30, 107, 58, 0.12); }
+  .badge-vencida { color: #a13a2a; background: rgba(161, 58, 42, 0.12); }
 </style>

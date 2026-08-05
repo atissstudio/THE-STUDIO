@@ -1,24 +1,41 @@
 ---
 import PortalLayout from "../../layouts/PortalLayout.astro";
+import { requireClient } from "../../lib/requireClient";
+
+export const prerender = false;
+
+const { redirect, supabase, cliente } = await requireClient(Astro);
+if (redirect) return redirect;
+
+const { count: documentosCount } = await supabase!
+  .from("documentos")
+  .select("*", { count: "exact", head: true })
+  .eq("cliente_id", cliente!.id);
+
+const { count: facturasPendientes } = await supabase!
+  .from("facturas")
+  .select("*", { count: "exact", head: true })
+  .eq("cliente_id", cliente!.id)
+  .eq("estado", "pendiente");
 
 const cards = [
   {
     href: "/portal/informes",
     label: "Informes",
     desc: "Documentos y entregas que te hemos hecho llegar.",
-    meta: "3 documentos",
+    meta: `${documentosCount ?? 0} documento${documentosCount === 1 ? "" : "s"}`,
   },
   {
-    href: "/portal/financieros",
-    label: "Gráficos financieros",
-    desc: "Inversión frente a retorno, mes a mes.",
-    meta: "actualizado — ejemplo",
+    href: "/portal/facturas",
+    label: "Facturas",
+    desc: "El estado de tus facturas con The Studio.",
+    meta: `${facturasPendientes ?? 0} pendiente${facturasPendientes === 1 ? "" : "s"}`,
   },
   {
     href: "/portal/estado",
     label: "Estado del servicio",
     desc: "En qué punto va tu proyecto y qué viene después.",
-    meta: "en curso — ejemplo",
+    meta: "próximamente",
   },
   {
     href: "/portal/contacto",
@@ -29,14 +46,11 @@ const cards = [
 ];
 ---
 
-<PortalLayout title="Portal de cliente — The Studio, by Atis" path="/portal" userName="Cliente demo">
+<PortalLayout title="Portal de cliente — The Studio, by Atis" path="/portal" userName={cliente!.nombre}>
   <section class="hero">
     <p class="kick">Portal de cliente</p>
-    <h1>Hola, Cliente demo</h1>
-    <p class="lead">
-      Este es un <b>mockup</b> con datos de ejemplo — así se vería el seguimiento de tu servicio con
-      The Studio.
-    </p>
+    <h1>Hola, {cliente!.nombre}</h1>
+    <p class="lead">Aquí tienes el seguimiento de tu servicio con The Studio.</p>
   </section>
 
   <div class="cards">

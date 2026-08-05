@@ -1,0 +1,88 @@
+---
+import "../../styles/tokens.css";
+import SEO from "../../components/SEO.astro";
+import Logo from "../../components/Logo.astro";
+import GlassButton from "../../components/GlassButton.astro";
+import { createSupabaseServerClient } from "../../lib/supabase";
+
+export const prerender = false;
+
+let error = "";
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const email = String(form.get("email") ?? "").trim();
+  const password = String(form.get("password") ?? "");
+
+  try {
+    const supabase = createSupabaseServerClient(Astro.request, Astro.cookies);
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (authError) {
+      error = "Usuario o contraseña incorrectos.";
+    } else {
+      return Astro.redirect("/admin");
+    }
+  } catch {
+    error = "El panel no está conectado todavía (faltan las claves de Supabase).";
+  }
+}
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <SEO title="Acceso — panel interno" description="Panel de gestión interno de The Studio, by Atis." path="/admin/login" noindex />
+  </head>
+  <body class="login-body">
+    <div class="login-logo"><Logo size="1.6rem" /></div>
+    <form class="login-form" method="POST">
+      <h1>Panel interno</h1>
+      <label>
+        Correo
+        <input type="email" name="email" autocomplete="username" required />
+      </label>
+      <label>
+        Contraseña
+        <input type="password" name="password" autocomplete="current-password" required />
+      </label>
+      {error && <p class="error">{error}</p>}
+      <GlassButton type="submit">Entrar</GlassButton>
+    </form>
+
+    <style>
+      .login-body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 32px;
+        background: #334ba4;
+        font-family: Arial, sans-serif;
+      }
+      .login-logo { color: #fff; }
+      .login-form {
+        background: #fff;
+        border-radius: 2px;
+        padding: 32px;
+        width: min(360px, 90vw);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .login-form h1 { font-size: 1.2rem; margin: 0 0 8px; }
+      .login-form label { display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; color: #565e6c; }
+      .login-form input {
+        padding: 10px 12px;
+        border: 1px solid #dde1e8;
+        border-radius: 2px;
+        font-size: 1rem;
+      }
+      .error { color: #b3261e; font-size: 0.88rem; margin: 0; }
+    </style>
+  </body>
+</html>

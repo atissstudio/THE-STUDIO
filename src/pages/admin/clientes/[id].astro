@@ -1,0 +1,83 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../../lib/requireAdmin";
+
+export const prerender = false;
+
+const { redirect, supabase } = await requireAdmin(Astro);
+if (redirect) return redirect;
+
+const { id } = Astro.params;
+
+const { data: cliente } = await supabase!.from("clientes").select("*").eq("id", id).single();
+
+if (!cliente) {
+  return Astro.redirect("/admin/clientes");
+}
+
+const { data: facturas } = await supabase!
+  .from("facturas")
+  .select("id, numero, concepto, importe, estado, fecha_emision")
+  .eq("cliente_id", id)
+  .order("fecha_emision", { ascending: false });
+
+const { data: documentos } = await supabase!
+  .from("documentos")
+  .select("id, titulo, tipo, publicado_at")
+  .eq("cliente_id", id)
+  .order("publicado_at", { ascending: false });
+---
+
+<AdminLayout title={`${cliente.nombre} — panel interno`} path="/admin/clientes">
+  <a href="/admin/clientes" class="back">← Clientes</a>
+  <h1>{cliente.nombre}</h1>
+  <p class="meta">{cliente.empresa ?? "Sin empresa"} · {cliente.email} {cliente.telefono ? `· ${cliente.telefono}` : ""}</p>
+  <p class="meta">Estado: <span class={`badge badge-${cliente.estado}`}>{cliente.estado}</span></p>
+
+  <section>
+    <h2>Facturas</h2>
+    {!facturas?.length ? (
+      <p class="empty">Sin facturas todavía. <a href={`/admin/facturas?cliente=${cliente.id}`}>Crear una</a>.</p>
+    ) : (
+      <ul class="list">
+        {facturas.map((f) => (
+          <li>
+            <span>{f.numero} — {f.concepto}</span>
+            <span>{f.importe.toFixed(2)} € · {f.estado}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+
+  <section>
+    <h2>Documentos</h2>
+    {!documentos?.length ? (
+      <p class="empty">Sin documentos publicados todavía. <a href={`/admin/documentos?cliente=${cliente.id}`}>Publicar uno</a>.</p>
+    ) : (
+      <ul class="list">
+        {documentos.map((d) => (
+          <li>
+            <span>{d.titulo}</span>
+            <span>{d.tipo}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+
+  <style>
+    .back { color: #334ba4; text-decoration: none; font-size: 0.88rem; }
+    h1 { font-size: 1.5rem; margin: 8px 0 4px; }
+    .meta { color: #565e6c; font-size: 0.9rem; margin: 2px 0; }
+    section { margin-top: 32px; }
+    h2 { font-size: 1.05rem; margin-bottom: 10px; }
+    .list { list-style: none; margin: 0; padding: 0; background: #fff; border: 1px solid #dde1e8; }
+    .list li { display: flex; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid #eef1f7; font-size: 0.9rem; }
+    .list li:last-child { border-bottom: none; }
+    .empty { color: #565e6c; font-size: 0.9rem; }
+    .empty a { color: #334ba4; }
+    .badge { padding: 2px 8px; font-size: 0.78rem; border-radius: 2px; background: #eef1f7; color: #565e6c; }
+    .badge-activo { background: #e3f4e8; color: #1e6b3a; }
+  </style>
+</AdminLayout>

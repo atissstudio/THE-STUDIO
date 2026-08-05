@@ -1,0 +1,107 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../../lib/requireAdmin";
+
+export const prerender = false;
+
+const { redirect, supabase } = await requireAdmin(Astro);
+if (redirect) return redirect;
+
+let formError = "";
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const nombre = String(form.get("nombre") ?? "").trim();
+  const email = String(form.get("email") ?? "").trim();
+  const empresa = String(form.get("empresa") ?? "").trim();
+  const telefono = String(form.get("telefono") ?? "").trim();
+
+  if (!nombre || !email) {
+    formError = "Nombre y correo son obligatorios.";
+  } else {
+    const { error } = await supabase!.from("clientes").insert({
+      nombre,
+      email,
+      empresa: empresa || null,
+      telefono: telefono || null,
+    });
+    if (error) formError = error.message;
+    else return Astro.redirect("/admin/clientes");
+  }
+}
+
+const { data: clientes } = await supabase!
+  .from("clientes")
+  .select("id, nombre, empresa, email, estado, created_at")
+  .order("created_at", { ascending: false });
+---
+
+<AdminLayout title="Clientes — panel interno" path="/admin/clientes">
+  <h1>Clientes</h1>
+
+  <details class="new-client">
+    <summary>+ Nuevo cliente</summary>
+    <form method="POST" class="client-form">
+      <label>Nombre <input type="text" name="nombre" required /></label>
+      <label>Empresa <input type="text" name="empresa" /></label>
+      <label>Correo <input type="email" name="email" required /></label>
+      <label>Teléfono <input type="tel" name="telefono" /></label>
+      {formError && <p class="error">{formError}</p>}
+      <button type="submit">Guardar</button>
+    </form>
+  </details>
+
+  {!clientes?.length ? (
+    <p class="empty">Todavía no hay clientes dados de alta.</p>
+  ) : (
+    <table>
+      <thead>
+        <tr><th>Nombre</th><th>Empresa</th><th>Correo</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        {clientes.map((c) => (
+          <tr>
+            <td><a href={`/admin/clientes/${c.id}`}>{c.nombre}</a></td>
+            <td>{c.empresa ?? "—"}</td>
+            <td>{c.email}</td>
+            <td><span class={`badge badge-${c.estado}`}>{c.estado}</span></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+
+  <style>
+    h1 { font-size: 1.6rem; margin-bottom: 20px; }
+    .new-client { margin-bottom: 28px; }
+    .new-client summary { cursor: pointer; color: #334ba4; font-weight: bold; margin-bottom: 12px; }
+    .client-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      background: #fff;
+      border: 1px solid #dde1e8;
+      padding: 20px;
+      max-width: 560px;
+    }
+    .client-form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.88rem; color: #565e6c; }
+    .client-form input { padding: 8px 10px; border: 1px solid #dde1e8; }
+    .client-form button {
+      grid-column: 1 / -1;
+      justify-self: start;
+      background: #334ba4;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    .error { grid-column: 1 / -1; color: #b3261e; font-size: 0.85rem; margin: 0; }
+    .empty { color: #565e6c; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid #eef1f7; font-size: 0.92rem; }
+    th { color: #565e6c; font-weight: normal; }
+    td a { color: #334ba4; text-decoration: none; font-weight: bold; }
+    .badge { padding: 2px 8px; font-size: 0.78rem; border-radius: 2px; background: #eef1f7; color: #565e6c; }
+    .badge-activo { background: #e3f4e8; color: #1e6b3a; }
+  </style>
+</AdminLayout>

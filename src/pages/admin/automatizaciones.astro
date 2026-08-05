@@ -1,0 +1,42 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../lib/requireAdmin";
+
+export const prerender = false;
+
+const { redirect } = await requireAdmin(Astro);
+if (redirect) return redirect;
+
+// Lista a mano, sin tabla propia todavía — se convierte en tabla de Supabase
+// cuando haya más de un puñado y merezca la pena editarla desde aquí (CLAUDE.md §3:
+// sistematizar lo repetido, no lo hipotético).
+const herramientas = [
+  { nombre: "Notion", uso: "Fuente de verdad estratégica: brandbook, roadmap, investigaciones.", enlace: "https://app.notion.com/p/398c49aa759681e08ee6d2b8ada463c3" },
+];
+---
+
+<AdminLayout title="Automatizaciones — panel interno" path="/admin/automatizaciones">
+  <h1>Herramientas y automatizaciones</h1>
+  <p class="lead">
+    Enlaces directos a lo que ya usas fuera de este panel. Se amplía a medida que entren
+    agentes o automatizaciones reales — de momento es solo una lista.
+  </p>
+
+  <ul class="list">
+    {herramientas.map((h) => (
+      <li>
+        <a href={h.enlace} target="_blank" rel="noopener">{h.nombre}</a>
+        <p>{h.uso}</p>
+      </li>
+    ))}
+  </ul>
+
+  <style>
+    h1 { font-size: 1.6rem; margin-bottom: 8px; }
+    .lead { color: #565e6c; font-size: 0.92rem; margin-bottom: 24px; max-width: 60ch; }
+    .list { list-style: none; margin: 0; padding: 0; }
+    .list li { background: #fff; border: 1px solid #dde1e8; padding: 16px 18px; margin-bottom: 10px; }
+    .list a { color: #334ba4; font-weight: bold; text-decoration: none; }
+    .list p { margin: 4px 0 0; color: #565e6c; font-size: 0.88rem; }
+  </style>
+</AdminLayout>

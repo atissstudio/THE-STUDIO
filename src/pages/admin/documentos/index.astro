@@ -1,0 +1,129 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../../lib/requireAdmin";
+
+export const prerender = false;
+
+const { redirect, supabase } = await requireAdmin(Astro);
+if (redirect) return redirect;
+
+const preselectCliente = Astro.url.searchParams.get("cliente") ?? "";
+let formError = "";
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const cliente_id = String(form.get("cliente_id") ?? "");
+  const titulo = String(form.get("titulo") ?? "").trim();
+  const tipo = String(form.get("tipo") ?? "informe");
+  const file = form.get("archivo") as File | null;
+
+  if (!cliente_id || !titulo || !file || file.size === 0) {
+    formError = "Cliente, título y archivo son obligatorios.";
+  } else {
+    const path = `${cliente_id}/${Date.now()}-${file.name}`;
+    const { error: uploadError } = await supabase!.storage.from("documentos").upload(path, file);
+
+    if (uploadError) {
+      formError = uploadError.message;
+    } else {
+      const { error } = await supabase!.from("documentos").insert({
+        cliente_id,
+        titulo,
+        tipo,
+        storage_path: path,
+      });
+      if (error) formError = error.message;
+      else return Astro.redirect("/admin/documentos");
+    }
+  }
+}
+
+const { data: clientes } = await supabase!.from("clientes").select("id, nombre").order("nombre");
+const { data: documentos } = await supabase!
+  .from("documentos")
+  .select("id, titulo, tipo, publicado_at, clientes(nombre)")
+  .order("publicado_at", { ascending: false });
+---
+
+<AdminLayout title="Documentos — panel interno" path="/admin/documentos">
+  <h1>Documentos</h1>
+
+  <details class="new-doc" open={!!preselectCliente}>
+    <summary>+ Publicar documento</summary>
+    <form method="POST" enctype="multipart/form-data" class="doc-form">
+      <label>
+        Cliente
+        <select name="cliente_id" required>
+          <option value="">Selecciona…</option>
+          {clientes?.map((c) => (
+            <option value={c.id} selected={c.id === preselectCliente}>{c.nombre}</option>
+          ))}
+        </select>
+      </label>
+      <label>Título <input type="text" name="titulo" required /></label>
+      <label>
+        Tipo
+        <select name="tipo">
+          <option value="informe">Informe</option>
+          <option value="contrato">Contrato</option>
+          <option value="entregable">Entregable</option>
+          <option value="otro">Otro</option>
+        </select>
+      </label>
+      <label>Archivo <input type="file" name="archivo" required /></label>
+      {formError && <p class="error">{formError}</p>}
+      <button type="submit">Publicar</button>
+    </form>
+  </details>
+
+  {!documentos?.length ? (
+    <p class="empty">Todavía no hay documentos publicados.</p>
+  ) : (
+    <table>
+      <thead>
+        <tr><th>Título</th><th>Cliente</th><th>Tipo</th><th>Publicado</th></tr>
+      </thead>
+      <tbody>
+        {documentos.map((d: any) => (
+          <tr>
+            <td>{d.titulo}</td>
+            <td>{d.clientes?.nombre ?? "—"}</td>
+            <td>{d.tipo}</td>
+            <td>{new Date(d.publicado_at).toLocaleDateString("es-ES")}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+
+  <style>
+    h1 { font-size: 1.6rem; margin-bottom: 20px; }
+    .new-doc { margin-bottom: 28px; }
+    .new-doc summary { cursor: pointer; color: #334ba4; font-weight: bold; margin-bottom: 12px; }
+    .doc-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      background: #fff;
+      border: 1px solid #dde1e8;
+      padding: 20px;
+      max-width: 560px;
+    }
+    .doc-form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.88rem; color: #565e6c; }
+    .doc-form input, .doc-form select { padding: 8px 10px; border: 1px solid #dde1e8; }
+    .doc-form button {
+      grid-column: 1 / -1;
+      justify-self: start;
+      background: #334ba4;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    .error { grid-column: 1 / -1; color: #b3261e; font-size: 0.85rem; margin: 0; }
+    .empty { color: #565e6c; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid #eef1f7; font-size: 0.92rem; }
+    th { color: #565e6c; font-weight: normal; }
+  </style>
+</AdminLayout>

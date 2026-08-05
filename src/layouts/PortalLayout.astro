@@ -7,9 +7,8 @@ interface Props {
   title: string;
   path: string;
   userName?: string;
-  protectedPage?: boolean;
 }
-const { title, path, userName, protectedPage = true } = Astro.props;
+const { title, path, userName } = Astro.props;
 ---
 
 <!doctype html>
@@ -20,22 +19,13 @@ const { title, path, userName, protectedPage = true } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <SEO
       title={title}
-      description="Portal de cliente de The Studio, by Atis — zona privada de demostración."
+      description="Portal de cliente de The Studio, by Atis."
       path={path}
       noindex
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet" />
-    {
-      protectedPage && (
-        <script is:inline>
-          if (sessionStorage.getItem("atis_portal_demo_auth") !== "1") {
-            window.location.replace("/portal/login");
-          }
-        </script>
-      )
-    }
   </head>
   <body>
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -54,13 +44,15 @@ const { title, path, userName, protectedPage = true } = Astro.props;
       <a href="/" aria-label="The Studio, by Atis — inicio" class="brand">
         <Logo size="1.3rem" />
       </a>
-      <span class="demo-tag">Demo · portal de cliente</span>
+      <span class="demo-tag">Portal de cliente</span>
       <div class="spacer"></div>
       {
         userName && (
           <div class="account">
             <span class="who">{userName}</span>
-            <button id="logout" type="button" class="logout">Salir</button>
+            <form method="POST" action="/portal/logout">
+              <button type="submit" class="logout">Salir</button>
+            </form>
           </div>
         )
       }
@@ -71,16 +63,8 @@ const { title, path, userName, protectedPage = true } = Astro.props;
     </main>
 
     <footer class="portal-footer">
-      <small>Datos de ejemplo — ninguna cifra o documento de esta zona pertenece a un cliente real.</small>
+      <small>Portal privado — este contenido es solo tuyo.</small>
     </footer>
-
-    <script>
-      const logoutBtn = document.getElementById("logout");
-      logoutBtn?.addEventListener("click", () => {
-        sessionStorage.removeItem("atis_portal_demo_auth");
-        window.location.href = "/portal/login";
-      });
-    </script>
 
     <style>
       /*

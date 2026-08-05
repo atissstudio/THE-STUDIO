@@ -11,7 +11,7 @@ export default defineConfig({
   site: SITE_URL,
   integrations: [
     sitemap({
-      filter: (page) => !page.includes("/maqueta") && !page.includes("/portal/"),
+      filter: (page) => !page.includes("/maqueta") && !page.includes("/portal/") && !page.includes("/admin"),
     }),
   ],
   // output "static" (por defecto) + adapter: todas las páginas se generan estáticas,

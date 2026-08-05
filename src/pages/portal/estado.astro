@@ -1,5 +1,11 @@
 ---
 import PortalLayout from "../../layouts/PortalLayout.astro";
+import { requireClient } from "../../lib/requireClient";
+
+export const prerender = false;
+
+const { redirect, cliente } = await requireClient(Astro);
+if (redirect) return redirect;
 
 const hitos = [
   { fecha: "3 mar. 2026", titulo: "Auditoría inicial", estado: "hecho" },
@@ -13,9 +19,9 @@ const fase = "Ejecución — cuña de automatización";
 const progreso = 60;
 ---
 
-<PortalLayout title="Estado del servicio — Portal de cliente" path="/portal/estado" userName="Cliente demo">
+<PortalLayout title="Estado del servicio — Portal de cliente" path="/portal/estado" userName={cliente!.nombre}>
   <a href="/portal" class="back">← Portal</a>
-  <p class="kick">Ejemplo — hitos de demostración</p>
+  <p class="kick">Próximamente — todavía sin datos reales de proyecto</p>
   <h1>Estado del servicio</h1>
   <p class="lead">En qué punto va tu proyecto con The Studio, y qué viene después.</p>
 

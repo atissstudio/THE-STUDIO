@@ -1,9 +1,15 @@
 ---
 import PortalLayout from "../../layouts/PortalLayout.astro";
 import GlassButton from "../../components/GlassButton.astro";
+import { requireClient } from "../../lib/requireClient";
+
+export const prerender = false;
+
+const { redirect, cliente } = await requireClient(Astro);
+if (redirect) return redirect;
 ---
 
-<PortalLayout title="Contacto — Portal de cliente" path="/portal/contacto" userName="Cliente demo">
+<PortalLayout title="Contacto — Portal de cliente" path="/portal/contacto" userName={cliente!.nombre}>
   <a href="/portal" class="back">← Portal</a>
   <p class="kick">Ejemplo — sin envío real</p>
   <h1>Contacto</h1>

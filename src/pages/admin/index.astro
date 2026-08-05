@@ -1,0 +1,47 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../lib/requireAdmin";
+
+export const prerender = false;
+
+const { redirect, supabase } = await requireAdmin(Astro);
+if (redirect) return redirect;
+
+const { count: clientesCount } = await supabase!
+  .from("clientes")
+  .select("*", { count: "exact", head: true });
+
+const { count: facturasPendientes } = await supabase!
+  .from("facturas")
+  .select("*", { count: "exact", head: true })
+  .eq("estado", "pendiente");
+---
+
+<AdminLayout title="Resumen — panel interno" path="/admin">
+  <h1>Resumen</h1>
+  <div class="stats">
+    <a href="/admin/clientes" class="stat">
+      <span class="num">{clientesCount ?? 0}</span>
+      <span class="label">Clientes</span>
+    </a>
+    <a href="/admin/facturas" class="stat">
+      <span class="num">{facturasPendientes ?? 0}</span>
+      <span class="label">Facturas pendientes</span>
+    </a>
+  </div>
+
+  <style>
+    h1 { font-size: 1.6rem; margin-bottom: 24px; }
+    .stats { display: flex; gap: 20px; }
+    .stat {
+      background: #fff;
+      border: 1px solid #dde1e8;
+      padding: 24px 28px;
+      text-decoration: none;
+      color: inherit;
+      min-width: 160px;
+    }
+    .num { display: block; font-size: 2.2rem; font-weight: bold; color: #334ba4; }
+    .label { color: #565e6c; font-size: 0.9rem; }
+  </style>
+</AdminLayout>

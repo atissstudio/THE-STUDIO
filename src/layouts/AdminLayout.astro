@@ -1,0 +1,91 @@
+---
+import "../styles/tokens.css";
+import SEO from "../components/SEO.astro";
+import Logo from "../components/Logo.astro";
+
+interface Props {
+  title: string;
+  path: string;
+}
+const { title, path } = Astro.props;
+
+const links = [
+  { href: "/admin", label: "Resumen" },
+  { href: "/admin/clientes", label: "Clientes" },
+  { href: "/admin/facturas", label: "Facturas" },
+  { href: "/admin/documentos", label: "Documentos" },
+  { href: "/admin/automatizaciones", label: "Automatizaciones" },
+];
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <SEO title={title} description="Panel de gestión interno de The Studio, by Atis." path={path} noindex />
+  </head>
+  <body class="admin-body">
+    <header class="admin-header">
+      <a href="/" aria-label="The Studio, by Atis — inicio" class="brand"><Logo size="1.2rem" /></a>
+      <nav class="admin-nav">
+        {links.map((l) => (
+          <a href={l.href} class={path === l.href ? "active" : ""}>{l.label}</a>
+        ))}
+      </nav>
+      <div class="spacer"></div>
+      <form method="POST" action="/admin/logout">
+        <button type="submit" class="logout">Salir</button>
+      </form>
+    </header>
+
+    <main class="admin-main">
+      <slot />
+    </main>
+
+    <style>
+      .admin-body {
+        background: #f4f5f7;
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        color: #14161c;
+      }
+      .admin-header {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        padding: 16px 28px;
+        background: #fff;
+        border-bottom: 1px solid #dde1e8;
+      }
+      .brand { display: flex; align-items: center; }
+      .admin-nav { display: flex; gap: 20px; }
+      .admin-nav a {
+        color: #565e6c;
+        text-decoration: none;
+        font-size: 0.95rem;
+        padding-bottom: 2px;
+      }
+      .admin-nav a.active {
+        color: #334ba4;
+        border-bottom: 2px solid #334ba4;
+        font-weight: bold;
+      }
+      .spacer { flex: 1; }
+      .logout {
+        background: none;
+        border: none;
+        color: #565e6c;
+        font-size: 0.9rem;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+      .admin-main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 28px 64px;
+      }
+    </style>
+  </body>
+</html>
