@@ -270,6 +270,39 @@ body {
   color: #c9d3f5;
 }
 
+/*
+  Filetes (2026-08-05). La línea de 1px pasa a ser elemento de maquetación, no
+  solo el separador de las tarjetas: abre cada bloque de lectura por encima de
+  su enunciado, igual que un índice editorial, y ancla el texto a la rejilla en
+  vez de dejarlo flotando en el campo de color. El color se adapta al campo,
+  claro sobre azul y oscuro sobre claro, para que sea una insinuación y no una
+  raya que compita con el texto.
+*/
+.read .k {
+  padding-top: 18px;
+  border-top: 1px solid rgba(17, 21, 32, 0.2);
+}
+.f-azul .read .k,
+.f-navy .read .k {
+  border-top-color: rgba(238, 241, 247, 0.38);
+}
+/* El cierre también arranca con su filete, a la medida de su columna */
+.closer .closer-inner {
+  border-top: 1px solid rgba(238, 241, 247, 0.38);
+  padding-top: 34px;
+}
+
+/* Utilidad suelta, para cuando una página necesite una línea propia */
+.filete {
+  border: 0;
+  border-top: 1px solid rgba(17, 21, 32, 0.2);
+  margin: 0;
+}
+.f-azul .filete,
+.f-navy .filete {
+  border-top-color: rgba(238, 241, 247, 0.38);
+}
+
 /* Lectura anclada a columnas — nunca un max-width centrado que rompa la rejilla */
 .read {
   grid-column: 2/9;
