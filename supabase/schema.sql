@@ -117,7 +117,9 @@ create policy "cliente lee sus documentos storage" on storage.objects
 -- SIGUIENTE PASO (a mano, en el panel de Supabase — no por SQL):
 -- Authentication → Users → Add user
 --   Email:    atisdev@atis.studio   (Supabase exige email, no "usuario" plano)
---   Password: ATIS10
+--   Password: (elígela en el panel y NO la escribas aquí — este repositorio es
+--             público. Hasta el 2026-08-06 esta línea llevaba la contraseña real
+--             en texto plano y cualquiera podía leerla.)
 --   Auto Confirm User: sí
 --
 -- La función is_admin() de arriba compara ese email exacto — si usas otro,
