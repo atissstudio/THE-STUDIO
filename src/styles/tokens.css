@@ -507,23 +507,35 @@ body {
   `data-slides` (hoy .02 y .03 de la home); el resto de la web sigue en flujo
   normal, que para páginas de servicio se lee mejor.
 
-  Aquí las paradas son DOS, no las cuatro del móvil: primero izquierda, luego
-  derecha, y vuelta a empezar. En una pantalla ancha el baile de cuatro
-  posiciones (abajo, arriba, centro…) se lee como desorden; alternar un solo
-  eje da ritmo sin marear. La parada sigue emparejada con el barrido, igual que
-  en móvil: el tramo entra desde la derecha y se detiene a la izquierda, o al
-  revés, de modo que el movimiento tiene una lógica.
+  OJO, la diferencia con el móvil (corregido 2026-08-06, segunda pasada): aquí
+  la diapositiva es el BLOQUE ENTERO, no un párrafo. En móvil hace falta
+  trocear porque un bloque completo no cabe en un teléfono; en escritorio sí
+  cabe, y trocearlo convertía la web de escritorio en la de móvil: ocho
+  pantallas para lo que son dos ideas. Por eso aquí NO se tocan los tamaños de
+  letra: el bloque se lee a su escala normal, que es la que permite que quepa.
+
+  Las paradas son DOS: primero izquierda, luego derecha. La parada va
+  emparejada con el barrido — el bloque entra desde la derecha y se detiene a
+  la izquierda, o al revés — de modo que el movimiento tiene una lógica.
 
   El ancho máximo no es decorativo: una línea de texto de 1280 px es ilegible.
-  62 caracteres es la medida de lectura habitual.
+  62 caracteres es la medida de lectura habitual, y el titular necesita la suya
+  propia, más corta, porque va mucho más grande.
 */
 @media (min-width: 901px) {
-  /* En modo diapositiva manda la parada del tramo, no la alineación del bloque */
+  /*
+    En modo diapositiva manda la parada, no la alineación propia del bloque.
+    El `text-align` se deja fuera de aquí a propósito: lo ponen las reglas de
+    parada de más abajo, que llevan `.rv-panel` en el selector justamente para
+    empatar en especificidad con `.read.right` y ganarle por orden. Sin ese
+    `.rv-panel`, `.read.right` (0,3,0) le ganaba a la parada (0,2,0) y la
+    segunda diapositiva colocaba el bloque a la derecha con el texto alineado
+    a la izquierda.
+  */
   [data-slides] .read,
   [data-slides] .read.right {
     grid-column: 1/13;
     padding: 0;
-    text-align: left;
   }
   [data-slides] .rv-panel {
     min-height: 100svh;
@@ -542,39 +554,30 @@ body {
     transform: none;
   }
   /* Las dos paradas */
-  [data-slides] .rv-paso-0,
-  [data-slides] .rv-paso-2 {
+  [data-slides] .rv-panel.rv-paso-0,
+  [data-slides] .rv-panel.rv-paso-2 {
     align-items: flex-start;
     text-align: left;
   }
-  [data-slides] .rv-paso-1,
-  [data-slides] .rv-paso-3 {
+  [data-slides] .rv-panel.rv-paso-1,
+  [data-slides] .rv-panel.rv-paso-3 {
     align-items: flex-end;
     text-align: right;
   }
   [data-slides] .rv-panel > * {
     max-width: 62ch;
-    margin-bottom: 0;
-  }
-  [data-slides] .rv-panel > .k {
-    margin-bottom: 20px;
   }
   /*
-    El titular necesita su propia medida: con los 62ch del cuerpo, a este
-    tamaño, se iba a los 1280 px de la pantalla y quedaba en una sola línea
+    El titular necesita su propia medida: con los 62ch del cuerpo, al tamaño al
+    que va, se iba a los 1280 px de la pantalla y quedaba en una sola línea
     interminable. En tipografía de display la medida cómoda es más corta.
   */
   [data-slides] .rv-panel > h2 {
-    font-size: clamp(2.6rem, 4.6vw, 4rem);
-    max-width: 25ch;
-    margin: 0;
-  }
-  [data-slides] .rv-panel > p {
-    font-size: clamp(1.3rem, 1.9vw, 1.75rem);
-    line-height: 1.5;
+    max-width: 24ch;
   }
   [data-slides] .rv-panel > .read-cta {
-    margin-top: 36px;
+    margin-top: 12px;
+    margin-bottom: 0;
   }
   /* Proximity y sin `stop`, para no pelear con la rueda ni con el trackpad */
   html:has([data-slides] .rv-panel) {

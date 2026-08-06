@@ -137,13 +137,23 @@ export function revelarTexto() {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   /*
-    En móvil se trocean todos los bloques de lectura. En escritorio solo los
-    que lo piden con `data-slides` (hoy, .02 y .03 de la home): el resto se
-    lee mejor en flujo normal y trocearlo todo sería otra web.
+    Móvil y escritorio NO hacen lo mismo, a propósito:
+
+    - En móvil el bloque se trocea párrafo a párrafo, porque en una pantalla
+      de teléfono un bloque entero no cabe sin encoger la letra.
+    - En escritorio el bloque marcado con `data-slides` es UNA diapositiva
+      entera, con su enunciado, su titular y sus párrafos juntos. En una
+      pantalla ancha sí cabe, y trocearlo convertía la web de escritorio en la
+      de móvil: ocho pantallas para lo que son dos ideas.
   */
   const movil = matchMedia("(max-width: 900px)").matches;
-  const alcance = movil ? "[data-reveal] .read" : "[data-slides] .read";
-  document.querySelectorAll<HTMLElement>(alcance).forEach(agruparEnTramos);
+  if (movil) {
+    document.querySelectorAll<HTMLElement>("[data-reveal] .read").forEach(agruparEnTramos);
+  } else {
+    document
+      .querySelectorAll<HTMLElement>("[data-slides] .read")
+      .forEach((read) => read.classList.add("rv-panel"));
+  }
   prepararBarrido(Array.from(document.querySelectorAll<HTMLElement>(".rv-panel")));
 
   const bloques = document.querySelectorAll<HTMLElement>(SELECTOR);
