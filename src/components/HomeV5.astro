@@ -352,26 +352,29 @@ const destacados = todos.slice(0, 3);
     opacity: var(--p1, 1);
   }
 
-  /* .06 CTA a pantalla completa, entra como diapositiva */
+  /*
+    .06 CTA a pantalla completa (rehecho 2026-08-06).
+
+    Antes esto ocupaba DOS pantallas: el contenedor medía una y la CTA, pegada
+    dentro, arrancaba recortada del todo (`clip-path: inset(100% …)`) y solo se
+    destapaba cuando ya tenía un 35% en pantalla. Como el contenedor no lleva
+    fondo, lo que se veía mientras tanto era una pantalla entera de campo claro
+    vacío justo antes de la CTA. No aportaba nada y se notaba en cada visita.
+
+    Ahora la CTA ocupa su pantalla y ya está: la entrada la hace su contenido,
+    que sube y aparece. `svh` y no `vh` porque en Safari de iOS `vh` mide la
+    ventana grande y el campo se salía por abajo (ver CLAUDE.md §6).
+  */
   .cta-wrap {
-    height: 100vh;
     position: relative;
-    overflow: hidden;
   }
   .cta-screen {
-    position: sticky;
-    top: 0;
-    height: 100vh;
+    min-height: 100svh;
     display: grid;
     place-items: center;
     text-align: center;
     background: var(--azul);
     color: var(--plata-clara);
-    clip-path: inset(var(--cta-clip, 100%) 0 0 0);
-    transition: clip-path 1s cubic-bezier(0.7, 0, 0.2, 1);
-  }
-  .cta-screen.in {
-    --cta-clip: 0%;
   }
   .cta-inner {
     max-width: 640px;
@@ -571,7 +574,6 @@ const destacados = todos.slice(0, 3);
     .reel-house .r3 { opacity: 1; }
     .reel-p1, .reel-kick { opacity: 0; }
     .reel-p2 { opacity: 1; position: static; text-align: center; margin: 20px auto; }
-    .cta-screen { clip-path: none; }
     .cta-inner { transform: none; opacity: 1; }
   }
 </style>
