@@ -157,8 +157,17 @@ const tramos = escenas.length + 1;
 
     const pintar = () => {
       const r = historia.getBoundingClientRect();
-      const total = historia.offsetHeight - innerHeight;
-      const p = total > 0 ? clamp01(-r.top / total) : 0;
+      /*
+        El reparto se mide contra el escenario y contra su punto de anclaje, no
+        contra la ventana entera. Antes usaba `innerHeight` y `-r.top` a secas,
+        y como el escenario se pega por debajo de la barra, el progreso no
+        llegaba a cero hasta haber pasado esos 44 px: el primer gesto de scroll
+        no movía nada.
+      */
+      const alto = escenario.offsetHeight;
+      const barra = parseFloat(getComputedStyle(escenario).top) || 0;
+      const total = historia.offsetHeight - alto;
+      const p = total > 0 ? clamp01((barra - r.top) / total) : 0;
       const bruto = p * tramos;
       const i = Math.min(tramos - 1, Math.floor(bruto));
       const dentro = clamp01(bruto - i);
@@ -187,7 +196,13 @@ const tramos = escenas.length + 1;
         tercio del tramo y se ve entero.
       */
       const alejar = tramo(dentro, 0, 0.3);
-      const acercar = tramo(dentro, 0.34, 0.8);
+      /*
+        La PRIMERA escena no tiene de dónde alejarse: no hay isla anterior que
+        desandar. Reservarle igualmente el tercio del alejamiento dejaba 449 px
+        de scroll al entrar en la página en los que no se movía absolutamente
+        nada. Sin isla previa, el acercamiento arranca en el primer píxel.
+      */
+      const acercar = previa ? tramo(dentro, 0.34, 0.8) : tramo(dentro, 0, 0.8);
 
       if (!ultima) {
         const isla = pos[escenas[i].isla];
@@ -259,10 +274,19 @@ const tramos = escenas.length + 1;
     position: relative;
     height: calc(var(--tramos) * 190svh);
   }
+  /*
+    Se ancla DEBAJO de la barra, no en el cero (2026-08-06).
+
+    Con `top: 0` el escenario no se quedaba quieto hasta haber scrolleado los
+    44 px de la barra fija, así que el primer gesto movía la página en vez de
+    arrancar la animación; y una vez anclado, su franja superior quedaba tapada
+    por la barra. Anclándolo a la altura de la barra se pega desde el primer
+    píxel, porque la sección empieza justo ahí.
+  */
   .escenario {
     position: sticky;
-    top: 0;
-    height: 100svh;
+    top: var(--menu-h);
+    height: calc(100svh - var(--menu-h));
     overflow: hidden;
   }
 
