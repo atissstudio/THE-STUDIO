@@ -299,14 +299,22 @@ body {
   text-wrap: balance;
   color: var(--ink);
 }
+/*
+  Cuerpo justificado (2026-08-05), como pide el manual. La última línea se
+  queda alineada a la izquierda: justificarla también dejaría una línea suelta
+  con huecos enormes entre palabras. Con `hyphens: auto` en español el
+  navegador parte palabras largas por sílabas, que es lo que evita los "ríos"
+  de espacio en blanco típicos del justificado en columnas estrechas.
+*/
 .read p {
   font-family: var(--sans);
   font-size: clamp(1.08rem, 1.35vw, 1.32rem);
   line-height: 1.6;
   color: var(--ink);
   margin: 0 0 20px;
-  text-align: left;
-  hyphens: none;
+  text-align: justify;
+  text-align-last: left;
+  hyphens: auto;
 }
 .f-azul .read h2,
 .f-navy .read h2 {
@@ -691,15 +699,25 @@ a:has(.logo) {
 }
 
 @media (max-width: 900px) {
-  .read,
+  /*
+    Zigzag de lectura (2026-08-05). En móvil todos los bloques caían a ancho
+    completo y contra el mismo margen, así que una sección se parecía a la
+    siguiente y se perdía el hilo. Ahora se van pegando alternativamente a un
+    lado y a otro con una sangría del 13%: el ojo nota que avanza. La sangría
+    es pequeña a propósito, para no comerse la medida de lectura.
+  */
+  .read {
+    grid-column: 1/13;
+    padding: 0 13% 0 20px;
+  }
   .read.right {
     grid-column: 1/13;
-    padding: 0 20px;
-    text-align: left;
+    padding: 0 20px 0 13%;
+    text-align: right;
   }
   .read.right p {
     text-align: justify;
-    text-align-last: left;
+    text-align-last: right;
   }
   .cells,
   .datos {
