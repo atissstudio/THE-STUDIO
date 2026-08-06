@@ -1,6 +1,7 @@
 ---
 import "../styles/tokens.css";
 import { COOKIE, huella } from "../middleware";
+import { SITE_GATE_PASSWORD } from "astro:env/server";
 
 export const prerender = false;
 
@@ -11,10 +12,16 @@ let error = "";
 const crudo = Astro.url.searchParams.get("volver") ?? "/";
 const volver = crudo.startsWith("/") && !crudo.startsWith("//") ? crudo : "/";
 
-const password = import.meta.env.SITE_GATE_PASSWORD;
-if (!password) return Astro.redirect(volver);
+/*
+  En tiempo de ejecución, igual que el middleware (ver allí el porqué). Y si no
+  hay contraseña configurada NO se deja pasar: antes esto hacía
+  `return Astro.redirect(volver)`, o sea que la falta de configuración abría el
+  sitio en vez de cerrarlo. Ahora se avisa y no se entra.
+*/
+const password = SITE_GATE_PASSWORD;
+const sinConfigurar = !password;
 
-if (Astro.request.method === "POST") {
+if (!sinConfigurar && Astro.request.method === "POST") {
   const form = await Astro.request.formData();
   const intento = String(form.get("password") ?? "").trim();
 
@@ -50,19 +57,30 @@ if (Astro.request.method === "POST") {
         <span class="scr">the</span> <span class="hvy">STUDIO</span>
         <span class="scr">by</span> <span class="hvy">ATIS</span>
       </p>
-      <p class="msg">Todavía en obras. Escribe la contraseña para entrar.</p>
-      <form method="POST" class="form">
-        <input
-          type="password"
-          name="password"
-          placeholder="Contraseña"
-          aria-label="Contraseña de acceso"
-          autocomplete="current-password"
-          autofocus
-        />
-        <button type="submit">Entrar</button>
-      </form>
-      {error && <p class="err">{error}</p>}
+      {
+        sinConfigurar ? (
+          <p class="msg">
+            Todavía en obras. El acceso no está configurado todavía, así que de momento no
+            se puede entrar.
+          </p>
+        ) : (
+          <>
+            <p class="msg">Todavía en obras. Escribe la contraseña para entrar.</p>
+            <form method="POST" class="form">
+              <input
+                type="password"
+                name="password"
+                placeholder="Contraseña"
+                aria-label="Contraseña de acceso"
+                autocomplete="current-password"
+                autofocus
+              />
+              <button type="submit">Entrar</button>
+            </form>
+            {error && <p class="err">{error}</p>}
+          </>
+        )
+      }
     </main>
 
     <style>
