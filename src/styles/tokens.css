@@ -438,32 +438,57 @@ body {
   .rv-panel.rv-dentro {
     transform: none;
   }
-  /* Las cuatro paradas */
+  /*
+    Las cuatro paradas: post-its pegados en la pizarra (2026-08-06).
+
+    Antes solo cambiaba la ALTURA y el texto ocupaba siempre todo el ancho, así
+    que de lado a lado no se movía nada y el recorrido se leía como un scroll
+    vertical corriente. Ahora cada tramo es un post-it más estrecho que la
+    pantalla, y el hueco que sobra es lo que le permite saltar: izquierda,
+    derecha, izquierda, derecha, cambiando además de altura. El salto lateral
+    va emparejado con el barrido (`--desde` en reveal.ts): los pasos pares
+    entran desde la derecha y se pegan a la izquierda, y al revés.
+  */
   .rv-paso-0 {
     justify-content: flex-end;
+    align-items: flex-start;
     padding-bottom: 16svh;
     text-align: left;
   }
   .rv-paso-1 {
     justify-content: flex-start;
+    align-items: flex-end;
     padding-top: 18svh;
-    text-align: center;
+    text-align: right;
   }
   .rv-paso-2 {
     justify-content: center;
+    align-items: flex-start;
     text-align: left;
   }
   .rv-paso-3 {
     justify-content: flex-end;
+    align-items: flex-end;
     padding-bottom: 16svh;
     text-align: right;
   }
-  /* En bandera contra el lado del tramo, sin justificar ni partir (ver .read p) */
-  .rv-paso-3 > p {
-    text-align: right;
-  }
+  /*
+    Ancho de post-it: lo que sobra hasta el 100% es el hueco por el que salta.
+
+    `margin-inline: 0` no es de adorno: `.read.right p` lleva `margin-left:
+    auto` de la maquetación normal, y un margen automático GANA a `align-items`
+    en flex. Con él puesto, todos los post-it del segundo bloque se pegaban a la
+    derecha y la parada no pintaba nada.
+  */
   .rv-panel > * {
+    width: 82%;
+    margin-inline: 0;
     margin-bottom: 0;
+  }
+  /* Con `.read.right` delante para ganarle en peso a `.read.right p` (0,2,1),
+     que si no deja el segundo bloque entero pegado a la derecha. */
+  .read.right .rv-panel > * {
+    margin-inline: 0;
   }
   .rv-panel > .k {
     margin-bottom: 18px;
@@ -564,8 +589,15 @@ body {
     align-items: flex-end;
     text-align: right;
   }
+  /* `margin-inline: 0` por lo mismo que en móvil: el margen automático de
+     `.read.right p` le ganaría a la parada (ver el bloque de móvil). */
   [data-slides] .rv-panel > * {
     max-width: 62ch;
+  }
+  /* Mismo motivo de peso que en móvil: aquí el panel ES el `.read`, así que el
+     selector lleva las dos clases para superar a `.read.right p`. */
+  [data-slides] .read.rv-panel > * {
+    margin-inline: 0;
   }
   /*
     El titular necesita su propia medida: con los 62ch del cuerpo, al tamaño al
@@ -859,22 +891,17 @@ a:has(.logo) {
 
 @media (max-width: 900px) {
   /*
-    Zigzag de lectura (2026-08-05). En móvil todos los bloques caían a ancho
-    completo y contra el mismo margen, así que una sección se parecía a la
-    siguiente y se perdía el hilo. Ahora se van pegando alternativamente a un
-    lado y a otro con una sangría del 13%: el ojo nota que avanza. La sangría
-    es pequeña a propósito, para no comerse la medida de lectura.
+    Margen simétrico (2026-08-06). Antes cada bloque llevaba una sangría del
+    13% a un lado para dar zigzag, pero ese zigzag era del BLOQUE entero y solo
+    cambiaba una vez por sección. El salto de lado a lado lo hace ahora cada
+    post-it, tramo a tramo (ver `.rv-paso-*`), y una sangría asimétrica encima
+    le robaría el hueco por el que salta.
   */
-  .read {
-    grid-column: 1/13;
-    padding: 0 13% 0 20px;
-  }
+  .read,
   .read.right {
     grid-column: 1/13;
-    padding: 0 20px 0 13%;
-    text-align: right;
+    padding: 0 20px;
   }
-  /* Hereda el `text-align: right` del bloque; sin justificar ni partir. */
   .cells,
   .datos {
     grid-template-columns: 1fr;
