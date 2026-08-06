@@ -1,0 +1,195 @@
+---
+/*
+  Capa de shader interactiva (2026-08-05).
+
+  Un único lienzo WebGL fijo sobre toda la página, en modo de fusión
+  "soft-light". Esa es la clave de que se adapte al fondo sin tocar nada: la
+  fusión se calcula contra lo que haya debajo, así que la misma capa se ve
+  plateada sobre el azul, cálida sobre los campos claros y profunda sobre el
+  navy, sin que el shader necesite saber en qué sección está.
+
+  Reacciona al puntero: donde está el ratón (o el dedo) el ruido se estira y
+  se aclara, y la reacción persigue al cursor con retardo para que no vaya a
+  tirones.
+
+  Frenos, a propósito:
+    · No se carga nada si el visitante pide menos movimiento.
+    · No se carga nada si el navegador no trae WebGL.
+    · La biblioteca (OGL) se importa de forma diferida, después de pintar, así
+      que no retrasa la primera vista. Se eligió OGL y no three.js por peso:
+      unos cientos de KB frente a más de 20 MB en disco.
+    · Se detiene cuando la pestaña no está visible, para no gastar batería.
+
+  Aviso registrado en su día: INV-09 concluyó que el espectáculo tipo WebGL
+  resta credibilidad con el público de Atis. Por eso la capa es sutil (opacidad
+  baja) y no un fondo protagonista.
+*/
+---
+
+<canvas id="shader-fondo" aria-hidden="true"></canvas>
+
+<style>
+  #shader-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    mix-blend-mode: soft-light;
+  }
+  #shader-fondo.listo {
+    opacity: 0.55;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #shader-fondo {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const lienzo = document.getElementById("shader-fondo") as HTMLCanvasElement | null;
+
+  const quiereQuieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const hayWebGL = (() => {
+    try {
+      return !!document.createElement("canvas").getContext("webgl");
+    } catch {
+      return false;
+    }
+  })();
+
+  if (lienzo && !quiereQuieto && hayWebGL) {
+    // Diferido: primero que la página pinte, después el adorno.
+    const arrancar = async () => {
+      const { Renderer, Program, Mesh, Triangle, Vec2 } = await import("ogl");
+
+      const renderer = new Renderer({
+        canvas: lienzo,
+        alpha: true,
+        // En pantallas muy densas no hace falta el doble de píxeles para un
+        // ruido suave: la mitad se ve igual y cuesta la cuarta parte.
+        dpr: Math.min(devicePixelRatio, 1.5),
+      });
+      const gl = renderer.gl;
+
+      const vertex = `
+        attribute vec2 uv;
+        attribute vec2 position;
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = vec4(position, 0.0, 1.0);
+        }
+      `;
+
+      /*
+        Ruido de valor con tres capas, arrastrado por el tiempo y deformado
+        alrededor del puntero. No pinta color de marca: devuelve grises que la
+        fusión "soft-light" convierte en luz o sombra del campo que tenga
+        debajo. Por eso funciona igual sobre azul, claro o navy.
+      */
+      const fragment = `
+        precision mediump float;
+        varying vec2 vUv;
+        uniform float uTiempo;
+        uniform vec2 uRaton;
+        uniform vec2 uMedida;
+
+        float azar(vec2 p) {
+          return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+        }
+
+        float ruido(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          vec2 u = f * f * (3.0 - 2.0 * f);
+          return mix(
+            mix(azar(i + vec2(0.0, 0.0)), azar(i + vec2(1.0, 0.0)), u.x),
+            mix(azar(i + vec2(0.0, 1.0)), azar(i + vec2(1.0, 1.0)), u.x),
+            u.y
+          );
+        }
+
+        void main() {
+          vec2 uv = vUv;
+          float rel = uMedida.x / uMedida.y;
+          vec2 p = vec2(uv.x * rel, uv.y);
+          vec2 raton = vec2(uRaton.x * rel, uRaton.y);
+
+          // Cerca del puntero el ruido se estira: es la "interacción".
+          float d = distance(p, raton);
+          float tiron = exp(-d * 4.0);
+          p += (p - raton) * tiron * 0.28;
+
+          float t = uTiempo * 0.06;
+          float n = ruido(p * 3.0 + vec2(t, -t)) * 0.55;
+          n += ruido(p * 7.0 - vec2(t * 1.7, t)) * 0.3;
+          n += ruido(p * 15.0 + vec2(-t * 2.3, t * 1.3)) * 0.15;
+
+          // Un halo suave siguiendo al puntero, para que se note quién manda.
+          n += tiron * 0.22;
+
+          gl_FragColor = vec4(vec3(n), 1.0);
+        }
+      `;
+
+      const program = new Program(gl, {
+        vertex,
+        fragment,
+        uniforms: {
+          uTiempo: { value: 0 },
+          uRaton: { value: new Vec2(0.5, 0.5) },
+          uMedida: { value: new Vec2(1, 1) },
+        },
+      });
+
+      const malla = new Mesh(gl, { geometry: new Triangle(gl), program });
+
+      const medir = () => {
+        renderer.setSize(innerWidth, innerHeight);
+        program.uniforms.uMedida.value.set(innerWidth, innerHeight);
+      };
+      medir();
+      addEventListener("resize", medir, { passive: true });
+
+      // El puntero se persigue con retardo: el salto seco se vería artificial.
+      const destino = { x: 0.5, y: 0.5 };
+      const actual = { x: 0.5, y: 0.5 };
+      const apuntar = (x: number, y: number) => {
+        destino.x = x / innerWidth;
+        destino.y = 1 - y / innerHeight;
+      };
+      addEventListener("pointermove", (e) => apuntar(e.clientX, e.clientY), { passive: true });
+
+      let vivo = true;
+      document.addEventListener("visibilitychange", () => {
+        // Pestaña oculta: se para. No tiene sentido gastar batería en un adorno.
+        vivo = !document.hidden;
+        if (vivo) requestAnimationFrame(bucle);
+      });
+
+      let t0 = performance.now();
+      function bucle(ahora: number) {
+        if (!vivo) return;
+        actual.x += (destino.x - actual.x) * 0.06;
+        actual.y += (destino.y - actual.y) * 0.06;
+        program.uniforms.uRaton.value.set(actual.x, actual.y);
+        program.uniforms.uTiempo.value = (ahora - t0) / 1000;
+        renderer.render({ scene: malla });
+        requestAnimationFrame(bucle);
+      }
+      requestAnimationFrame(bucle);
+      lienzo!.classList.add("listo");
+    };
+
+    if ("requestIdleCallback" in window) {
+      (window as any).requestIdleCallback(arrancar, { timeout: 2500 });
+    } else {
+      addEventListener("load", () => setTimeout(arrancar, 400));
+    }
+  }
+</script>

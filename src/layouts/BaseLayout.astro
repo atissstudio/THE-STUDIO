@@ -4,6 +4,7 @@ import SEO from "../components/SEO.astro";
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
 import Loader from "../components/Loader.astro";
+import ShaderFondo from "../components/ShaderFondo.astro";
 
 interface Props {
   title: string;
@@ -81,6 +82,8 @@ const breadcrumbLd =
       </defs>
     </svg>
     {showLoader && <Loader />}
+    {/* Capa de shader interactiva, encima de los campos y en modo de fusión */}
+    <ShaderFondo />
     <Nav />
     {/*
       #page se desplaza hacia abajo cuando se abre el menú (clase .dropped) y
