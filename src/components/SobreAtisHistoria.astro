@@ -169,44 +169,65 @@ const tramos = escenas.length + 1;
       }
 
       const ultima = i === tramos - 1;
+      // La isla en la que se quedó la escena anterior, para poder desandar.
+      const previa = i > 0 && i - 1 < escenas.length ? pos[escenas[i - 1].isla] : null;
+
+      /*
+        DOS FASES POR ESCENA, y esta es la clave de que no se vea un corte:
+
+          1 · ALEJARSE  (0 → 0.30): se desanda el zoom de la isla anterior
+              hasta la vista general del archipiélago. A la vista, porque la
+              plata se retira antes (en 0.10), no después.
+          2 · ACERCARSE (0.34 → 0.80): desde la vista general se viaja y se
+              amplía sobre la isla de esta escena.
+
+        Antes el alejamiento sí existía, pero ocurría de un fotograma a otro
+        justo en el salto de escena y con la plata todavía encima: el ojo no
+        veía movimiento, veía un corte. Ahora el alejamiento ocupa casi un
+        tercio del tramo y se ve entero.
+      */
+      const alejar = tramo(dentro, 0, 0.3);
+      const acercar = tramo(dentro, 0.34, 0.8);
 
       if (!ultima) {
-        /*
-          Cada escena ARRANCA en la vista general del mar y desde ahí viaja
-          hasta su isla: el punto de mira se interpola del centro (50/50) a la
-          isla a la vez que crece el zoom. Antes el punto de mira ya estaba
-          puesto en la isla desde el primer fotograma, así que el mapa aparecía
-          desplazado, las islas del este se salían por la derecha y la vista
-          del archipiélago entero no llegaba a verse nunca.
-        */
         const isla = pos[escenas[i].isla];
+        let ox, oy, z;
+        if (previa && alejar < 1) {
+          ox = lerp(previa.x, 50, alejar);
+          oy = lerp(previa.y, 50, alejar);
+          z = lerp(zoomDe(previa), 1, alejar);
+        } else {
+          ox = lerp(50, isla.x, acercar);
+          oy = lerp(50, isla.y, acercar);
+          z = lerp(1, zoomDe(isla), acercar);
+        }
+        mapa.style.setProperty("--ox", `${ox}%`);
+        mapa.style.setProperty("--oy", `${oy}%`);
+        mapa.style.setProperty("--z", `${z}`);
+
         /*
-          El viaje empieza más tarde (0.12) para dar tiempo a que la plata de
-          la escena anterior se retire y se vea otra vez el archipiélago
-          entero. Antes el zoom se reiniciaba de golpe justo cuando la plata
-          desaparecía, y el salto se notaba.
+          La plata se va pronto (para descubrir el alejamiento) y vuelve al
+          final. Se toma el mayor de los dos para que el relevo entre una y
+          otra no deje ni un fotograma transparente.
         */
-        const t = tramo(dentro, 0.12, 0.68);
-        mapa.style.setProperty("--ox", `${lerp(50, isla.x, t)}%`);
-        mapa.style.setProperty("--oy", `${lerp(50, isla.y, t)}%`);
-        mapa.style.setProperty("--z", `${lerp(1, zoomDe(isla), t)}`);
-        /*
-          La plata sale de escena al principio (salvo en la primera, que ya
-          empieza sin ella) y vuelve al final: quitar zoom, ver el mapa, volver
-          a acercarse. Se toma el mayor de los dos valores para que el paso de
-          una a otra no deje un hueco transparente.
-        */
-        const saliendo = i === 0 ? 0 : 1 - tramo(dentro, 0, 0.16);
-        const entrando = tramo(dentro, 0.62, 0.8);
+        const saliendo = i === 0 ? 0 : 1 - tramo(dentro, 0, 0.1);
+        const entrando = tramo(dentro, 0.7, 0.86);
         escenario.style.setProperty("--plata-op", `${Math.max(saliendo, entrando)}`);
         // El texto entra cuando la plata ya manda, para leerse en negro.
-        escenario.style.setProperty("--t-op", `${tramo(dentro, 0.72, 0.86)}`);
+        escenario.style.setProperty("--t-op", `${tramo(dentro, 0.78, 0.9)}`);
       } else {
-        // Sale del fondo: la plata se retira y el mar se descubre entero.
-        mapa.style.setProperty("--ox", "50%");
-        mapa.style.setProperty("--oy", "50%");
-        mapa.style.setProperty("--z", `${lerp(2.4, 1, tramo(dentro, 0, 0.55))}`);
-        escenario.style.setProperty("--plata-op", `${1 - tramo(dentro, 0, 0.4)}`);
+        /*
+          Cierre: también se aleja desde la última isla, no desde un valor
+          inventado. Antes partía de un zoom fijo de 2.4 que no tenía nada que
+          ver con dónde se había quedado la escena anterior, y por eso el
+          arranque daba un salto.
+        */
+        const desde = previa ? zoomDe(previa) : 2.4;
+        const salir = tramo(dentro, 0, 0.5);
+        mapa.style.setProperty("--ox", `${lerp(previa ? previa.x : 50, 50, salir)}%`);
+        mapa.style.setProperty("--oy", `${lerp(previa ? previa.y : 50, 50, salir)}%`);
+        mapa.style.setProperty("--z", `${lerp(desde, 1, salir)}`);
+        escenario.style.setProperty("--plata-op", `${1 - tramo(dentro, 0, 0.16)}`);
         escenario.style.setProperty("--t-op", `${tramo(dentro, 0.35, 0.6)}`);
       }
       escenario.classList.toggle("sobre-plata", !ultima);
@@ -351,13 +372,20 @@ const tramos = escenas.length + 1;
   .cierre .texto {
     max-width: 620px;
     padding: 42px 46px;
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(24px) saturate(1.5);
-    -webkit-backdrop-filter: blur(24px) saturate(1.5);
-    border: 1px solid rgba(255, 255, 255, 0.24);
+    /*
+      Cristal con cuerpo. La primera versión iba al 12% de blanco y sobre el
+      mar, que es casi negro, no llegaba a formar caja: las islas se veían
+      nítidas cruzando por detrás del texto. Ahora el tinte es oscuro y bastante
+      más opaco, así que el panel existe aunque el navegador no soporte
+      backdrop-filter, y las islas quedan desenfocadas detrás donde sí lo hace.
+    */
+    background: rgba(8, 12, 30, 0.55);
+    backdrop-filter: blur(26px) saturate(1.4);
+    -webkit-backdrop-filter: blur(26px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, 0.28);
     box-shadow:
-      0 26px 70px -30px rgba(0, 0, 0, 0.7),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      0 26px 70px -24px rgba(0, 0, 0, 0.8),
+      inset 0 1px 0 rgba(255, 255, 255, 0.32);
   }
   .cierre h2 {
     font-family: var(--sans);
