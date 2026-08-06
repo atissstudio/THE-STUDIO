@@ -77,6 +77,13 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   /*
+    Ninguna palabra se parte, en ninguna parte de la web (2026-08-06, regla
+    cerrada por Alejandro). Es el valor por defecto del navegador, pero se deja
+    escrito a propósito: el justificado tienta a reactivar `hyphens: auto` para
+    tapar los ríos de espacio, y la respuesta correcta es no justificar.
+  */
+  hyphens: manual;
+  /*
     `clip`, no `hidden` (2026-08-05). `overflow-x: hidden` convierte al body en
     un contenedor de scroll, y eso ROMPE `position: sticky` en todo lo que
     cuelga de él: los escenarios anclados (la casa de la home, la historia de
@@ -333,11 +340,17 @@ body {
   color: var(--ink);
 }
 /*
-  Cuerpo justificado (2026-08-05), como pide el manual. La última línea se
-  queda alineada a la izquierda: justificarla también dejaría una línea suelta
-  con huecos enormes entre palabras. Con `hyphens: auto` en español el
-  navegador parte palabras largas por sílabas, que es lo que evita los "ríos"
-  de espacio en blanco típicos del justificado en columnas estrechas.
+  Cuerpo en bandera, NUNCA justificado ni partido (2026-08-06, decisión de
+  Alejandro: "que las palabras se corten está prohibido en toda la web").
+
+  Las dos cosas van juntas y por eso caen juntas. El justificado del 2026-08-05
+  solo se sostenía porque `hyphens: auto` partía las palabras largas; sin
+  partir, justificar en español abre ríos de espacio en blanco entre palabras y
+  queda peor que el problema que venía a resolver. Así que bandera: el texto se
+  alinea contra el lado de su bloque (izquierda por defecto, derecha en
+  `.read.right`) y el borde contrario queda irregular, que es lo correcto.
+
+  `text-wrap: pretty` es lo que evita la línea final de una sola palabra.
 */
 .read p {
   font-family: var(--sans);
@@ -345,9 +358,7 @@ body {
   line-height: 1.6;
   color: var(--ink);
   margin: 0 0 20px;
-  text-align: justify;
-  text-align-last: left;
-  hyphens: auto;
+  text-wrap: pretty;
 }
 .f-azul .read h2,
 .f-navy .read h2 {
@@ -447,9 +458,9 @@ body {
     padding-bottom: 16svh;
     text-align: right;
   }
+  /* En bandera contra el lado del tramo, sin justificar ni partir (ver .read p) */
   .rv-paso-3 > p {
-    text-align: justify;
-    text-align-last: right;
+    text-align: right;
   }
   .rv-panel > * {
     margin-bottom: 0;
@@ -778,10 +789,7 @@ a:has(.logo) {
     padding: 0 20px 0 13%;
     text-align: right;
   }
-  .read.right p {
-    text-align: justify;
-    text-align-last: right;
-  }
+  /* Hereda el `text-align: right` del bloque; sin justificar ni partir. */
   .cells,
   .datos {
     grid-template-columns: 1fr;
