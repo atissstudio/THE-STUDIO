@@ -320,14 +320,48 @@ const pasos = [
       margin-top: 26px;
     }
     /*
-      Esta sección ya tiene su propio scroll interno (lista apilada en
-      móvil, ver script al final). No entra en el snap de diapositivas
-      general de tokens.css: forzarla a una sola pantalla cortaría los
-      4 pasos a la mitad.
+      Diapositivas también en móvil (2026-08-05). Antes los cuatro pasos se
+      apilaban como una lista larga; ahora cada paso es una pantalla completa,
+      y se encadenan con un ajuste suave al parar.
+
+      No se usa el mecanismo de escritorio (escenario pegado y pasos
+      superpuestos gobernados por el scroll): en un teléfono sale más robusto
+      dejarlos en flujo normal, uno detrás de otro, y animar la entrada de cada
+      uno. Si el JS no llega, se siguen leyendo los cuatro, solo que sin la
+      animación.
     */
     .proceso {
-      scroll-snap-align: none;
+      scroll-snap-type: y proximity;
       min-height: 0;
+    }
+    .proceso .paso {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      scroll-snap-align: start;
+      padding: 0 20px;
+      /* Entra desde abajo, como una carta que se pone encima de la anterior */
+      transform: translateY(7svh);
+      transition:
+        transform 0.8s cubic-bezier(0.2, 0.75, 0.2, 1),
+        opacity 0.6s ease;
+      opacity: 0.35;
+    }
+    .proceso .paso.a-la-vista {
+      transform: none;
+      opacity: 1;
+    }
+    /* El índice lateral no cabe en móvil y duplicaría la información */
+    .proceso .pistas {
+      display: none;
+    }
+  }
+  @media (max-width: 900px) and (prefers-reduced-motion: reduce) {
+    .proceso .paso {
+      transform: none;
+      opacity: 1;
+      transition: none;
     }
   }
 
@@ -461,6 +495,25 @@ const pasos = [
     cabe.addEventListener("change", aplicarModo);
     reduce.addEventListener("change", aplicarModo);
     window.addEventListener("resize", alScroll, { passive: true });
+
+    /*
+      Móvil: cada paso es una pantalla en flujo normal (ver la media query) y
+      se anima al entrar. Va por observador, no por el scroll gobernado de
+      escritorio, porque en un teléfono es más barato y no depende de que el
+      escenario quede anclado. Red de seguridad a los 6 s: el paso parte
+      atenuado desde el CSS, así que si el observador no llegara a disparar
+      se enciende igual.
+    */
+    if ("IntersectionObserver" in window) {
+      const verse = new IntersectionObserver(
+        (entradas) => entradas.forEach((e) => e.target.classList.toggle("a-la-vista", e.isIntersecting)),
+        { threshold: 0.25 }
+      );
+      pasos.forEach((p) => verse.observe(p));
+    } else {
+      pasos.forEach((p) => p.classList.add("a-la-vista"));
+    }
+    setTimeout(() => pasos.forEach((p) => p.classList.add("a-la-vista")), 6000);
   }
 
   /*

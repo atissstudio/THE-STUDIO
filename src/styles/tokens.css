@@ -825,11 +825,18 @@ a:has(.logo) {
     solo donde son intencionadas y aportan (la historia del archipiélago en
     /sobre-atis), que declara su propio snap en su componente.
   */
+  /*
+    100svh, no 100vh (2026-08-05). En Safari de iOS, `vh` mide la ventana
+    GRANDE, la de cuando la barra del navegador ya se ha plegado. Como la barra
+    empieza desplegada, cada campo nacía más alto que la pantalla visible y el
+    final de la página quedaba cortado por abajo — el fallo que Alejandro veía
+    en su móvil. `svh` mide la ventana pequeña, que es la estable.
+  */
   .f-azul,
   .f-claro,
   .f-blanco,
   .f-navy {
-    min-height: 100vh;
+    min-height: 100svh;
   }
 
   /*
