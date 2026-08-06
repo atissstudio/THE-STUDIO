@@ -41,7 +41,12 @@
     mix-blend-mode: soft-light;
   }
   #shader-fondo.listo {
-    opacity: 0.55;
+    /*
+      Bajado de 0.55 a 0.28: sobre el azul del campo, la fusión soft-light a
+      media opacidad dejaba manchas grandes que parecían suciedad más que
+      textura. A este nivel se percibe como grano, que es lo que se busca.
+    */
+    opacity: 0.28;
   }
   @media (prefers-reduced-motion: reduce) {
     #shader-fondo {
@@ -126,9 +131,9 @@
           p += (p - raton) * tiron * 0.28;
 
           float t = uTiempo * 0.06;
-          float n = ruido(p * 3.0 + vec2(t, -t)) * 0.55;
-          n += ruido(p * 7.0 - vec2(t * 1.7, t)) * 0.3;
-          n += ruido(p * 15.0 + vec2(-t * 2.3, t * 1.3)) * 0.15;
+          float n = ruido(p * 6.0 + vec2(t, -t)) * 0.5;
+          n += ruido(p * 14.0 - vec2(t * 1.7, t)) * 0.32;
+          n += ruido(p * 30.0 + vec2(-t * 2.3, t * 1.3)) * 0.18;
 
           // Un halo suave siguiendo al puntero, para que se note quién manda.
           n += tiron * 0.22;

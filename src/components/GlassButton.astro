@@ -1,51 +1,56 @@
 ---
+/*
+  Llamada a la acción, estilo único de todo el sitio (2026-08-05).
+
+  Antes esto era una píldora de cristal con contorno y sombra, y convivía con un
+  segundo estilo de enlace subrayado. En la misma pantalla de la home se veían
+  los dos y no había forma de saber cuál mandaba. Se queda el segundo: sin caja,
+  sin contorno, solo el texto con su filete debajo. Encaja además con la
+  contención del manual mejor que la píldora.
+
+  El color se hereda del campo (ver tokens.css): plata clara sobre azul y navy,
+  azul Atis sobre los campos claros. El componente no necesita saber dónde está.
+
+  `withDot` sigue en la interfaz aunque ya no pinte nada: lo pasan varias
+  páginas y no compensa tocarlas todas para quitar algo inofensivo.
+*/
 interface Props {
   href?: string;
   type?: "button" | "submit";
   withDot?: boolean;
 }
-const { href, type = "button", withDot = true } = Astro.props;
+const { href, type = "button" } = Astro.props;
 const Tag = href ? "a" : "button";
 ---
 
-<Tag class="glass" href={href} type={href ? undefined : type}>
-  {withDot && <span class="dot"></span>}
+<Tag class="cta" href={href} type={href ? undefined : type}>
   <slot />
 </Tag>
 
 <style>
-  .glass {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    border-radius: 14px;
-    padding: 12px 22px;
+  .cta {
+    display: inline-block;
     font-family: var(--sans);
     font-weight: 700;
-    font-size: 0.9rem;
-    cursor: pointer;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
     text-decoration: none;
+    cursor: pointer;
+    background: none;
     border: 0;
-    color: var(--azul-deep);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    background: rgba(51, 75, 164, 0.12);
-    backdrop-filter: blur(16px) saturate(1.5);
-    -webkit-backdrop-filter: blur(16px) saturate(1.5);
-    box-shadow: 0 16px 34px -12px rgba(51, 75, 164, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.9),
-      inset 0 -10px 20px -14px rgba(51, 75, 164, 0.4);
+    padding: 0 0 3px;
+    color: var(--azul);
+    border-bottom: 1px solid rgba(51, 75, 164, 0.4);
+    transition:
+      border-color 0.25s ease,
+      color 0.25s ease;
   }
-  .glass:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 22px 44px -12px rgba(51, 75, 164, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  .cta:hover {
+    border-bottom-color: var(--azul);
   }
-  .dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #eef1f7, #9aa0ab);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
-    flex: none;
+  .cta:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
   }
 </style>

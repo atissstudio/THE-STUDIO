@@ -89,7 +89,7 @@ const destacados = todos.slice(0, 3);
     <p><span class="em on-light">Lo diseñamos contigo.</span> No una plantilla genérica. Un plan hecho a la medida de tu negocio, de tu gente y de tu momento.</p>
     <p><span class="em on-light">Lo implementamos de la mano.</span> Sin dejarte solo con la tecnología. Te explicamos cada paso mientras lo hacemos.</p>
     <p class="read-cta">
-      <a class="inline-link" href="/como-trabajamos">Ver el método completo, paso a paso</a>
+      <GlassButton href="/como-trabajamos">Ver el método completo, paso a paso</GlassButton>
     </p>
   </div>
 </section>
@@ -166,26 +166,25 @@ const destacados = todos.slice(0, 3);
 
 <style>
   /*
-    Portada (rehecha 2026-08-05). Antes el logo vivía en un hueco casi cuadrado
-    con relleno de sobra arriba y abajo, y debajo colgaban una cinta rotatoria y
-    una franja de datos que dejaban el campo azul descosido por los bordes.
-
-    Ahora la portada es un campo azul que llena la pantalla de arriba abajo, con
-    el logo y el claim como único contenido, centrados en bloque: el hueco del
-    logo es un rectángulo ancho, no un cuadrado, y todo sube hacia el centro
-    óptico en vez de quedar flotando.
+    Portada: el logo pegado arriba y a sangre, una línea que lo separa, y
+    debajo el carril con la frase corriendo. Antes el conjunto iba centrado en
+    vertical y el logo quedaba flotando en mitad del campo.
+  */
+  /*
+    La portada mide lo que miden el logo y el carril, no una pantalla entera.
+    Con `min-height: 100svh` y el contenido arriba quedaban casi dos tercios de
+    campo azul vacío debajo del carril antes de que empezara la casa.
   */
   .hero {
-    min-height: 100svh;
-    /* Sube al centro óptico: centrado exacto se ve caído hacia abajo */
-    padding: 0 0 9vh;
+    padding: 0;
     overflow: hidden;
-    align-content: center;
+    align-content: start;
   }
   .logo-h1 {
     grid-column: 1/13;
     margin: 0;
-    padding: 0 20px;
+    /* Casi sin margen: el wordmark manda y llega al borde */
+    padding: calc(var(--menu-h) * 0.6) 12px 0;
     line-height: 0.86;
     display: flex;
     align-items: baseline;
@@ -202,7 +201,7 @@ const destacados = todos.slice(0, 3);
   */
   .claim-banner {
     grid-column: 1/13;
-    margin-top: calc(var(--row) * 0.55);
+    margin-top: calc(var(--row) * 0.42);
     overflow: hidden;
     border-top: 1px solid rgba(255, 255, 255, 0.85);
     border-bottom: 1px solid rgba(255, 255, 255, 0.85);
@@ -220,14 +219,18 @@ const destacados = todos.slice(0, 3);
     color: var(--plata-clara);
     white-space: nowrap;
   }
-  /* Se desplaza justo la mitad: como el contenido está duplicado, el salto
-     al reiniciar cae en un punto idéntico y no se nota. */
+  /*
+    Corre de IZQUIERDA a DERECHA: parte medio carril desplazada hacia la
+    izquierda y avanza hasta cero. Es justo la mitad porque el contenido está
+    duplicado, así que al reiniciar el bucle cae en un punto idéntico y no se
+    ve la costura.
+  */
   @keyframes desfile {
     from {
-      transform: translateX(0);
+      transform: translateX(-50%);
     }
     to {
-      transform: translateX(-50%);
+      transform: translateX(0);
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -428,12 +431,10 @@ const destacados = todos.slice(0, 3);
     font-size: 0.95rem;
     color: var(--ink);
   }
-  /* El botón mantiene el cristal completo (mismo lenguaje que el resto de la web) */
-  .ctaform :global(.glass) {
+  /* La CTA ya no es una píldora, así que solo hay que evitar que se encoja */
+  .ctaform :global(.cta) {
     flex: 0 0 auto;
     white-space: nowrap;
-    padding: 16px 26px;
-    font-size: 0.78rem;
   }
   /*
     Campo de "qué necesitas": visible por defecto (si el JS no llega a
@@ -467,19 +468,6 @@ const destacados = todos.slice(0, 3);
 
   .read-cta {
     margin-top: 28px;
-  }
-  .inline-link {
-    font-size: 0.76rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--azul);
-    text-decoration: none;
-    border-bottom: 1px solid rgba(51, 75, 164, 0.4);
-    padding-bottom: 3px;
-  }
-  .inline-link:hover {
-    border-bottom-color: var(--azul);
   }
   .head-link {
     margin-top: 18px;
