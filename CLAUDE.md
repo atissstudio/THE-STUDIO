@@ -95,6 +95,9 @@ Las sesiones se encarecen porque **cada mensaje reenvía todo el contexto**. Reg
 
 ---
 
+16. **La referencia es SIEMPRE la web publicada, no `localhost` (norma, 2026-08-06).** Alejandro mira, juzga y pide correcciones sobre **https://the-studio-delta.vercel.app**. Claude tiene que revisar **sobre esa misma web**, no sobre su servidor local, o se está hablando de dos sitios distintos sin saberlo. Consecuencia obligada: **antes de dar nada por verificado, el trabajo tiene que estar subido y desplegado**. Si hay commits sin `git push`, lo publicado es código viejo y cualquier comprobación contra producción es falsa — en ese caso Claude lo dice y pide el push antes de verificar. `localhost` vale para el ciclo rápido mientras se construye; **la palabra final la tiene lo publicado**.
+    - Rutas de acceso, para no confundirlas: **panel interno `/admin/login`** (cuenta `atisdev@atis.studio`, la que compara `is_admin()`) · **portal de cliente `/portal/login`** (busca ficha en la tabla `clientes`; un correo sin ficha da "Ese correo no tiene una ficha de cliente asociada", que es lo correcto, no un fallo).
+
 ## 6. Estado actual y siguiente paso
 
 - Identidad visual **cerrada y actualizada a v5** (ver §4), logo **vectorizado** (Arial + Pinyon Script). Investigaciones INV-01…08 **hechas** (falta INV-04 · Precio, en espera).
