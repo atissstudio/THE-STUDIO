@@ -6,33 +6,64 @@ import { createSupabaseServerClient } from "../../lib/supabase";
 
 export const prerender = false;
 
+/*
+  Acceso por CONTRASEÑA, con dos vías: entrar o crear cuenta (2026-08-05).
+
+  Antes era un enlace mágico por correo. Se cambió por dos motivos: metía
+  fricción (salir del sitio, abrir el buzón, volver) y, sobre todo, dejaba el
+  portal inaccesible en pruebas, porque las cuentas de trabajo usan buzones que
+  no existen de verdad y el enlace no llegaba a ninguna parte.
+
+  Quién puede entrar no lo decide este formulario: crear cuenta aquí solo
+  sirve para ponerse una contraseña. Si el correo no tiene ficha de cliente en
+  la base, `requireClient` cierra la sesión y devuelve aquí con un aviso. Alta
+  de clientes, solo desde /admin.
+*/
+
 let error = "";
-let sent = false;
+let aviso = "";
+const modo = Astro.url.searchParams.get("modo") === "crear" ? "crear" : "entrar";
 
 const urlError = Astro.url.searchParams.get("error");
-if (urlError === "sin-acceso") error = "Ese correo no tiene una ficha de cliente asociada. Contacta con nosotros.";
-if (urlError === "enlace-invalido") error = "El enlace ha caducado o no es válido. Pide uno nuevo.";
+if (urlError === "sin-acceso")
+  error = "Ese correo no tiene una ficha de cliente asociada. Escríbenos y te damos de alta.";
 
 if (Astro.request.method === "POST") {
   const form = await Astro.request.formData();
   const email = String(form.get("email") ?? "").trim();
+  const password = String(form.get("password") ?? "");
+  const accion = String(form.get("accion") ?? "entrar");
 
   if (!email || !email.includes("@")) {
     error = "Escribe un correo válido.";
+  } else if (password.length < 6) {
+    error = "La contraseña necesita al menos 6 caracteres.";
   } else {
     try {
       const supabase = createSupabaseServerClient(Astro.request, Astro.cookies);
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: `${Astro.url.origin}/portal/auth/confirm` },
-      });
-      if (otpError) error = otpError.message;
-      else sent = true;
+
+      if (accion === "crear") {
+        const { data, error: e } = await supabase.auth.signUp({ email, password });
+        if (e) {
+          error = e.message;
+        } else if (data.session) {
+          return Astro.redirect("/portal");
+        } else {
+          // Supabase tiene activada la confirmación por correo en este proyecto.
+          aviso = "Cuenta creada. Confirma el correo que te hemos enviado y ya podrás entrar.";
+        }
+      } else {
+        const { error: e } = await supabase.auth.signInWithPassword({ email, password });
+        if (e) error = "Correo o contraseña incorrectos.";
+        else return Astro.redirect("/portal");
+      }
     } catch {
       error = "El portal no está conectado todavía (faltan las claves de Supabase).";
     }
   }
 }
+
+const esCrear = modo === "crear";
 ---
 
 <!doctype html>
@@ -40,6 +71,7 @@ if (Astro.request.method === "POST") {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -48,28 +80,48 @@ if (Astro.request.method === "POST") {
   </head>
   <body class="portal-login-body">
     <section class="login-wrap">
-      <div class="login-logo"><Logo size="1.6rem" /></div>
+      <div class="login-logo"><Logo size="1.6rem" onLight /></div>
       <p class="kick">Portal de cliente</p>
-      <h1>Entra a tu portal</h1>
+      <h1>{esCrear ? "Crea tu acceso" : "Entra a tu portal"}</h1>
 
-      {sent ? (
-        <p class="lead">
-          Te hemos mandado un enlace a tu correo. Ábrelo desde este mismo dispositivo para entrar —
-          caduca a los 60 minutos.
-        </p>
+      <div class="vias" role="tablist">
+        <a href="/portal/login" class={esCrear ? "" : "activa"} role="tab" aria-selected={!esCrear}>
+          Iniciar sesión
+        </a>
+        <a href="/portal/login?modo=crear" class={esCrear ? "activa" : ""} role="tab" aria-selected={esCrear}>
+          Crear cuenta
+        </a>
+      </div>
+
+      {aviso ? (
+        <p class="aviso">{aviso}</p>
       ) : (
-        <>
-          <p class="lead">Escribe el correo con el que te dimos de alta y te mandamos un enlace de acceso.</p>
-          <form method="POST">
-            <label>
-              Correo
-              <input type="email" name="email" autocomplete="email" required />
-            </label>
-            {error && <p class="error">{error}</p>}
-            <GlassButton type="submit">Enviar enlace</GlassButton>
-          </form>
-        </>
+        <form method="POST">
+          <input type="hidden" name="accion" value={esCrear ? "crear" : "entrar"} />
+          <label>
+            Correo
+            <input type="email" name="email" autocomplete="email" required />
+          </label>
+          <label>
+            Contraseña
+            <input
+              type="password"
+              name="password"
+              minlength="6"
+              autocomplete={esCrear ? "new-password" : "current-password"}
+              required
+            />
+          </label>
+          {error && <p class="error">{error}</p>}
+          <GlassButton type="submit">{esCrear ? "Crear cuenta" : "Entrar"}</GlassButton>
+        </form>
       )}
+
+      <p class="pie">
+        {esCrear
+          ? "Usa el mismo correo con el que te dimos de alta."
+          : "¿Primera vez? Crea tu cuenta con el correo que nos diste."}
+      </p>
     </section>
 
     <style>
@@ -78,7 +130,7 @@ if (Astro.request.method === "POST") {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--f-azul, #334ba4);
+        background: var(--azul);
       }
       .login-wrap {
         max-width: 420px;
@@ -88,7 +140,9 @@ if (Astro.request.method === "POST") {
         background: #fff;
         border-radius: 18px;
       }
-      .login-logo { margin-bottom: 24px; }
+      .login-logo {
+        margin-bottom: 24px;
+      }
       .kick {
         font-family: var(--sans);
         font-size: 0.72rem;
@@ -104,16 +158,38 @@ if (Astro.request.method === "POST") {
         text-transform: uppercase;
         letter-spacing: -0.01em;
         font-size: clamp(1.5rem, 4vw, 2rem);
-        margin: 0 0 12px;
+        margin: 0 0 20px;
       }
-      .lead {
+      /* Las dos vías, visibles a la vez: se ve que existe la opción de crear */
+      .vias {
+        display: flex;
+        gap: 4px;
+        margin: 0 0 24px;
+        background: #f4f5f7;
+        border-radius: 12px;
+        padding: 4px;
+      }
+      .vias a {
+        flex: 1;
+        padding: 9px 8px;
+        border-radius: 9px;
         font-family: var(--sans);
+        font-size: 0.84rem;
+        font-weight: 700;
         color: var(--muted);
-        font-style: italic;
-        font-size: 0.92rem;
-        margin: 0 0 28px;
+        text-decoration: none;
       }
-      form { display: flex; flex-direction: column; gap: 16px; text-align: left; }
+      .vias a.activa {
+        background: #fff;
+        color: var(--azul);
+        box-shadow: 0 2px 8px -3px rgba(17, 21, 32, 0.3);
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        text-align: left;
+      }
       label {
         display: flex;
         flex-direction: column;
@@ -147,7 +223,25 @@ if (Astro.request.method === "POST") {
         padding: 10px 14px;
         margin: 0;
       }
-      form :global(.glass) { align-self: center; margin-top: 4px; }
+      .aviso {
+        font-family: var(--sans);
+        font-size: 0.9rem;
+        color: #1e6b3a;
+        background: rgba(30, 107, 58, 0.1);
+        border-radius: 10px;
+        padding: 14px;
+        margin: 0;
+      }
+      .pie {
+        font-family: var(--sans);
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin: 20px 0 0;
+      }
+      form :global(.glass) {
+        align-self: center;
+        margin-top: 4px;
+      }
     </style>
   </body>
 </html>
