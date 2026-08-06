@@ -77,11 +77,63 @@ function agruparEnTramos(read: HTMLElement) {
   }
 }
 
+/*
+  Barrido de pizarra (solo móvil). Cada tramo entra deslizándose de un lado, y
+  al asentarse coloca el texto en un sitio distinto del anterior. La posición
+  NO es aleatoria: va emparejada con la dirección del barrido, de modo que el
+  texto siempre se detiene en el lado hacia el que venía viajando. Así el
+  movimiento se lee como una pizarra que corre, y no como cuatro animaciones
+  sueltas.
+
+  Cuatro pasos, y vuelta a empezar:
+    0 · entra por la derecha  → se queda abajo, a la izquierda
+    1 · entra por la izquierda → se queda arriba, centrado
+    2 · entra por la derecha  → se queda en el centro, a la izquierda
+    3 · entra por la izquierda → se queda abajo, a la derecha
+*/
+function prepararBarrido(paneles: HTMLElement[]) {
+  paneles.forEach((panel, n) => {
+    const paso = n % 4;
+    panel.classList.add(`rv-paso-${paso}`);
+    // Los pasos impares llegan desde la izquierda; los pares, desde la derecha.
+    panel.style.setProperty("--desde", paso % 2 === 0 ? "14vw" : "-14vw");
+  });
+
+  const mostrarTodos = () => paneles.forEach((p) => p.classList.add("rv-dentro"));
+
+  if (!("IntersectionObserver" in window)) {
+    mostrarTodos();
+    return;
+  }
+
+  const io = new IntersectionObserver(
+    (entradas) => {
+      entradas.forEach((e) => {
+        // Se rearma al salir del todo, para que el barrido se repita al volver.
+        if (e.isIntersecting) e.target.classList.add("rv-dentro");
+        else if (e.intersectionRatio === 0) e.target.classList.remove("rv-dentro");
+      });
+    },
+    { threshold: [0, 0.12] }
+  );
+  paneles.forEach((p) => io.observe(p));
+
+  /*
+    Redes de seguridad. El tramo parte invisible y es el observador quien lo
+    enciende, así que si algo lo dejara mudo el texto no llegaría a verse
+    nunca. A los 6 s se encienden todos pase lo que pase, y al imprimir
+    también, donde no hay scroll que dispare nada.
+  */
+  setTimeout(mostrarTodos, 6000);
+  addEventListener("beforeprint", mostrarTodos);
+}
+
 export function revelarTexto() {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   if (matchMedia("(max-width: 900px)").matches) {
     document.querySelectorAll<HTMLElement>("[data-reveal] .read").forEach(agruparEnTramos);
+    prepararBarrido(Array.from(document.querySelectorAll<HTMLElement>(".rv-panel")));
   }
 
   const bloques = document.querySelectorAll<HTMLElement>(SELECTOR);

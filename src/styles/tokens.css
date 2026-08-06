@@ -402,12 +402,54 @@ body {
   la altura pequeña, la estable.
 */
 @media (max-width: 900px) {
+  /*
+    Cada tramo es una pantalla y entra con un barrido lateral, como una pizarra
+    que corre. La posición en la que se detiene cambia en ciclos de cuatro y va
+    emparejada con la dirección del barrido (ver prepararBarrido en reveal.ts):
+    el texto siempre acaba en el lado hacia el que venía viajando, así el
+    movimiento tiene una lógica y no parece que cada pantalla haga la suya.
+  */
   .rv-panel {
     min-height: 100svh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     scroll-snap-align: center;
+    /*
+      El barrido es SOLO desplazamiento, sin atenuar. Con opacidad de por medio,
+      cualquier fallo del observador dejaría el texto invisible; así, en el peor
+      de los casos, se queda corrido a un lado pero se lee. El atenuado de
+      entrada ya lo pone el revelado palabra a palabra.
+    */
+    transform: translateX(var(--desde, 0));
+    transition: transform 0.75s cubic-bezier(0.2, 0.75, 0.2, 1);
+  }
+  .rv-panel.rv-dentro {
+    transform: none;
+  }
+  /* Las cuatro paradas */
+  .rv-paso-0 {
+    justify-content: flex-end;
+    padding-bottom: 16svh;
+    text-align: left;
+  }
+  .rv-paso-1 {
+    justify-content: flex-start;
+    padding-top: 18svh;
+    text-align: center;
+  }
+  .rv-paso-2 {
+    justify-content: center;
+    text-align: left;
+  }
+  .rv-paso-3 {
+    justify-content: flex-end;
+    padding-bottom: 16svh;
+    text-align: right;
+  }
+  .rv-paso-3 > p {
+    text-align: justify;
+    text-align-last: right;
   }
   .rv-panel > * {
     margin-bottom: 0;
@@ -449,7 +491,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .rv-w,
-  .rv-bloque {
+  .rv-bloque,
+  .rv-panel {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
