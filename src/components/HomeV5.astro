@@ -18,7 +18,26 @@ const destacados = todos.slice(0, 3);
     {/* En móvil manda el logo vertical oficial del manual, no una recreación con texto */}
     <img class="logo-img" src="/logo/perfil-blanco.svg" alt="the STUDIO by ATIS" width="252" height="133" />
   </h1>
-  <p class="claim">la puta primera cooperativa creativa</p>
+  {/*
+    Banner en marcha. La manuscrita entra aquí como decoración repetida, que es
+    el uso que el manual le permite fuera del logo, no como texto de lectura.
+    Se duplica exacto para que el bucle no tenga costura.
+  */}
+  <div class="claim-banner">
+    <div class="claim-cinta">
+      {
+        /*
+          Doce repeticiones: seis por mitad. La animación desplaza justo la
+          mitad de la cinta, así que cada mitad tiene que ser por sí sola más
+          ancha que la pantalla o al reiniciar el bucle asomaría un hueco.
+          Seis cubren hasta unos 3.200 px de ancho.
+        */
+        Array.from({ length: 12 }).map(() => (
+          <span>la p*ta primera cooperativa creativa ·&nbsp;</span>
+        ))
+      }
+    </div>
+  </div>
 </section>
 
 <div class="reel" id="reel">
@@ -177,19 +196,44 @@ const destacados = todos.slice(0, 3);
     color: var(--plata-clara);
   }
   /*
-    El claim en cursiva de Arial, no en la manuscrita: el manual reserva
-    Pinyon Script para el logo y la decoración, nunca para texto.
+    Cinta del claim: a sangre, separada por dos líneas blancas del logo que
+    tiene encima y del campo que viene debajo, para que se lea como una franja
+    propia y no como un pie del logo.
   */
-  .claim {
+  .claim-banner {
     grid-column: 1/13;
-    margin: calc(var(--row) * 0.5) 0 0;
-    padding: 0 20px;
-    text-align: center;
-    font-family: var(--sans);
-    font-style: italic;
-    font-size: clamp(1rem, 2.1vw, 1.5rem);
-    letter-spacing: 0.01em;
+    margin-top: calc(var(--row) * 0.55);
+    overflow: hidden;
+    border-top: 1px solid rgba(255, 255, 255, 0.85);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.85);
+  }
+  .claim-cinta {
+    display: flex;
+    width: max-content;
+    animation: desfile 26s linear infinite;
+  }
+  .claim-cinta span {
+    font-family: var(--script);
+    font-size: clamp(1.5rem, 3.4vw, 2.6rem);
+    line-height: 1.5;
+    padding: 10px 0;
     color: var(--plata-clara);
+    white-space: nowrap;
+  }
+  /* Se desplaza justo la mitad: como el contenido está duplicado, el salto
+     al reiniciar cae en un punto idéntico y no se nota. */
+  @keyframes desfile {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .claim-cinta {
+      animation: none;
+    }
   }
   .logo-h1 .scr {
     font-family: var(--script);
@@ -216,8 +260,14 @@ const destacados = todos.slice(0, 3);
     larguísimo y roto. Ahora el reparto de la animación (abajo, en el script)
     llega casi al final del tramo y no sobra desierto.
   */
+  /*
+    Dos pantallas justas (2026-08-05). Con 240vh el escenario se quedaba
+    anclado durante 1,4 pantallas de scroll y se sentían tres gestos largos
+    sobre un campo de plata enorme. Con 200vh el tramo es exactamente el alto
+    de una pantalla de scroll: entra la casa, cruza y sale, sin desierto.
+  */
   .reel {
-    height: 240vh;
+    height: 200vh;
     position: relative;
     background: var(--plata-mid);
   }
