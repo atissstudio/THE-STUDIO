@@ -70,9 +70,14 @@ function agruparEnTramos(read: HTMLElement) {
   };
 
   for (const hijo of hijos) {
-    // El enunciado abre tramo y se queda con el titular que venga detrás.
-    const abreTramo = hijo.classList.contains("k") || !tramo || hijo.tagName !== "H2";
-    if (abreTramo && !(tramo && hijo.tagName === "H2")) abrir();
+    /*
+      Dos cosas no abren tramo propio, porque solas no llenan una pantalla y
+      dejarían un hueco que se lee como un fallo: el titular, que se queda con
+      el enunciado que lo precede, y la llamada a la acción, que se queda con
+      el texto al que pertenece.
+    */
+    const continua = tramo && (hijo.tagName === "H2" || hijo.classList.contains("read-cta"));
+    if (!continua) abrir();
     tramo!.appendChild(hijo);
   }
 }
@@ -131,10 +136,15 @@ function prepararBarrido(paneles: HTMLElement[]) {
 export function revelarTexto() {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-  if (matchMedia("(max-width: 900px)").matches) {
-    document.querySelectorAll<HTMLElement>("[data-reveal] .read").forEach(agruparEnTramos);
-    prepararBarrido(Array.from(document.querySelectorAll<HTMLElement>(".rv-panel")));
-  }
+  /*
+    En móvil se trocean todos los bloques de lectura. En escritorio solo los
+    que lo piden con `data-slides` (hoy, .02 y .03 de la home): el resto se
+    lee mejor en flujo normal y trocearlo todo sería otra web.
+  */
+  const movil = matchMedia("(max-width: 900px)").matches;
+  const alcance = movil ? "[data-reveal] .read" : "[data-slides] .read";
+  document.querySelectorAll<HTMLElement>(alcance).forEach(agruparEnTramos);
+  prepararBarrido(Array.from(document.querySelectorAll<HTMLElement>(".rv-panel")));
 
   const bloques = document.querySelectorAll<HTMLElement>(SELECTOR);
   if (!bloques.length) return;
@@ -161,8 +171,6 @@ export function revelarTexto() {
     que cada gesto de scroll traiga el párrafo siguiente ya animado, en vez de
     encenderlos todos de golpe al entrar la sección.
   */
-  const movil = matchMedia("(max-width: 900px)").matches;
-
   const io = new IntersectionObserver(
     (entradas) => {
       entradas.forEach((e) => {
@@ -170,7 +178,19 @@ export function revelarTexto() {
         else if (e.intersectionRatio === 0) apagar(e.target);
       });
     },
-    { threshold: [0, 0.2], rootMargin: movil ? "0px 0px -28% 0px" : "0px 0px -8% 0px" }
+    {
+      threshold: [0, 0.2],
+      /*
+        Donde hay diapositivas (móvil siempre, escritorio en los bloques con
+        `data-slides`) el margen es el grande: así el revelado palabra a
+        palabra dispara justo cuando cae la diapositiva nueva, y no antes de
+        que haya terminado de entrar.
+      */
+      rootMargin:
+        movil || document.querySelector(".rv-panel")
+          ? "0px 0px -28% 0px"
+          : "0px 0px -8% 0px",
+    }
   );
 
   bloques.forEach((el) => io.observe(el));
