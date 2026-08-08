@@ -216,6 +216,59 @@ body {
   background: var(--navy);
   color: var(--plata-clara);
 }
+/*
+  ── Fundido entre campos (2026-08-08) ─────────────────────────────────────
+
+  Los campos se cortaban a cuchillo y el salto de claro a azul chocaba. Cada
+  campo se trae ahora su propio color en degradado sobre el campo anterior, en
+  una banda por encima de sí mismo.
+
+  Por qué así y no enumerando parejas: hay cuatro campos, o sea doce
+  combinaciones posibles, y habría que mantenerlas a mano. De este modo cada
+  campo solo tiene que saber DE QUÉ COLOR ES; el de arriba, sea cual sea, se
+  ve por debajo del degradado.
+
+  `* + .f-…` es deliberado: solo se aplica cuando el campo tiene algo delante.
+  Así la portada, que es lo primero de la página, no se pinta una banda encima
+  de la barra de navegación.
+
+  La banda no captura el ratón y va fuera del campo, así que no puede taparle
+  su propio contenido. Para ajustar el efecto basta con `--fundido`.
+*/
+:root {
+  --fundido: 72px;
+}
+.f-azul,
+.f-claro,
+.f-blanco,
+.f-navy {
+  position: relative;
+}
+* + .f-azul::before,
+* + .f-claro::before,
+* + .f-blanco::before,
+* + .f-navy::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(-1 * var(--fundido));
+  height: var(--fundido);
+  pointer-events: none;
+}
+* + .f-azul::before {
+  background: linear-gradient(to bottom, rgba(51, 75, 164, 0), var(--azul));
+}
+* + .f-claro::before {
+  background: linear-gradient(to bottom, rgba(238, 241, 247, 0), var(--plata-clara));
+}
+* + .f-blanco::before {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--blanco));
+}
+* + .f-navy::before {
+  background: linear-gradient(to bottom, rgba(11, 18, 48, 0), var(--navy));
+}
+
 /* campo de plata líquida con textura, ver .liquid-field más abajo */
 .f-plata {
   background: var(--plata-mid);
@@ -864,8 +917,23 @@ a:has(.logo) {
   hueco del pie: quedaban 172 px muertos tras la última línea. Se recorta por
   abajo, que es donde molesta, y se mantiene arriba para que el campo respire.
 */
+/*
+  El cierre sale en TODAS las páginas, así que un fallo aquí se multiplica.
+  Repasado el 2026-08-08 con las medidas delante:
+
+  1 · Los enlaces de abajo NO estaban centrados. `.sidelinks` es un <p>, así
+      que heredaba el `max-width` de `.closer p`, pero su propio margen (que
+      cada página declara por su cuenta) anulaba el `auto` de los lados: una
+      caja estrecha pegada a la izquierda con los enlaces centrados DENTRO de
+      ella. Medido: iba de 233 a 651 en un contenedor de 213 a 1067. Se
+      resuelve dejándola sin medida máxima, y así su `justify-content: center`
+      centra de verdad.
+  2 · El párrafo iba a 46ch (417 px) contra un titular de 813: casi el doble, y
+      la frase de apoyo partía dejando dos palabras solas en la última línea.
+  3 · El relleno de arriba casi duplicaba al de abajo y dejaba un hueco muerto.
+*/
 .closer {
-  padding: calc(var(--row) * 1.1) 0 calc(var(--row) * 0.62);
+  padding: calc(var(--row) * 0.8) 0 calc(var(--row) * 0.7);
   text-align: center;
 }
 .closer .closer-inner {
@@ -879,14 +947,17 @@ a:has(.logo) {
   font-size: clamp(1.7rem, 3.4vw, 2.8rem);
   line-height: 1.02;
   letter-spacing: -0.03em;
-  margin: 0 0 16px;
+  /* En em, no en ch: la medida acompaña al tamaño del titular. */
+  max-width: 16em;
+  margin: 0 auto 16px;
 }
-.closer p {
+.closer p:not(.sidelinks) {
   color: rgba(238, 241, 247, 0.78);
   font-size: 1.02rem;
   line-height: 1.6;
   margin: 0 auto 26px;
-  max-width: 46ch;
+  max-width: 56ch;
+  text-wrap: pretty;
 }
 
 @media (max-width: 900px) {

@@ -78,16 +78,14 @@ const destacados = todos.slice(0, 3);
       <GlassButton href="/contacto">Quiero que me ayudéis a crecer</GlassButton>
     </p>
     {/*
-      El texto dice que el negocio canario tenga LAS MISMAS oportunidades que
-      una multinacional. Las islas entran desiguales —a distintas alturas y
-      tamaños— y se nivelan contra una misma línea. No es decoración: es la
-      frase, dicha con el elemento gráfico de la marca.
+      HUECO RESERVADO para el gráfico de este bloque (2026-08-08).
+
+      Aquí hubo las ocho islas nivelándose y no convencieron, así que se
+      retiran hasta decidir qué va. La maquinaria está lista: basta con meter
+      un `<div class="slide-art" data-art aria-hidden="true">` aquí dentro y se
+      coloca solo en el lado que el texto deja libre, oculto en móvil y fuera
+      del troceado en tramos.
     */}
-    <div class="slide-art art-islas" data-art aria-hidden="true">
-      {["08", "06", "07", "05", "01", "02", "03", "04"].map((n, i) => (
-        <img class="isla-nivel" src={`/plata/isla-${n}.webp`} alt="" style={`--i:${i}`} />
-      ))}
-    </div>
   </div>
 </section>
 
@@ -624,31 +622,6 @@ const destacados = todos.slice(0, 3);
       left: 0;
     }
 
-    /* .02 · las ocho islas, niveladas contra una misma línea */
-    .art-islas {
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      gap: clamp(6px, 0.9vw, 14px);
-    }
-    /*
-      La plata metálica sobre campo claro NO se lee: medido sobre los propios
-      archivos el 2026-08-06, el color medio de las islas es (207,207,206) y
-      da 2,0:1 de contraste contra el campo. Se ve lavado.
-
-      El manual ya tenía la respuesta: "plata adaptativa, siempre color sólido,
-      #565E6C sobre campos claros". Se oscurece hasta esa familia, quitando
-      parte del brillo metálico pero no todo, y sube a 3,9:1. No se usa una
-      máscara con relleno sólido porque obligaría a repetir en el CSS las
-      proporciones reales de cada archivo, y se rompería al cambiar una isla.
-    */
-    .isla-nivel {
-      height: clamp(38px, 4.2vw, 62px);
-      width: auto;
-      transform-origin: bottom center;
-      filter: grayscale(0.4) brightness(0.58) contrast(1.15);
-    }
-
     /*
       .03 · El camino de tres pasos, con su nombre.
 
@@ -836,33 +809,6 @@ const destacados = todos.slice(0, 3);
   contarCifras(".datos .big");
 
   if (!quieto && escritorio) {
-    /*
-      .02 · Las ocho islas se nivelan.
-
-      Entran desiguales, a distintas alturas y tamaños, y acaban todas en la
-      misma línea y al mismo alto. Los desniveles son fijos, no aleatorios: el
-      dibujo tiene que ser el mismo en cada visita, no una tirada de dados.
-    */
-    const islas = gsap.utils.toArray<HTMLElement>(".art-islas .isla-nivel");
-    if (islas.length) {
-      const altura = [34, -22, 46, -34, 26, -42, 18, 38];
-      const tamano = [0.45, 1.35, 0.6, 1.5, 0.5, 1.25, 0.7, 0.4];
-      gsap.from(islas, {
-        scrollTrigger: {
-          trigger: ".art-islas",
-          start: "top 78%",
-          // Se rearma al volver a subir, como el resto del revelado del sitio.
-          toggleActions: "play none none reverse",
-        },
-        y: (i: number) => altura[i] ?? 0,
-        scale: (i: number) => tamano[i] ?? 1,
-        opacity: 0,
-        duration: 0.9,
-        ease: "power3.out",
-        stagger: 0.07,
-      });
-    }
-
     /*
       .03 · El camino de tres pasos se dibuja hacia abajo, y cada parada dice
       cómo se llama.

@@ -199,10 +199,27 @@ import { servicios } from "../../data/servicios";
     clic o usar el teclado, que es lo que fija la clase .abierta para quien no
     tiene ratón. Nunca navega solo, siempre hay que pulsar el enlace de dentro.
   */
+  /*
+    Se abre despacio (2026-08-08). Iba a 0,4s y se sentía como un golpe: la
+    fila daba un tirón y el texto aparecía de una vez. A 0,75s con una curva
+    suave el panel se despliega en vez de saltar.
+  */
   .panel {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+    opacity: 0;
+    transition:
+      max-height 0.75s cubic-bezier(0.22, 0.61, 0.24, 1),
+      opacity 0.5s ease 0.12s;
+  }
+  .fila-wrap:hover .panel,
+  .fila-wrap.abierta .panel {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .panel {
+      transition: none;
+    }
   }
   .fila-wrap:hover .panel,
   .fila-wrap.abierta .panel {
@@ -283,4 +300,57 @@ import { servicios } from "../../data/servicios";
   */
   import { escalonar } from "../../scripts/entradas";
   escalonar(".lista .fila-wrap");
+
+  /*
+    La fila abierta se centra sola, sin golpes (2026-08-08).
+
+    El problema: al abrir la 6ª o la 7ª, el panel se desplegaba hacia abajo y
+    se quedaba fuera de pantalla, así que había que ir a buscarlo.
+
+    Y el riesgo de arreglarlo mal: como el acordeón se abre AL PASAR EL RATÓN,
+    centrar en cada fila que se toca dejaría la página saltando sin parar
+    mientras se recorre la lista. Por eso solo se centra cuando hace falta de
+    verdad —cuando la fila ya abierta se sale por abajo— y con un retardo, para
+    que pasar de largo con el cursor no dispare nada. Un clic, que sí es
+    intención, se atiende al momento.
+  */
+  import { gsap } from "gsap";
+  import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+  gsap.registerPlugin(ScrollToPlugin);
+
+  {
+    const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const finoDeRaton = matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const filas = Array.from(document.querySelectorAll<HTMLElement>(".lista .fila-wrap"));
+    let pendiente: number | undefined;
+
+    const centrar = (fila: HTMLElement) => {
+      const caja = fila.getBoundingClientRect();
+      // Solo si de verdad no cabe: si ya se ve entera, moverla sería gratuito.
+      if (caja.top >= 0 && caja.bottom <= innerHeight) return;
+      const destino = Math.max(0, scrollY + caja.top - (innerHeight - caja.height) / 2);
+      if (quieto) {
+        scrollTo(0, destino);
+        return;
+      }
+      gsap.to(window, { scrollTo: destino, duration: 0.85, ease: "power2.inOut" });
+    };
+
+    filas.forEach((fila) => {
+      // El panel tarda en desplegarse, así que se mide DESPUÉS de abrirse.
+      const alAbrir = (espera: number) => {
+        clearTimeout(pendiente);
+        pendiente = window.setTimeout(() => centrar(fila), espera);
+      };
+
+      if (finoDeRaton) {
+        // 260 ms: pasar de largo no llega a disparar; pararse a leer, sí.
+        fila.addEventListener("mouseenter", () => alAbrir(260 + 750));
+        fila.addEventListener("mouseleave", () => clearTimeout(pendiente));
+      }
+      // Un clic o el teclado son intención: se atiende en cuanto abre.
+      fila.addEventListener("click", () => alAbrir(780));
+      fila.addEventListener("focusin", () => alAbrir(780));
+    });
+  }
 </script>
