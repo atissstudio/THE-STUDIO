@@ -559,8 +559,15 @@ body {
   */
   [data-slides] .read,
   [data-slides] .read.right {
-    grid-column: 1/13;
-    padding: 0;
+    /*
+      Dentro del carril de la retícula, NO a sangre. Con `1/13` y sin padding
+      el texto quedaba pegado al borde de la ventana, sin un milímetro de aire
+      (visto en producción el 2026-08-06). `2/12` deja una columna de margen a
+      cada lado, y es ese hueco simétrico el que permite que la diapositiva se
+      pegue a un lado o al otro y se note.
+    */
+    grid-column: 2/12;
+    padding: 0 20px;
   }
   [data-slides] .rv-panel {
     min-height: 100svh;
