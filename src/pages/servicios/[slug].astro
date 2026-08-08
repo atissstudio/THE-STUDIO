@@ -35,6 +35,15 @@ const otros = servicios.filter((s) => s.slug !== servicio.slug).slice(0, 3);
     <div class="read">
       <p class="k">{servicio.title}</p>
       {servicio.body.map((parrafo) => <p>{parrafo}</p>)}
+      {/*
+        Cada servicio ya tiene su isla asignada en src/data/servicios.ts, y
+        hasta ahora solo se veía en las tarjetas de la home. Aquí hace de sello
+        de la página: ocupa el lado que el texto deja libre y entra subiendo.
+        `data-art` la mantiene fuera del troceado en tramos del móvil.
+      */}
+      <div class="sello-isla" data-art aria-hidden="true">
+        <img src={servicio.isla} alt="" />
+      </div>
     </div>
   </section>
 
@@ -98,4 +107,47 @@ const otros = servicios.filter((s) => s.slug !== servicio.slug).slice(0, 3);
   .sidelinks a:hover {
     color: var(--azul-lit);
   }
+  /*
+    El sello va en el lado que el texto deja libre (`.read` ocupa las columnas
+    2 a 9), posicionado en absoluto para no tocar la medida de lectura. Solo
+    escritorio: en un teléfono no hay lado libre.
+
+    Plata sólida, no metálica: sobre campo claro el degradado da 2,0:1 de
+    contraste y se ve lavado (medido el 2026-08-06). Mismo tratamiento que las
+    islas de la home.
+  */
+  @media (min-width: 901px) {
+    .sello-isla {
+      position: absolute;
+      top: 50%;
+      /*
+        Se posiciona contra la SECCIÓN (`.row12` es quien lleva `position:
+        relative`), no contra `.read`. Y la rejilla no tiene margen exterior,
+        así que `right: 0` dejaba el sello pegado al borde de la ventana. Se le
+        da el mismo carril que al texto: una columna más los 20 px de `.read`.
+      */
+      right: calc(100% / 12 + 20px);
+      translate: 0 -50%;
+      width: min(26%, 260px);
+      max-width: none;
+      pointer-events: none;
+    }
+    .sello-isla img {
+      display: block;
+      width: 100%;
+      height: auto;
+      filter: grayscale(0.4) brightness(0.58) contrast(1.15);
+    }
+  }
+  @media (max-width: 900px) {
+    .sello-isla {
+      display: none;
+    }
+  }
 </style>
+
+<script>
+  import { escalonar } from "../../scripts/entradas";
+  // Entra subiendo, como el resto de piezas gráficas del sitio.
+  escalonar(".sello-isla", { desde: 34 });
+</script>

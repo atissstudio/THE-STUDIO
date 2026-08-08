@@ -198,3 +198,14 @@ const datos = [
     }
   }
 </style>
+
+<script>
+  /*
+    La rejilla de datos entra escalonada y las cifras cuentan hasta su valor.
+    Es la página que sostiene el "no hablamos por hablar": el número es el
+    argumento, así que merece llegar contándose y no puesto ahí sin más.
+  */
+  import { escalonar, contarCifras } from "../scripts/entradas";
+  escalonar(".rejilla .celda");
+  contarCifras(".rejilla .big");
+</script>

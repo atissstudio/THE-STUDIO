@@ -274,4 +274,13 @@ import { servicios } from "../../data/servicios";
       boton.setAttribute("aria-expanded", String(!!abierta));
     });
   });
+
+  /*
+    Las siete filas entraban de golpe. Ahora se van poniendo una detrás de
+    otra: es el catálogo comercial y conviene que se lea como una lista que se
+    recorre, no como un muro. El escalón es corto (ver `escalonar`) para no
+    obligar a esperar a la séptima.
+  */
+  import { escalonar } from "../../scripts/entradas";
+  escalonar(".lista .fila-wrap");
 </script>
