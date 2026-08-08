@@ -181,11 +181,25 @@ export function revelarTexto() {
     que cada gesto de scroll traiga el párrafo siguiente ya animado, en vez de
     encenderlos todos de golpe al entrar la sección.
   */
+  /*
+    Dentro de una diapositiva se observa el PANEL, no cada elemento suelto. La
+    diapositiva es una unidad y tiene que encenderse entera: observando
+    elemento a elemento, lo que queda más abajo (la llamada a la acción, casi
+    siempre) no entraba en el margen hasta un gesto de scroll más, y se
+    encendía sola con el resto del bloque ya iluminado. La cascada entre
+    palabras la sigue dando el retardo por índice, no el observador.
+  */
+  const enElPanel = (el: Element) =>
+    (el as HTMLElement).classList.contains("rv-panel")
+      ? Array.from(el.querySelectorAll<HTMLElement>(SELECTOR))
+      : [el];
+
   const io = new IntersectionObserver(
     (entradas) => {
       entradas.forEach((e) => {
-        if (e.isIntersecting) mostrar(e.target);
-        else if (e.intersectionRatio === 0) apagar(e.target);
+        const objetivos = enElPanel(e.target);
+        if (e.isIntersecting) objetivos.forEach(mostrar);
+        else if (e.intersectionRatio === 0) objetivos.forEach(apagar);
       });
     },
     {
@@ -203,7 +217,15 @@ export function revelarTexto() {
     }
   );
 
-  bloques.forEach((el) => io.observe(el));
+  // Un bloque suelto se observa él; uno que vive en una diapositiva delega en
+  // ella, y la diapositiva se observa una sola vez aunque tenga cinco dentro.
+  const paneles = new Set<HTMLElement>();
+  bloques.forEach((el) => {
+    const panel = el.closest<HTMLElement>(".rv-panel");
+    if (panel) paneles.add(panel);
+    else io.observe(el);
+  });
+  paneles.forEach((panel) => io.observe(panel));
 
   // Al imprimir o guardar como PDF no hay scroll: se enciende todo antes.
   addEventListener("beforeprint", () => bloques.forEach(mostrar));
