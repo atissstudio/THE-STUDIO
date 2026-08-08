@@ -77,6 +77,17 @@ const destacados = todos.slice(0, 3);
     <p class="read-cta">
       <GlassButton href="/contacto">Quiero que me ayudéis a crecer</GlassButton>
     </p>
+    {/*
+      El texto dice que el negocio canario tenga LAS MISMAS oportunidades que
+      una multinacional. Las islas entran desiguales —a distintas alturas y
+      tamaños— y se nivelan contra una misma línea. No es decoración: es la
+      frase, dicha con el elemento gráfico de la marca.
+    */}
+    <div class="slide-art art-islas" data-art aria-hidden="true">
+      {["08", "06", "07", "05", "01", "02", "03", "04"].map((n, i) => (
+        <img class="isla-nivel" src={`/plata/isla-${n}.webp`} alt="" style={`--i:${i}`} />
+      ))}
+    </div>
   </div>
 </section>
 
@@ -91,6 +102,19 @@ const destacados = todos.slice(0, 3);
     <p class="read-cta">
       <GlassButton href="/como-trabajamos">Ver el método completo, paso a paso</GlassButton>
     </p>
+    {/*
+      Tres pasos, un camino. La línea se dibuja hacia abajo y cada nudo se
+      enciende al llegar. Es el filete de 1 px del manual, puesto a contar el
+      proceso en vez de solo separar.
+    */}
+    <div class="slide-art art-proceso" data-art aria-hidden="true">
+      <svg viewBox="0 0 120 420" fill="none" preserveAspectRatio="xMidYMid meet">
+        <path class="pr-linea" d="M60 24 L60 396" stroke-width="2" stroke-linecap="round" />
+        <circle class="pr-nudo" cx="60" cy="86" r="9" stroke-width="2" />
+        <circle class="pr-nudo" cx="60" cy="210" r="9" stroke-width="2" />
+        <circle class="pr-nudo" cx="60" cy="334" r="9" stroke-width="2" />
+      </svg>
+    </div>
   </div>
 </section>
 
@@ -567,6 +591,86 @@ const destacados = todos.slice(0, 3);
       height: auto;
     }
   }
+  /*
+    ── El gráfico de cada diapositiva ────────────────────────────────────────
+
+    Va en el lado que el texto deja libre: en `.02` el texto se pega a la
+    izquierda y el gráfico ocupa la derecha, y en `.03` al revés. El lado se
+    saca del marcado (`.read` / `.read.right`), no de la clase de parada que
+    pone el JS, para que no dependa de que ese JS haya corrido.
+
+    Posicionado en absoluto a propósito: así no entra en la columna de texto y
+    no toca la medida de lectura ni las alturas ya verificadas.
+
+    Solo escritorio. En un teléfono no hay lado libre: el texto ya ocupa el
+    ancho entero y meter esto sería robarle sitio.
+  */
+  @media (min-width: 901px) {
+    :global([data-slides] .read) {
+      position: relative;
+    }
+    .slide-art {
+      position: absolute;
+      top: 50%;
+      translate: 0 -50%;
+      width: min(34%, 360px);
+      max-width: none;
+      pointer-events: none;
+    }
+    :global(.read) > .slide-art {
+      right: 0;
+    }
+    :global(.read.right) > .slide-art {
+      left: 0;
+    }
+
+    /* .02 · las ocho islas, niveladas contra una misma línea */
+    .art-islas {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: clamp(6px, 0.9vw, 14px);
+    }
+    /*
+      La plata metálica sobre campo claro NO se lee: medido sobre los propios
+      archivos el 2026-08-06, el color medio de las islas es (207,207,206) y
+      da 2,0:1 de contraste contra el campo. Se ve lavado.
+
+      El manual ya tenía la respuesta: "plata adaptativa, siempre color sólido,
+      #565E6C sobre campos claros". Se oscurece hasta esa familia, quitando
+      parte del brillo metálico pero no todo, y sube a 3,9:1. No se usa una
+      máscara con relleno sólido porque obligaría a repetir en el CSS las
+      proporciones reales de cada archivo, y se rompería al cambiar una isla.
+    */
+    .isla-nivel {
+      height: clamp(38px, 4.2vw, 62px);
+      width: auto;
+      transform-origin: bottom center;
+      filter: grayscale(0.4) brightness(0.58) contrast(1.15);
+    }
+
+    /* .03 · el camino de tres pasos */
+    .art-proceso svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 62svh;
+      margin: 0 auto;
+    }
+    .pr-linea,
+    .pr-nudo {
+      stroke: var(--azul);
+    }
+    .pr-nudo {
+      fill: var(--plata-clara);
+    }
+  }
+  @media (max-width: 900px) {
+    .slide-art {
+      display: none;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .reel { height: auto; }
     .reel-stage { position: static; height: auto; padding: 10vh 0; }
@@ -666,6 +770,90 @@ const destacados = todos.slice(0, 3);
     if (ctaform && ctaEmail) {
       ctaform.classList.add("compacto");
       ctaEmail.addEventListener("focus", () => ctaform.classList.remove("compacto"), { once: true });
+    }
+  }
+</script>
+
+<script>
+  /*
+    Los gráficos de las diapositivas .02 y .03, con GSAP + ScrollTrigger.
+
+    GSAP va como dependencia del proyecto, NO desde un CDN ajeno: así no se
+    añade una conexión a un tercero (el mismo problema que ya arrastramos con
+    la tipografía de Google) ni dependemos de que el servidor de otro esté vivo.
+
+    Se queda para lo nuevo. Las tres coreografías que ya existen (el reel, la
+    historia de Sobre Atis y los pasos de Cómo trabajamos) siguen con su cálculo
+    a mano: funcionan y están medidas, y reescribirlas solo mete riesgo.
+  */
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const escritorio = matchMedia("(min-width: 901px)").matches;
+
+  if (!quieto && escritorio) {
+    /*
+      .02 · Las ocho islas se nivelan.
+
+      Entran desiguales, a distintas alturas y tamaños, y acaban todas en la
+      misma línea y al mismo alto. Los desniveles son fijos, no aleatorios: el
+      dibujo tiene que ser el mismo en cada visita, no una tirada de dados.
+    */
+    const islas = gsap.utils.toArray<HTMLElement>(".art-islas .isla-nivel");
+    if (islas.length) {
+      const altura = [34, -22, 46, -34, 26, -42, 18, 38];
+      const tamano = [0.45, 1.35, 0.6, 1.5, 0.5, 1.25, 0.7, 0.4];
+      gsap.from(islas, {
+        scrollTrigger: {
+          trigger: ".art-islas",
+          start: "top 78%",
+          // Se rearma al volver a subir, como el resto del revelado del sitio.
+          toggleActions: "play none none reverse",
+        },
+        y: (i: number) => altura[i] ?? 0,
+        scale: (i: number) => tamano[i] ?? 1,
+        opacity: 0,
+        duration: 0.9,
+        ease: "power3.out",
+        stagger: 0.07,
+      });
+    }
+
+    /*
+      .03 · El camino de tres pasos se dibuja hacia abajo.
+
+      Sin DrawSVG: `stroke-dasharray` hace lo mismo para una línea recta y
+      ahorra un plugin. Cada nudo se enciende en el instante EXACTO en que el
+      trazo pasa por él, calculado desde su propia `cy`, para no tener que
+      cuadrar tiempos a mano si mañana se mueve un nudo.
+    */
+    const linea = document.querySelector<SVGPathElement>(".pr-linea");
+    const nudos = gsap.utils.toArray<SVGCircleElement>(".pr-nudo");
+    if (linea && nudos.length) {
+      const largo = linea.getTotalLength();
+      const DE = 24;
+      const A = 396;
+      const DURACION = 1.6;
+
+      gsap.set(linea, { strokeDasharray: largo, strokeDashoffset: largo });
+      gsap.set(nudos, { scale: 0, transformOrigin: "center center" });
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".art-proceso",
+          start: "top 78%",
+          toggleActions: "play none none reverse",
+        },
+      });
+      tl.to(linea, { strokeDashoffset: 0, duration: DURACION, ease: "none" });
+      nudos.forEach((nudo) => {
+        const cy = Number(nudo.getAttribute("cy"));
+        const cuando = ((cy - DE) / (A - DE)) * DURACION;
+        tl.to(nudo, { scale: 1, duration: 0.35, ease: "back.out(2)" }, cuando);
+      });
     }
   }
 </script>

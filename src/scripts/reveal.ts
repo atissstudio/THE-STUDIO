@@ -70,6 +70,10 @@ function agruparEnTramos(read: HTMLElement) {
   };
 
   for (const hijo of hijos) {
+    // El gráfico de la diapositiva no es texto y no abre tramo: si lo hiciera,
+    // en móvil se llevaría una pantalla entera para él solo (y encima está
+    // oculto ahí, así que sería una pantalla en blanco).
+    if (hijo.dataset.art !== undefined) continue;
     /*
       Dos cosas no abren tramo propio, porque solas no llenan una pantalla y
       dejarían un hueco que se lee como un fallo: el titular, que se queda con
