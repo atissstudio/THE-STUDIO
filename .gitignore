@@ -30,3 +30,10 @@ yarn-error.log*
 
 # Claude (local)
 .claude/settings.local.json
+# Vercel (lo añadió `vercel link`)
+.vercel
+# Secretos locales. `.env*` a secas, que es lo que escribe Vercel, también
+# taparía `.env.example`, que SÍ debe estar en el repositorio: es la plantilla
+# que documenta qué variables hacen falta para levantar el proyecto.
+.env*
+!.env.example
