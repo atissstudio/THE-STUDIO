@@ -794,6 +794,36 @@ const destacados = todos.slice(0, 3);
   const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const escritorio = matchMedia("(min-width: 901px)").matches;
 
+  /*
+    .05 · Las cifras cuentan hasta su valor.
+
+    Esto sí va también en móvil: no ocupa sitio, solo anima un número que ya
+    está ahí. Es "demostrar, no prometer" puesto en movimiento — y si el
+    visitante pidió menos animación, se queda la cifra quieta y correcta,
+    porque el valor final ya está escrito en el HTML.
+  */
+  if (!quieto) {
+    gsap.utils.toArray<HTMLElement>(".datos .big").forEach((el) => {
+      const partes = (el.textContent ?? "").trim().match(/^(\D*)(\d+)(\D*)$/);
+      if (!partes) return;
+      const [, antes, digitos, despues] = partes;
+      const destino = Number(digitos);
+      const cuenta = { v: 0 };
+      gsap.to(cuenta, {
+        v: destino,
+        duration: 1.1,
+        ease: "power2.out",
+        scrollTrigger: { trigger: el, start: "top 88%", once: true },
+        onUpdate: () => {
+          el.textContent = `${antes}${Math.round(cuenta.v)}${despues}`;
+        },
+        onComplete: () => {
+          el.textContent = `${antes}${destino}${despues}`;
+        },
+      });
+    });
+  }
+
   if (!quieto && escritorio) {
     /*
       .02 · Las ocho islas se nivelan.

@@ -83,7 +83,13 @@ const error = Astro.url.searchParams.get("error") === "1";
     </aside>
   </section>
 
-  <section class="f-azul closer row12">
+  {/*
+    Revelado palabra a palabra solo en el cierre, NO en la sección del
+    formulario: allí atenuaría las etiquetas de los campos hasta que el
+    observador las encendiera, y un formulario con las etiquetas a medio ver
+    es peor que uno quieto.
+  */}
+  <section class="f-azul closer row12" data-reveal>
     <div class="closer-inner">
       <p class="k">Mientras tanto</p>
       <h2>Mira cómo trabajamos.</h2>
