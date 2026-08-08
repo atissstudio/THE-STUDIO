@@ -158,6 +158,21 @@ Las sesiones se encarecen porque **cada mensaje reenvía todo el contexto**. Reg
 
 **Hallazgos abiertos que salieron de la verificación:** ver la lista de la sesión siguiente.
 
+### Sesión 2026-08-08 — cortina real, GSAP y elementos animados (HECHA)
+
+- **La cortina llevaba desde el principio sin tapar nada** (ver §6 arriba). Corregida y **verificada contra la web publicada**: las páginas redirigen a `/entrar`, la contraseña emite cookie `HttpOnly`, una cookie falsa no cuela y `/admin/login` y `/portal/login` siguen accesibles.
+- ⚠️ **La contraseña del admin de Supabase estuvo publicada** en `supabase/schema.sql` con el repositorio de GitHub en público. Quitada del fichero, pero **sigue en el historial**: hay que rotarla en Supabase antes del primer cliente real.
+- **GSAP entra como dependencia** (v3.15, todos los plugins ya libres). Regla: **solo para lo nuevo**. El reel, Sobre Atis y Cómo trabajamos conservan su cálculo de scroll a mano, que funciona y está medido; reescribirlos solo mete riesgo.
+- **Módulo compartido `src/scripts/entradas.ts`**: `escalonar()` (entrada en cascada) y `contarCifras()` (cifras que cuentan). Lo usan la home, `/servicios`, `/casos` y `/servicios/[slug]`.
+- **Elementos animados nuevos:** `.02` las 8 islas se nivelan · `.03` línea de tres nudos que se dibuja · `.05` y `/casos` cifras que cuentan · `/servicios` 7 filas en cascada · `/servicios/[slug]` la isla del servicio como sello · `/contacto` revelado en el cierre (**no en el formulario**, atenuaría las etiquetas).
+- **Dos trampas que costaron un fallo cada una, y que van a repetirse si no se leen:**
+  1. **Toda entrada que arranque en `opacity: 0` necesita red de seguridad.** Si el observador no dispara, el contenido no se ve NUNCA. `escalonar()` y `contarCifras()` la llevan a los 6 s, al imprimir y al volver de segundo plano — igual que `reveal.ts`.
+  2. **Las cifras que cuentan escriben un cero antes de contar.** Si los fotogramas se congelan, queda un "0%" FALSO en pantalla. Pasó de verdad con dos cifras de `/casos`. El valor bueno se restaura siempre.
+- **La plata metálica NO se lee sobre campo claro:** medido sobre los archivos, color medio (207,207,206) = **2,0:1**. El manual ya lo resolvía ("plata sólida `#565E6C` sobre campos claros"). Filtro `grayscale(0.4) brightness(0.58) contrast(1.15)` → 3,85-4,78:1.
+- **Posicionar en absoluto dentro de `.row12` sangra:** la rejilla no tiene margen exterior, así que `right: 0` es el borde de la ventana. Pasó dos veces (las diapositivas de la home y el sello de servicio). El carril correcto es `calc(100% / 12 + 20px)`, que iguala el margen del texto.
+
+**Pendiente del plan aprobado:** la **transición entre campos de color**. Es el único punto que no se puede validar midiendo (es puro movimiento) y el único cuyo error sería global, no local. Se deja a que Alejandro vea el resto en movimiento y decida si hace falta.
+
 ### 🎯 Lo que toca en la sesión siguiente
 
 **1 · Los cuatro hallazgos de la auditoría, sin resolver.** Salieron el 2026-08-05 y siguen abiertos:
@@ -221,4 +236,7 @@ Las sesiones se encarecen porque **cada mensaje reenvía todo el contexto**. Reg
 - **Brandbook · Identidad visual — LA PARTICIÓN DE PALABRAS QUEDA PROHIBIDA (2026-08-06, decisión de Alejandro).** Contradice y sustituye a lo que se apuntó el 2026-08-05 en esta misma cola ("texto justificado con partición por sílabas"): **eso ya no vale y no debe volcarse a Notion tal cual**. La regla nueva: ninguna palabra se parte en ninguna parte de la web, y por tanto **tampoco se justifica** (justificar en español sin partir abre ríos de espacio). Texto en bandera contra el lado de su bloque, borde contrario irregular.
 - **Brandbook · Identidad visual — la diapositiva es el BLOQUE, no el párrafo (2026-08-06).** "Un scroll, una animación, una diapositiva" pasa a patrón de marca, activable por bloque. **Escritorio y móvil se comportan distinto a propósito:** en móvil se trocea párrafo a párrafo porque el bloque no cabe; en escritorio la diapositiva es el bloque entero a su escala normal de lectura. Dos paradas (izquierda, derecha) frente a las cuatro del móvil, con todo el texto de una diapositiva en el mismo eje y medida acotada (62ch cuerpo, 24ch titulares).
 - **Brandbook · Identidad visual — ninguna pantalla se queda vacía.** Regla de maquetación salida de dos fallos reales el mismo día: la CTA de cierre enseñaba una pantalla entera de campo vacío antes de aparecer, y la llamada a la acción se llevaba una diapositiva para ella sola. Si un elemento no llena la pantalla, viaja con el texto al que pertenece.
+- **Brandbook · Identidad visual — elementos animados con función (2026-08-08).** GSAP entra en el sistema, y con una regla: **la animación explica lo que dice el texto, no decora**. Las islas se nivelan porque el copy habla de igualdad de oportunidades; la línea se dibuja porque el copy habla de un proceso. Dos reglas técnicas que son de marca, no de código: (a) **plata sólida `#565E6C` sobre campo claro**, porque la metálica da 2,0:1 y se ve lavada; (b) **ninguna animación puede dejar el contenido invisible o con un dato falso** si se interrumpe — siempre red de seguridad.
+- **Investigaciones · INV-09 — segunda contradicción consciente (2026-08-08).** Se añaden siete movimientos nuevos a la web sabiendo que INV-09 concluyó que el espectáculo resta credibilidad con dueños de negocio de 45-60. Se aceptó con el criterio de que cada uno explique algo concreto. Conviene registrarlo junto a la contradicción de los shaders.
+- **Roadmap al MVP — la web ya NO es pública** (cortina verificada en producción el 2026-08-08) y **la contraseña del admin de Supabase estuvo publicada** en un repositorio abierto: rotarla antes del primer cliente real.
 - **Roadmap al MVP — `npm run export` roto** desde que el sitio pasa a render en servidor. Decidir si se recupera o se retira: la web ya está publicada y esa copia offline puede haber dejado de tener sentido.
