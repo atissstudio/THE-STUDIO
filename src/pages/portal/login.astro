@@ -80,6 +80,15 @@ const esCrear = modo === "crear";
   </head>
   <body class="portal-login-body">
     <section class="login-wrap">
+      {/*
+        Salida (2026-08-08). Esta pantalla no tenía forma de cerrarse ni de
+        volver: quien entraba aquí por curiosidad, desde el icono de cuenta del
+        menú, se quedaba encerrado y solo salía con el botón atrás del
+        navegador. Va arriba y a la izquierda, que es donde se busca.
+      */}
+      <a class="salir" href="/">
+        <span aria-hidden="true">←</span> Volver a la web
+      </a>
       <div class="login-logo"><Logo size="1.6rem" onLight /></div>
       <p class="kick">Portal de cliente</p>
       <h1>{esCrear ? "Crea tu acceso" : "Entra a tu portal"}</h1>
@@ -140,8 +149,28 @@ const esCrear = modo === "crear";
         background: #fff;
         border-radius: 18px;
       }
+      .salir {
+        display: inline-block;
+        float: left;
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: var(--azul);
+        padding: 12px 8px 12px 0;
+        /* Objetivo táctil: 44 px de alto, el mínimo, que en el resto del sitio
+           todavía está por corregir pero aquí no se hereda. */
+        min-height: 44px;
+        line-height: 20px;
+      }
+      .salir:hover {
+        text-decoration: underline;
+      }
       .login-logo {
         margin-bottom: 24px;
+        clear: both;
       }
       .kick {
         font-family: var(--sans);

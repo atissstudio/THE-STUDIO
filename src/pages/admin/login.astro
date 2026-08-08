@@ -53,7 +53,27 @@ if (Astro.request.method === "POST") {
       <GlassButton type="submit">Entrar</GlassButton>
     </form>
 
+    {/* Salida: sin esto solo se sale con el botón atrás del navegador. */}
+    <a class="salir" href="/"><span aria-hidden="true">←</span> Volver a la web</a>
+
     <style>
+      .salir {
+        margin-top: 28px;
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: var(--azul);
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .salir:hover {
+        text-decoration: underline;
+      }
       .login-body {
         min-height: 100vh;
         display: flex;

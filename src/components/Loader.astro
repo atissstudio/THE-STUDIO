@@ -43,10 +43,27 @@
       dar una máscara vacía o a medias, y de ahí que el logo se viera cortado
       en Safari. Con dos topes en 0% y 100% la máscara es sólida sin ambigüedad.
     */
+    /*
+      La máscara tiene que ser MÁS GRANDE que la caja del texto (2026-08-08).
+
+      Con `mask-size: 0% 100%` cubría exactamente la caja, y medido aquí la
+      letra se sale de ella: 6 px por abajo en las cuatro partes y 5 px por
+      arriba en STUDIO y ATIS. Todo eso quedaba fuera de la máscara y se veía
+      recortado — se notaba sobre todo en "the" y "by", que son manuscrita y
+      tienen los rasgos largos. La causa de fondo es el `line-height: 1`, que
+      deja la caja más baja que la tinta.
+
+      300% de alto y centrada resuelve el corte vertical sin tocar la
+      maquetación; el respiro horizontal lo da el padding, para los rasgos que
+      salen por los lados. El barrido sigue siendo de izquierda a derecha.
+    */
+    padding: 0 0.6vw;
     -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 100%);
     mask-image: linear-gradient(90deg, #000 0%, #000 100%);
-    -webkit-mask-size: 0% 100%;
-    mask-size: 0% 100%;
+    -webkit-mask-position: left center;
+    mask-position: left center;
+    -webkit-mask-size: 0% 300%;
+    mask-size: 0% 300%;
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
     /*
@@ -63,8 +80,8 @@
   }
   @keyframes trazar {
     to {
-      -webkit-mask-size: 100% 100%;
-      mask-size: 100% 100%;
+      -webkit-mask-size: 100% 300%;
+      mask-size: 100% 300%;
     }
   }
   /* Sutil, no un parpadeo agresivo: entre opaco y semi-transparente */
