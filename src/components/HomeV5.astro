@@ -14,33 +14,29 @@ const destacados = todos.slice(0, 3);
 ---
 
 {/*
-  .01 · PORTADA EN DOS TIEMPOS (2026-08-09)
+  .01 · PORTADA
 
-  Primer tiempo: el logo centrado en la pantalla con el claim grande debajo,
-  quieto. Segundo tiempo, con el primer gesto de scroll: el conjunto sube a su
-  sitio de siempre, el claim se encoge hasta el carril y echa a correr. Es el
-  mismo elemento en los dos estados, no dos copias que se relevan.
+  La portada grande (logo a pantalla completa con el claim) ya no vive aquí:
+  es la propia pantalla de carga, que al retirarse deja el logo y el claim
+  aterrizados justo sobre estos (ver Loader.astro). Aquí queda la portada de
+  siempre, sin recorrido de scroll propio: el intento de anclarla gastaba una
+  pantalla entera de azul vacío debajo del logo.
 
-  Dos pantallas de alto con la de arriba anclada: la de sobra es el recorrido
-  del scroll que dura la transformación. Solo en escritorio; en móvil el
-  contenedor no hace nada y la portada se comporta como hasta ahora.
+  El carril arranca `quieto` y lo suelta el loader cuando termina el relevo, o
+  el propio loader al descartarse si no hay animación.
 */}
-<div class="portada" id="portada">
-  <div class="portada-pin">
-    <section class="f-azul hero row12">
-      <h1 class="logo-h1">
-        <span class="scr">the</span><span class="hvy">STUDIO</span><span class="scr">by</span><span class="hvy">ATIS</span>
-        {/* En móvil manda el logo vertical oficial del manual, no una recreación con texto */}
-        <img class="logo-img" src="/logo/perfil-blanco.svg" alt="the STUDIO by ATIS" width="252" height="133" />
-      </h1>
-      {/*
-        La manuscrita entra aquí como decoración repetida, que es el uso que el
-        manual le permite fuera del logo, nunca como texto de lectura.
-      */}
-      <CarrilClaim id="claimPortada" quieto />
-    </section>
-  </div>
-</div>
+<section class="f-azul hero row12">
+  <h1 class="logo-h1">
+    <span class="scr">the</span><span class="hvy">STUDIO</span><span class="scr">by</span><span class="hvy">ATIS</span>
+    {/* En móvil manda el logo vertical oficial del manual, no una recreación con texto */}
+    <img class="logo-img" src="/logo/perfil-blanco.svg" alt="the STUDIO by ATIS" width="252" height="133" />
+  </h1>
+  {/*
+    La manuscrita entra aquí como decoración repetida, que es el uso que el
+    manual le permite fuera del logo, nunca como texto de lectura.
+  */}
+  <CarrilClaim id="claimPortada" quieto />
+</section>
 
 <div class="reel" id="reel">
   <div class="reel-liquid"><i class="l1"></i><i class="l2"></i><i class="l3"></i></div>
@@ -202,58 +198,14 @@ const destacados = todos.slice(0, 3);
     align-content: start;
   }
   /*
-    ── Portada en dos tiempos (2026-08-09) ───────────────────────────────────
-
-    En móvil no existe: `.portada` y `.portada-pin` no hacen nada y la portada
-    se comporta como siempre. Todo lo de abajo es de escritorio.
-
-    El movimiento entero cuelga de una sola variable, `--intro`, que va de 1
-    (logo centrado, claim grande y quieto) a 0 (portada de siempre, claim
-    corriendo en su carril). La escribe el script con el scroll.
-
-    Lo que se mueve son SOLO transformaciones y opacidades: si el script no
-    llegara a ejecutarse, `--intro` vale 0 por defecto y lo que se ve es
-    exactamente la portada de antes, no una pantalla rota.
-  */
-  @media (min-width: 901px) {
-    .portada {
-      position: relative;
-      /* La pantalla de más es el recorrido de scroll que dura la transformación */
-      height: 200svh;
-    }
-    .portada-pin {
-      position: sticky;
-      top: 0;
-      height: 100svh;
-      overflow: hidden;
-      background: var(--azul);
-      /* Estado de partida. El script lo va bajando a 0 con el scroll. */
-      --intro: 1;
-    }
-    .hero {
-      /* El bloque entero baja hasta el centro de la pantalla y vuelve a subir */
-      transform: translateY(calc(var(--intro, 0) * var(--intro-dy, 0px)));
-    }
-    /*
-      El carril no se apaga para dejar paso al claim grande: es el mismo. Crece
-      desde su sitio hacia abajo (origen arriba, que es donde está el logo, para
-      que al crecer no se meta debajo de él) y los filetes solo aparecen cuando
-      ya es un carril de verdad.
-    */
-    .hero :global(#claimPortada) {
-      transform-origin: 50% 0;
-      transform: scale(calc(1 + var(--intro, 0) * 0.55));
-      border-top-color: rgba(255, 255, 255, calc(0.85 * (1 - var(--intro, 0))));
-      border-bottom-color: rgba(255, 255, 255, calc(0.85 * (1 - var(--intro, 0))));
-    }
-  }
-  /*
-    El carril repetido bajo la casa. Franja fina y a sangre, sin más: lo que
-    tiene que hacer es cerrar el campo de plata y anunciar que a partir de ahí
-    se pasa a diapositivas.
+    El carril repetido bajo la casa. SIN relleno: el campo azul mide
+    exactamente lo que mide el carril, así que las dos líneas blancas quedan a
+    ras y son ELLAS las que separan de la plata de arriba y del campo claro de
+    abajo. Con relleno quedaba azul por fuera de las líneas y la franja se veía
+    más gruesa de lo que toca (corregido 2026-08-09).
   */
   .carril-cierre {
-    padding: calc(var(--row) * 0.22) 0;
+    padding: 0;
   }
   /*
     ── Una pantalla, una diapositiva (2026-08-09, solo escritorio) ───────────
@@ -732,86 +684,15 @@ const destacados = todos.slice(0, 3);
   addEventListener("resize", fitLogo);
 
   /*
-    ── Portada en dos tiempos ───────────────────────────────────────────────
-
-    El logo y el claim arrancan centrados en la pantalla, con el claim grande y
-    parado. Con el primer gesto de scroll el conjunto sube a su sitio, el claim
-    se encoge hasta ser el carril y ECHA A CORRER (no se apaga para dar paso a
-    otro: es el mismo elemento).
-
-    Solo escritorio. En móvil el logo de la portada es el vertical y el carril
-    ya está en su sitio desde el principio, así que aquí no se toca nada más
-    allá de soltar el desfile.
+    El carril de la portada arranca parado porque la pantalla de carga tiene
+    que aterrizar el suyo encima antes de que este eche a andar (ver
+    Loader.astro, que es quien lo suelta). Esta es la red de seguridad: si el
+    loader no llegara a existir o se quedara mudo, a los 6 s el carril corre
+    igual, en vez de quedarse congelado para siempre.
   */
-  {
-    const pin = document.querySelector<HTMLElement>(".portada-pin");
-    const portada = document.getElementById("portada");
-    const heroEl = document.querySelector<HTMLElement>(".hero");
-    const claim = document.getElementById("claimPortada");
-    const grande = matchMedia("(min-width: 901px)");
-    const hayIntro = () => !!(pin && portada && heroEl) && grande.matches && !reduce;
-
-    // Sin portada en dos tiempos, el carril corre desde el primer momento.
-    if (!hayIntro()) claim?.classList.remove("quieto");
-
-    if (pin && portada && heroEl) {
-      /*
-        El desplazamiento hasta el centro se MIDE, no se estima: es el hueco
-        que queda entre el alto del bloque (con el claim ya crecido, que no
-        ocupa sitio de maquetación porque crece por transformación) y la
-        pantalla. Así encaja en cualquier alto de ventana.
-      */
-      let dy = 0;
-      const medirIntro = () => {
-        if (!hayIntro()) {
-          heroEl.style.removeProperty("--intro-dy");
-          return;
-        }
-        const extra = claim ? claim.offsetHeight * 0.55 : 0;
-        dy = Math.max(0, (innerHeight - heroEl.offsetHeight - extra) / 2);
-        heroEl.style.setProperty("--intro-dy", dy.toFixed(1) + "px");
-      };
-
-      const introUpdate = () => {
-        if (!hayIntro()) {
-          pin.style.setProperty("--intro", "0");
-          claim?.classList.remove("quieto");
-          return;
-        }
-        const total = portada.offsetHeight - innerHeight;
-        const p = total > 0 ? clamp01(-portada.getBoundingClientRect().top / total) : 1;
-        pin.style.setProperty("--intro", (1 - p).toFixed(3));
-        // El desfile arranca cuando el carril ya es un carril, no antes.
-        claim?.classList.toggle("quieto", p < 0.97);
-      };
-
-      medirIntro();
-      introUpdate();
-      addEventListener(
-        "scroll",
-        () => requestAnimationFrame(introUpdate),
-        { passive: true }
-      );
-      addEventListener(
-        "resize",
-        () => {
-          medirIntro();
-          introUpdate();
-        },
-        { passive: true }
-      );
-      if (document.fonts) document.fonts.ready.then(medirIntro);
-      /*
-        Red de seguridad (misma idea que en reveal.ts): si algo dejara el
-        script mudo, a los 6 s el claim corre igual y el logo se queda en su
-        sitio, en vez de una portada congelada a medio camino.
-      */
-      setTimeout(() => {
-        if (!claim?.classList.contains("quieto")) return;
-        if (scrollY > innerHeight * 0.9) introUpdate();
-      }, 6000);
-    }
-  }
+  setTimeout(() => {
+    document.getElementById("claimPortada")?.classList.remove("quieto");
+  }, 6000);
 
   if (!reduce) {
     const reel = document.getElementById("reel");
