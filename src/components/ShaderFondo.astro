@@ -42,11 +42,16 @@
   }
   #shader-fondo.listo {
     /*
-      Bajado de 0.55 a 0.28: sobre el azul del campo, la fusión soft-light a
-      media opacidad dejaba manchas grandes que parecían suciedad más que
-      textura. A este nivel se percibe como grano, que es lo que se busca.
+      0.55 -> 0.28 -> 0.13 (2026-08-09). Seguía leyéndose como manchas y como
+      suciedad sobre el azul, que es exactamente lo que no queremos: la textura
+      tiene que estar por debajo del umbral de "¿esto qué es?". A 0.13 se nota
+      que el campo no es plano y no se ve una sola mancha.
+
+      Este número y el contraste del ruido (más abajo, en el shader) son las dos
+      perillas: la opacidad decide cuánto se ve, el contraste decide si es grano
+      fino o mancha grande. Se han bajado las dos.
     */
-    opacity: 0.28;
+    opacity: 0.13;
   }
   @media (prefers-reduced-motion: reduce) {
     #shader-fondo {
@@ -130,13 +135,27 @@
           float tiron = exp(-d * 4.0);
           p += (p - raton) * tiron * 0.28;
 
+          /*
+            Reparto de octavas rebalanceado (2026-08-09). Antes mandaba la
+            octava grande (p*6, peso 0.5) y era ella la que dibujaba las manchas
+            del tamaño de un puño. Ahora manda la fina: nubes grandes casi
+            testimoniales, grano fino con casi todo el peso.
+          */
           float t = uTiempo * 0.06;
-          float n = ruido(p * 6.0 + vec2(t, -t)) * 0.5;
-          n += ruido(p * 14.0 - vec2(t * 1.7, t)) * 0.32;
-          n += ruido(p * 30.0 + vec2(-t * 2.3, t * 1.3)) * 0.18;
+          float n = ruido(p * 6.0 + vec2(t, -t)) * 0.22;
+          n += ruido(p * 16.0 - vec2(t * 1.7, t)) * 0.33;
+          n += ruido(p * 42.0 + vec2(-t * 2.3, t * 1.3)) * 0.45;
 
           // Un halo suave siguiendo al puntero, para que se note quién manda.
-          n += tiron * 0.22;
+          n += tiron * 0.1;
+
+          /*
+            Comprimido contra el gris medio. En soft-light, 0.5 es "no toques
+            nada": cuanto más lejos de 0.5, más oscurece o aclara. Acercando
+            todo el rango al centro, la textura deja de ensuciar el color del
+            campo y solo lo vibra.
+          */
+          n = 0.5 + (n - 0.5) * 0.5;
 
           gl_FragColor = vec4(vec3(n), 1.0);
         }

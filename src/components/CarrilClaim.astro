@@ -1,0 +1,92 @@
+---
+/*
+  Carril del claim: la manuscrita corriendo entre dos filetes.
+
+  Sale de la portada a componente propio porque ahora aparece DOS veces
+  (2026-08-09): encima de la casa, que es donde aterriza el claim grande de la
+  portada, y debajo de la casa, cerrando el reel y dando entrada a las
+  diapositivas. Duplicar el marcado a mano habría dejado dos copias de las doce
+  repeticiones y de la animación, que es justo lo que no queremos tocar dos
+  veces.
+
+  El texto es el MISMO que se lee grande en la portada al abrir la página: no se
+  apaga para dar paso al carril, se encoge hasta aquí y echa a correr.
+*/
+interface Props {
+  id?: string;
+  /* Se para el desfile hasta que alguien lo suelte (lo usa la portada). */
+  quieto?: boolean;
+}
+const { id, quieto = false } = Astro.props;
+---
+
+<div class:list={["claim-banner", { quieto }]} id={id}>
+  <div class="claim-cinta">
+    {
+      /*
+        Doce repeticiones: seis por mitad. La animación desplaza justo la mitad
+        de la cinta, así que cada mitad tiene que ser por sí sola más ancha que
+        la pantalla o al reiniciar el bucle asomaría un hueco. Seis cubren hasta
+        unos 3.200 px de ancho.
+      */
+      Array.from({ length: 12 }).map(() => (
+        <span>la p*ta primera cooperativa creativa ·&nbsp;</span>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  /*
+    A sangre y separado por dos líneas blancas de lo que tiene encima y de lo
+    que viene debajo, para que se lea como una franja propia y no como un pie
+    del logo.
+  */
+  .claim-banner {
+    grid-column: 1/13;
+    overflow: hidden;
+    border-top: 1px solid rgba(255, 255, 255, 0.85);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.85);
+  }
+  .claim-cinta {
+    display: flex;
+    width: max-content;
+    animation: desfile 26s linear infinite;
+  }
+  /*
+    Parado en el fotograma 0, que es exactamente translateX(-50%). Al soltarlo
+    (quitando la clase) la animación arranca desde ese mismo punto, así que el
+    relevo no da ningún salto.
+  */
+  .claim-banner.quieto .claim-cinta {
+    animation-play-state: paused;
+  }
+  .claim-cinta span {
+    font-family: var(--script);
+    font-size: clamp(1.5rem, 3.4vw, 2.6rem);
+    line-height: 1.5;
+    padding: 10px 0;
+    color: var(--plata-clara);
+    white-space: nowrap;
+  }
+  /*
+    Corre de IZQUIERDA a DERECHA: parte medio carril desplazada hacia la
+    izquierda y avanza hasta cero. Es justo la mitad porque el contenido está
+    duplicado, así que al reiniciar el bucle cae en un punto idéntico y no se
+    ve la costura.
+  */
+  @keyframes desfile {
+    from {
+      transform: translateX(-50%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .claim-cinta {
+      animation: none;
+      transform: translateX(-50%);
+    }
+  }
+</style>

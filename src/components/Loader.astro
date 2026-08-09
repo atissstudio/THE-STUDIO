@@ -124,12 +124,71 @@
     const overflowPrevio = html.style.overflow;
     html.style.overflow = "hidden"; // la página real no se mueve mientras se espera
 
+    /*
+      ── El logo de la carga SE CONVIERTE en el de la portada (2026-08-09) ──
+
+      En escritorio la pantalla de carga ya no se desliza hacia arriba: el logo
+      crece hasta el tamaño y la posición exactos del logo grande de la portada
+      y allí se releva. Funciona sin trucos porque los dos campos son el MISMO
+      azul: al desvanecerse la carga, debajo hay idéntico color y el mismo
+      wordmark en el mismo sitio, así que no hay costura que ver.
+
+      La caja de destino se mide de las palabras, no del <h1>: el <h1> ocupa el
+      ancho entero de la rejilla y centra el texto dentro, así que su rectángulo
+      es el de la pantalla y escalar contra él dejaría el logo enorme.
+
+      En móvil no se hace: allí la portada usa el logo vertical oficial, que no
+      tiene la misma forma que este wordmark y no habría nada que encajar.
+    */
+    const marca = loader.querySelector<HTMLElement>(".mark");
+    const destino = document.querySelector<HTMLElement>(".logo-h1");
+
+    const cajaDeLasPalabras = (el: HTMLElement) => {
+      const cajas = Array.from(el.children)
+        .map((k) => k.getBoundingClientRect())
+        .filter((r) => r.width > 0);
+      if (!cajas.length) return el.getBoundingClientRect();
+      return {
+        left: Math.min(...cajas.map((r) => r.left)),
+        right: Math.max(...cajas.map((r) => r.right)),
+        top: Math.min(...cajas.map((r) => r.top)),
+        bottom: Math.max(...cajas.map((r) => r.bottom)),
+      };
+    };
+
+    const crecerHastaLaPortada = () => {
+      if (!marca || !destino) return false;
+      if (!matchMedia("(min-width: 901px)").matches) return false;
+      // Si se recargó a media página, el logo de destino no está donde toca.
+      if (scrollY > 4) return false;
+
+      const d = cajaDeLasPalabras(destino);
+      const m = marca.getBoundingClientRect();
+      const ancho = d.right - d.left;
+      if (!(ancho > 0) || !(m.width > 0)) return false;
+
+      const escala = ancho / m.width;
+      const dx = (d.left + d.right) / 2 - (m.left + m.width / 2);
+      const dy = (d.top + d.bottom) / 2 - (m.top + m.height / 2);
+
+      marca.style.animation = "none"; // fuera el parpadeo, estorba al relevo
+      marca.style.transition = "transform 0.95s cubic-bezier(0.62, 0, 0.2, 1)";
+      marca.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${escala.toFixed(4)})`;
+      // Se desvanece al final del recorrido, ya encajado sobre su gemelo.
+      loader.style.transition = "opacity 0.3s ease 0.75s";
+      loader.style.opacity = "0";
+      return true;
+    };
+
     let salido = false;
     const salir = () => {
       if (salido) return;
       salido = true;
-      loader.classList.add("done");
+      if (!crecerHastaLaPortada()) loader.classList.add("done");
       quitarEscuchas();
+      // Red de seguridad: el scroll no puede quedarse bloqueado si no llega
+      // ninguna transición. Se arma AQUÍ, al salir, no al cargar.
+      setTimeout(() => terminar(), 1600);
       // El scroll de la página real se queda bloqueado hasta que el loader
       // termine de deslizar del todo (ver "transitionend" más abajo). Antes se
       // desbloqueaba en el mismo instante del gesto, así que la home ya
@@ -144,17 +203,26 @@
     };
     gestos.forEach((ev) => addEventListener(ev, salir, { passive: true }));
 
-    // Una vez fuera de pantalla deja de existir, para que no capture clics,
-    // y es entonces cuando se libera el scroll de la home.
-    loader.addEventListener(
-      "transitionend",
-      (e) => {
-        if (e.propertyName !== "transform") return;
-        html.style.overflow = overflowPrevio;
-        loader.remove();
-      },
-      { once: true }
-    );
+    /*
+      Una vez fuera (deslizada o desvanecida) deja de existir, para que no
+      capture clics, y es entonces cuando se libera el scroll de la home.
+
+      Se atiende a las dos salidas: el deslizamiento mueve el propio loader
+      (transform) y el relevo con la portada lo desvanece (opacity), y el
+      transform que se anima ahí es el del logo, que llega hasta aquí por
+      propagación. La red de seguridad por plazo se arma dentro de `salir`.
+    */
+    let terminado = false;
+    const terminar = () => {
+      if (terminado) return;
+      terminado = true;
+      html.style.overflow = overflowPrevio;
+      loader.remove();
+    };
+    loader.addEventListener("transitionend", (e) => {
+      if (e.propertyName === "opacity" && e.target === loader) terminar();
+      else if (e.propertyName === "transform" && e.target === loader) terminar();
+    });
   } else {
     loader?.remove();
   }

@@ -6,44 +6,46 @@
   lectura) -> azul (.04, servicios) -> blanco (.05, datos) -> azul (.06, CTA).
 */
 import GlassButton from "./GlassButton.astro";
+import CarrilClaim from "./CarrilClaim.astro";
 import { servicios as todos } from "../data/servicios";
 
 // En la home solo entran los tres primeros. El resto vive en /servicios.
 const destacados = todos.slice(0, 3);
 ---
 
-<section class="f-azul hero row12">
-  <h1 class="logo-h1">
-    <span class="scr">the</span><span class="hvy">STUDIO</span><span class="scr">by</span><span class="hvy">ATIS</span>
-    {/* En móvil manda el logo vertical oficial del manual, no una recreación con texto */}
-    <img class="logo-img" src="/logo/perfil-blanco.svg" alt="the STUDIO by ATIS" width="252" height="133" />
-  </h1>
-  {/*
-    Banner en marcha. La manuscrita entra aquí como decoración repetida, que es
-    el uso que el manual le permite fuera del logo, no como texto de lectura.
-    Se duplica exacto para que el bucle no tenga costura.
-  */}
-  <div class="claim-banner">
-    <div class="claim-cinta">
-      {
-        /*
-          Doce repeticiones: seis por mitad. La animación desplaza justo la
-          mitad de la cinta, así que cada mitad tiene que ser por sí sola más
-          ancha que la pantalla o al reiniciar el bucle asomaría un hueco.
-          Seis cubren hasta unos 3.200 px de ancho.
-        */
-        Array.from({ length: 12 }).map(() => (
-          <span>la p*ta primera cooperativa creativa ·&nbsp;</span>
-        ))
-      }
-    </div>
+{/*
+  .01 · PORTADA EN DOS TIEMPOS (2026-08-09)
+
+  Primer tiempo: el logo centrado en la pantalla con el claim grande debajo,
+  quieto. Segundo tiempo, con el primer gesto de scroll: el conjunto sube a su
+  sitio de siempre, el claim se encoge hasta el carril y echa a correr. Es el
+  mismo elemento en los dos estados, no dos copias que se relevan.
+
+  Dos pantallas de alto con la de arriba anclada: la de sobra es el recorrido
+  del scroll que dura la transformación. Solo en escritorio; en móvil el
+  contenedor no hace nada y la portada se comporta como hasta ahora.
+*/}
+<div class="portada" id="portada">
+  <div class="portada-pin">
+    <section class="f-azul hero row12">
+      <h1 class="logo-h1">
+        <span class="scr">the</span><span class="hvy">STUDIO</span><span class="scr">by</span><span class="hvy">ATIS</span>
+        {/* En móvil manda el logo vertical oficial del manual, no una recreación con texto */}
+        <img class="logo-img" src="/logo/perfil-blanco.svg" alt="the STUDIO by ATIS" width="252" height="133" />
+      </h1>
+      {/*
+        La manuscrita entra aquí como decoración repetida, que es el uso que el
+        manual le permite fuera del logo, nunca como texto de lectura.
+      */}
+      <CarrilClaim id="claimPortada" quieto />
+    </section>
   </div>
-</section>
+</div>
 
 <div class="reel" id="reel">
   <div class="reel-liquid"><i class="l1"></i><i class="l2"></i><i class="l3"></i></div>
   <div class="reel-stage" id="reelStage">
-    <div class="reel-kick">El punto de partida · .01</div>
+    <div class="reel-kick">El punto de partida · .02</div>
     <div class="reel-phrase reel-p1">Tu negocio ya vale.</div>
     <div class="reel-house" id="reelHouse">
       <img class="r0" src="/negocio/casa-00-dark.webp" alt="Tu negocio, todavía apagado" />
@@ -55,8 +57,18 @@ const destacados = todos.slice(0, 3);
   </div>
 </div>
 
-<section class="f-claro field-pad row12" data-reveal data-slides>
-  <span class="field-tag" style="color:var(--azul)">.02</span>
+{/*
+  El carril, otra vez, cerrando la casa (pedido 2026-08-09). Va sobre campo azul
+  porque la manuscrita es plata clara y sobre el campo de plata de la casa no se
+  leería. Aquí se acaba el scroll continuo: de esta franja para abajo, cada
+  gesto trae una diapositiva.
+*/}
+<div class="f-azul carril-cierre">
+  <CarrilClaim />
+</div>
+
+<section class="f-claro field-pad row12 home-slide" data-reveal data-slides>
+  <span class="field-tag" style="color:var(--azul)">.03</span>
   <div class="read">
     <p class="k">Por qué existimos</p>
     <h2>Tu negocio de siempre, con las herramientas de los más grandes.</h2>
@@ -89,8 +101,8 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
-<section class="f-claro row12" style="padding-top:0; padding-bottom: calc(var(--row)*.45)" data-reveal data-slides>
-  <span class="field-tag" style="color:var(--azul)">.03</span>
+<section class="f-claro row12 home-slide pega-arriba" data-reveal data-slides>
+  <span class="field-tag" style="color:var(--azul)">.04</span>
   <div class="read right">
     <p class="k">Cómo lo hacemos</p>
     <h2>Un proceso, sin humo.</h2>
@@ -103,8 +115,8 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
-<section class="f-azul row12 field-cards">
-  <span class="field-tag">.04</span>
+<section class="f-azul row12 field-cards home-slide">
+  <span class="field-tag">.05</span>
   <div class="cells">
     <div class="head-cell">
       <p class="k">Qué hacemos</p>
@@ -122,8 +134,8 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
-<section class="f-blanco row12 field-cards">
-  <span class="field-tag" style="color:var(--azul)">.05</span>
+<section class="f-blanco row12 field-cards home-slide">
+  <span class="field-tag" style="color:var(--azul)">.06</span>
   <div class="datos">
     <div class="head-cell"><p class="k">Los datos</p><h2>No hablamos por hablar.</h2></div>
     <div class="dato">
@@ -145,9 +157,9 @@ const destacados = todos.slice(0, 3);
 </section>
 
 <div class="cta-wrap">
-  <div class="cta-screen" id="ctaScreen">
+  <div class="cta-screen home-slide" id="ctaScreen">
     <div class="cta-inner">
-      <p class="k2">.06 · Tu plan gratis</p>
+      <p class="k2">.07 · Tu plan gratis</p>
       <h2>Vamos a que se note.</h2>
       <p>Déjame tu correo y te mando un plan gratis, hecho para ti. Sin compromiso.</p>
       <form class="ctaform" id="ctaform" action="/api/lead" method="post">
@@ -189,6 +201,107 @@ const destacados = todos.slice(0, 3);
     overflow: hidden;
     align-content: start;
   }
+  /*
+    ── Portada en dos tiempos (2026-08-09) ───────────────────────────────────
+
+    En móvil no existe: `.portada` y `.portada-pin` no hacen nada y la portada
+    se comporta como siempre. Todo lo de abajo es de escritorio.
+
+    El movimiento entero cuelga de una sola variable, `--intro`, que va de 1
+    (logo centrado, claim grande y quieto) a 0 (portada de siempre, claim
+    corriendo en su carril). La escribe el script con el scroll.
+
+    Lo que se mueve son SOLO transformaciones y opacidades: si el script no
+    llegara a ejecutarse, `--intro` vale 0 por defecto y lo que se ve es
+    exactamente la portada de antes, no una pantalla rota.
+  */
+  @media (min-width: 901px) {
+    .portada {
+      position: relative;
+      /* La pantalla de más es el recorrido de scroll que dura la transformación */
+      height: 200svh;
+    }
+    .portada-pin {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      overflow: hidden;
+      background: var(--azul);
+      /* Estado de partida. El script lo va bajando a 0 con el scroll. */
+      --intro: 1;
+    }
+    .hero {
+      /* El bloque entero baja hasta el centro de la pantalla y vuelve a subir */
+      transform: translateY(calc(var(--intro, 0) * var(--intro-dy, 0px)));
+    }
+    /*
+      El carril no se apaga para dejar paso al claim grande: es el mismo. Crece
+      desde su sitio hacia abajo (origen arriba, que es donde está el logo, para
+      que al crecer no se meta debajo de él) y los filetes solo aparecen cuando
+      ya es un carril de verdad.
+    */
+    .hero :global(#claimPortada) {
+      transform-origin: 50% 0;
+      transform: scale(calc(1 + var(--intro, 0) * 0.55));
+      border-top-color: rgba(255, 255, 255, calc(0.85 * (1 - var(--intro, 0))));
+      border-bottom-color: rgba(255, 255, 255, calc(0.85 * (1 - var(--intro, 0))));
+    }
+  }
+  /*
+    El carril repetido bajo la casa. Franja fina y a sangre, sin más: lo que
+    tiene que hacer es cerrar el campo de plata y anunciar que a partir de ahí
+    se pasa a diapositivas.
+  */
+  .carril-cierre {
+    padding: calc(var(--row) * 0.22) 0;
+  }
+  /*
+    ── Una pantalla, una diapositiva (2026-08-09, solo escritorio) ───────────
+
+    De la casa para abajo cada campo mide exactamente una pantalla y frena el
+    gesto (`scroll-snap-stop: always`), así que ninguna rueda se salta ninguna.
+    El ajuste es el nativo del navegador, no un secuestro del scroll por JS.
+
+    La portada y la casa quedan FUERA a propósito: las dos tienen animación
+    atada al scroll continuo y un punto de ajuste en medio las cortaría.
+  */
+  @media (min-width: 901px) {
+    .home-slide {
+      height: 100svh;
+      box-sizing: border-box;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      align-content: center;
+    }
+    /*
+      La etiqueta (.03, .04…) baja por debajo de la franja del menú. Ahora cada
+      campo se detiene con su borde superior justo en el borde de la ventana, y
+      ahí es donde vive la franja fija: en su sitio de siempre (top: 22px) la
+      etiqueta quedaba tapada en las cinco diapositivas.
+    */
+    .home-slide > .field-tag {
+      top: calc(var(--menu-h) + 14px);
+    }
+    /* En modo diapositiva el aire lo pone la pantalla, no el relleno del campo */
+    .home-slide.field-pad,
+    .home-slide.pega-arriba {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    /*
+      El panel de texto ya no impone su propia pantalla: la impone el campo, y
+      el panel la rellena. Con los dos a 100svh el campo medía dos pantallas.
+    */
+    :global(.home-slide[data-slides] .rv-panel) {
+      min-height: 0;
+      height: 100%;
+    }
+  }
+  /* En móvil el segundo bloque de lectura sigue pegado al primero, como estaba */
+  .pega-arriba {
+    padding-top: 0;
+    padding-bottom: calc(var(--row) * 0.45);
+  }
   .logo-h1 {
     grid-column: 1/13;
     margin: 0;
@@ -204,48 +317,12 @@ const destacados = todos.slice(0, 3);
     color: var(--plata-clara);
   }
   /*
-    Cinta del claim: a sangre, separada por dos líneas blancas del logo que
-    tiene encima y del campo que viene debajo, para que se lea como una franja
-    propia y no como un pie del logo.
+    El carril vive ahora en CarrilClaim.astro, que lo pinta en los dos sitios
+    donde aparece. Aquí solo queda su separación del logo, que es propia de la
+    portada.
   */
-  .claim-banner {
-    grid-column: 1/13;
+  .hero :global(#claimPortada) {
     margin-top: calc(var(--row) * 0.42);
-    overflow: hidden;
-    border-top: 1px solid rgba(255, 255, 255, 0.85);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.85);
-  }
-  .claim-cinta {
-    display: flex;
-    width: max-content;
-    animation: desfile 26s linear infinite;
-  }
-  .claim-cinta span {
-    font-family: var(--script);
-    font-size: clamp(1.5rem, 3.4vw, 2.6rem);
-    line-height: 1.5;
-    padding: 10px 0;
-    color: var(--plata-clara);
-    white-space: nowrap;
-  }
-  /*
-    Corre de IZQUIERDA a DERECHA: parte medio carril desplazada hacia la
-    izquierda y avanza hasta cero. Es justo la mitad porque el contenido está
-    duplicado, así que al reiniciar el bucle cae en un punto idéntico y no se
-    ve la costura.
-  */
-  @keyframes desfile {
-    from {
-      transform: translateX(-50%);
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .claim-cinta {
-      animation: none;
-    }
   }
   .logo-h1 .scr {
     font-family: var(--script);
@@ -653,6 +730,88 @@ const destacados = todos.slice(0, 3);
   if (document.fonts) document.fonts.ready.then(fitLogo);
   fitLogo();
   addEventListener("resize", fitLogo);
+
+  /*
+    ── Portada en dos tiempos ───────────────────────────────────────────────
+
+    El logo y el claim arrancan centrados en la pantalla, con el claim grande y
+    parado. Con el primer gesto de scroll el conjunto sube a su sitio, el claim
+    se encoge hasta ser el carril y ECHA A CORRER (no se apaga para dar paso a
+    otro: es el mismo elemento).
+
+    Solo escritorio. En móvil el logo de la portada es el vertical y el carril
+    ya está en su sitio desde el principio, así que aquí no se toca nada más
+    allá de soltar el desfile.
+  */
+  {
+    const pin = document.querySelector<HTMLElement>(".portada-pin");
+    const portada = document.getElementById("portada");
+    const heroEl = document.querySelector<HTMLElement>(".hero");
+    const claim = document.getElementById("claimPortada");
+    const grande = matchMedia("(min-width: 901px)");
+    const hayIntro = () => !!(pin && portada && heroEl) && grande.matches && !reduce;
+
+    // Sin portada en dos tiempos, el carril corre desde el primer momento.
+    if (!hayIntro()) claim?.classList.remove("quieto");
+
+    if (pin && portada && heroEl) {
+      /*
+        El desplazamiento hasta el centro se MIDE, no se estima: es el hueco
+        que queda entre el alto del bloque (con el claim ya crecido, que no
+        ocupa sitio de maquetación porque crece por transformación) y la
+        pantalla. Así encaja en cualquier alto de ventana.
+      */
+      let dy = 0;
+      const medirIntro = () => {
+        if (!hayIntro()) {
+          heroEl.style.removeProperty("--intro-dy");
+          return;
+        }
+        const extra = claim ? claim.offsetHeight * 0.55 : 0;
+        dy = Math.max(0, (innerHeight - heroEl.offsetHeight - extra) / 2);
+        heroEl.style.setProperty("--intro-dy", dy.toFixed(1) + "px");
+      };
+
+      const introUpdate = () => {
+        if (!hayIntro()) {
+          pin.style.setProperty("--intro", "0");
+          claim?.classList.remove("quieto");
+          return;
+        }
+        const total = portada.offsetHeight - innerHeight;
+        const p = total > 0 ? clamp01(-portada.getBoundingClientRect().top / total) : 1;
+        pin.style.setProperty("--intro", (1 - p).toFixed(3));
+        // El desfile arranca cuando el carril ya es un carril, no antes.
+        claim?.classList.toggle("quieto", p < 0.97);
+      };
+
+      medirIntro();
+      introUpdate();
+      addEventListener(
+        "scroll",
+        () => requestAnimationFrame(introUpdate),
+        { passive: true }
+      );
+      addEventListener(
+        "resize",
+        () => {
+          medirIntro();
+          introUpdate();
+        },
+        { passive: true }
+      );
+      if (document.fonts) document.fonts.ready.then(medirIntro);
+      /*
+        Red de seguridad (misma idea que en reveal.ts): si algo dejara el
+        script mudo, a los 6 s el claim corre igual y el logo se queda en su
+        sitio, en vez de una portada congelada a medio camino.
+      */
+      setTimeout(() => {
+        if (!claim?.classList.contains("quieto")) return;
+        if (scrollY > innerHeight * 0.9) introUpdate();
+      }, 6000);
+    }
+  }
 
   if (!reduce) {
     const reel = document.getElementById("reel");

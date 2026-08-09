@@ -96,6 +96,7 @@ Las sesiones se encarecen porque **cada mensaje reenvía todo el contexto**. Reg
 ---
 
 16. **La referencia es SIEMPRE la web publicada, no `localhost` (norma, 2026-08-06).** Alejandro mira, juzga y pide correcciones sobre **https://the-studio-delta.vercel.app**. Claude tiene que revisar **sobre esa misma web**, no sobre su servidor local, o se está hablando de dos sitios distintos sin saberlo. Consecuencia obligada: **antes de dar nada por verificado, el trabajo tiene que estar subido y desplegado**. Si hay commits sin `git push`, lo publicado es código viejo y cualquier comprobación contra producción es falsa — en ese caso Claude lo dice y pide el push antes de verificar. `localhost` vale para el ciclo rápido mientras se construye; **la palabra final la tiene lo publicado**.
+17. **SE COMMITEA Y SE SUBE SIEMPRE, sin preguntar (norma, 2026-08-09).** Al terminar un bloque de trabajo, Claude hace `git commit` y `git push` **por defecto**, sin esperar a que se lo pidan. Sustituye a la prohibición que había en §7 ("no commitear sin que te lo pidan"), que en la práctica dejaba el trabajo muerto en el disco: Alejandro juzga sobre la web publicada (norma 16), así que trabajo sin subir es trabajo que **no existe** para él, y en la sesión del 2026-08-09 se le entregó una tanda entera de cambios que no podía ver por eso. Lo único que sigue prohibido es **commitear secretos, `.env` o credenciales**. Si el trabajo queda a medias o roto, se dice claramente en el mensaje del commit, pero se sube igual.
     - Rutas de acceso, para no confundirlas: **panel interno `/admin/login`** (cuenta `atisdev@atis.studio`, la que compara `is_admin()`) · **portal de cliente `/portal/login`** (busca ficha en la tabla `clientes`; un correo sin ficha da "Ese correo no tiene una ficha de cliente asociada", que es lo correcto, no un fallo).
 
 ## 6. Estado actual y siguiente paso
@@ -175,6 +176,17 @@ Las sesiones se encarecen porque **cada mensaje reenvía todo el contexto**. Reg
 
 **Pendiente del plan aprobado:** la **transición entre campos de color**. Es el único punto que no se puede validar midiendo (es puro movimiento) y el único cuyo error sería global, no local. Se deja a que Alejandro vea el resto en movimiento y decida si hace falta.
 
+### Sesión 2026-08-09 — la home pasa a diapositivas (HECHA)
+
+- **Portada en dos tiempos** (`HomeV5.astro`). El logo arranca centrado a pantalla completa con el claim grande debajo, quieto; con el primer gesto de scroll el conjunto sube a su sitio de siempre y **el claim se encoge hasta el carril y echa a correr** — es el MISMO elemento, no se apaga uno para encender otro. Todo cuelga de una variable, `--intro` (1 → 0), que escribe el scroll. Referencia pedida por Alejandro: produx.design. Medido a 1280×800: logo de 268 px a 12 px, claim de 131 px a 84 px, continuo.
+- **El logo viene de la pantalla de carga** (`Loader.astro`). En escritorio la carga ya no se desliza hacia arriba: el logo **crece 2,19× hasta caer exactamente sobre el logo grande** de la portada y allí se releva mientras el campo se desvanece. Funciona sin trucos porque **los dos campos son el mismo azul**. Medido: acaba en 640 × 373,6 px con 1.203,16 px de ancho contra un destino de 640 × 373,59 y 1.203,14 — dos centésimas de píxel. La caja de destino se mide **de las palabras**, no del `<h1>`, que ocupa el ancho entero de la rejilla. En móvil se conserva el deslizamiento (allí el logo de portada es el vertical y no casa).
+- **`CarrilClaim.astro`**: el carril sale a componente propio porque ahora aparece **dos veces**, encima y debajo de la casa. El de abajo va sobre franja azul: la manuscrita es plata clara y sobre el campo de plata de la casa no se leería.
+- **Una pantalla, una diapositiva de la casa para abajo** (solo escritorio, clase `.home-slide`): las cinco (`.03` por qué existimos · `.04` proceso · `.05` servicios · `.06` datos · `.07` llamada) miden 100svh exactos, con `scroll-snap-align: start` y **`scroll-snap-stop: always`**, así que ningún gesto se salta ninguna. Es ajuste **nativo**, no un secuestro del scroll por JS (decisión de Alejandro). **La portada y la casa quedan fuera del sistema a propósito**: las dos tienen animación atada al scroll continuo y un punto de ajuste en medio las cortaría. Verificado a 1280×800: cinco tramos de 800 px, nada desbordado, separados 800 px justos, y 300 px finales para el pie. Móvil intacto (allí se sigue troceando por párrafos).
+  - ⚠️ **Con diapositivas, cada campo se detiene con su borde superior en el borde de la ventana, que es donde vive la franja fija del menú.** Las etiquetas (`.field-tag`, en `top: 22px`) quedaban tapadas en las cinco. Bajadas a `calc(var(--menu-h) + 14px)`.
+- **Numeración**: casa `.02`, lecturas `.03`/`.04`, servicios `.05`, datos `.06`, llamada `.07`. La portada **no lleva rótulo**, un número sobre el logo no aporta nada.
+- **Shader suavizado** (`ShaderFondo.astro`): seguía leyéndose como manchas. Dos perillas a la vez — opacidad 0,28 → **0,13** y reparto de octavas volcado al **grano fino** (la octava grande baja de 0,50 a 0,22, la fina sube a 0,45), más una compresión del rango contra el gris neutro (`0.5 + (n-0.5)*0.5`), que en soft-light es "no toques el color". Pendiente del ojo de Alejandro.
+- **Siguiente paso pactado:** maquetar el contenido de cada diapositiva. `.05` servicios y `.06` datos dejan de ser tarjetas sueltas y pasan a dar algo más de información, con poco texto y buscando rematar la convicción.
+
 ### 🎯 Lo que toca en la sesión siguiente
 
 **1 · Los cuatro hallazgos de la auditoría, sin resolver.** Salieron el 2026-08-05 y siguen abiertos:
@@ -206,7 +218,7 @@ Las sesiones se encarecen porque **cada mensaje reenvía todo el contexto**. Reg
 
 - Inventar datos, cifras, nombres o fuentes.
 - Mover o borrar archivos originales del usuario (copiar, nunca mover).
-- Commitear o hacer push sin que se lo pidan; commitear secretos o `.env`.
+- Commitear secretos, credenciales o `.env`. (Commitear y subir el trabajo, en cambio, se hace **siempre y sin preguntar** desde el 2026-08-09, ver §5 regla 17.)
 - Declarar algo "funcionando" sin haberlo verificado de verdad.
 - Sobreingeniería: infraestructura para una escala que no existe.
 - Ser complaciente: aceptar una mala decisión por no contradecir al fundador.
