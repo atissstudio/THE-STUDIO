@@ -136,6 +136,14 @@
     const html = document.documentElement;
     const overflowPrevio = html.style.overflow;
     html.style.overflow = "hidden"; // la página real no se mueve mientras se espera
+    /*
+      Marca de "todavía cargando". La usa la portada para tener su claim
+      escondido mientras dura esto: así, al retirarse la carga, primero aterriza
+      el logo y DESPUÉS entra la frase, en vez de aparecer las dos a la vez.
+      No hay parpadeo por ponerla desde el guion: mientras tanto, esta pantalla
+      lo está tapando todo.
+    */
+    html.classList.add("cargando");
 
     /*
       ── El logo de la carga SE CONVIERTE en el de la portada (2026-08-09) ──
@@ -234,6 +242,8 @@
       if (terminado) return;
       terminado = true;
       html.style.overflow = overflowPrevio;
+      // Se va la carga y entra la frase de debajo del logo: segundo tiempo.
+      html.classList.remove("cargando");
       /*
         El carril NO se suelta aquí si la portada tiene entrada: mientras el
         claim es la bajada del logo va parado a propósito, y quien lo suelta es

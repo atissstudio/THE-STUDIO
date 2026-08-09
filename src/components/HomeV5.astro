@@ -323,7 +323,21 @@ const destacados = todos.slice(0, 3);
       que la franja sigue midiendo el ancho entero y son sus dos líneas blancas
       las que llegan a los bordes, pase lo que pase.
     */
+    /*
+      ── El orden de la entrada ────────────────────────────────────────────────
+
+      Primero aterriza el logo, y SOLO cuando la pantalla de carga se ha ido
+      aparece el claim debajo. Antes se destapaba con ella, o sea a la vez que
+      el logo todavía estaba viajando: dos cosas moviéndose por motivos
+      distintos y ningún orden que leer. Ahora son dos tiempos: cae la marca,
+      entra su frase.
+    */
+    :global(html.cargando) .hero :global(#claimPortada) {
+      opacity: 0;
+      transform: translateY(10px);
+    }
     .hero :global(#claimPortada) {
+      transition: opacity 0.6s ease 0.1s, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s;
       --claim-esc: calc(1 + var(--intro, 0) * (var(--claim-esc-tope, 1) - 1));
       width: calc(100% - var(--intro, 0) * (100% - var(--claim-ancho, 100%)));
       margin-inline: auto;
@@ -954,13 +968,17 @@ const destacados = todos.slice(0, 3);
         raiz.style.setProperty("--intro", (1 - p).toFixed(3));
         // El desfile arranca cuando el carril ya es un carril, no antes.
         /*
-          Quieto solo mientras es la bajada del logo. Parado en el fotograma 0,
-          la cinta cae justo en la juntura entre dos copias (son 24, y la
-          animación parte de media cinta), así que en la caja estrecha se lee
-          UNA frase entera y no un trozo cortado. En cuanto se empieza a bajar,
-          echa a andar.
+          ORDEN: la frase no echa a correr hasta que la caja ya es un carril
+          (dos tercios del recorrido). Antes arrancaba al primer gesto, con lo
+          que se ponía a desfilar siendo todavía la bajada del logo, y no se
+          entendía qué era. Ahora se lee: frase quieta → la caja se abre y
+          aparecen las líneas → y entonces la cinta arranca.
+
+          Parada en el fotograma 0 cae justo en la juntura entre dos copias
+          (son 24 y la animación parte de media cinta), así que en la caja
+          estrecha se lee UNA frase entera y no un trozo cortado.
         */
-        claim?.classList.toggle("quieto", p < 0.08);
+        claim?.classList.toggle("quieto", p < 0.65);
       };
 
       medirIntro();
