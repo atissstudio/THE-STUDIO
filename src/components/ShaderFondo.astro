@@ -51,7 +51,7 @@
       perillas: la opacidad decide cuánto se ve, el contraste decide si es grano
       fino o mancha grande. Se han bajado las dos.
     */
-    opacity: 0.13;
+    opacity: 0.07;
   }
   @media (prefers-reduced-motion: reduce) {
     #shader-fondo {
@@ -142,9 +142,9 @@
             testimoniales, grano fino con casi todo el peso.
           */
           float t = uTiempo * 0.06;
-          float n = ruido(p * 6.0 + vec2(t, -t)) * 0.22;
-          n += ruido(p * 16.0 - vec2(t * 1.7, t)) * 0.33;
-          n += ruido(p * 42.0 + vec2(-t * 2.3, t * 1.3)) * 0.45;
+          float n = ruido(p * 9.0 + vec2(t, -t)) * 0.08;
+          n += ruido(p * 26.0 - vec2(t * 1.7, t)) * 0.27;
+          n += ruido(p * 70.0 + vec2(-t * 2.3, t * 1.3)) * 0.65;
 
           // Un halo suave siguiendo al puntero, para que se note quién manda.
           n += tiron * 0.1;
