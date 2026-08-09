@@ -1,40 +1,20 @@
 ---
 /*
-  Pantalla de carga Y PORTADA GRANDE, que son la misma pantalla (fusionadas el
-  2026-08-09).
+  Pantalla de carga de la maqueta aprobada: campo azul a sangre y el logo que
+  se traza de izquierda a derecha. Una vez trazado, el logo queda parpadeando
+  y la pantalla espera a que el usuario deslice (rueda, touch, tecla o clic)
+  para retirarse. No se quita sola (cambio pedido 2026-08-03).
 
-  Antes eran dos: la carga se deslizaba hacia arriba y debajo esperaba una
-  portada anclada que gastaba una pantalla de scroll entera en su
-  transformación. Como el logo solo llena 262 px, sobraba media pantalla de
-  azul vacío que además tardaba otra pantalla en irse. Al fundirlas desaparece
-  ese recorrido: la portada grande ES esta pantalla, y cuando se retira, debajo
-  está la página ya montada en su sitio, sin hueco.
-
-  La secuencia, toda aquí:
-
-    1 · el logo se traza de izquierda a derecha (sin máscara, ver abajo)
-    2 · crece hasta ocupar el ancho y aparece el claim grande debajo
-    3 · espera un gesto, parpadeando
-    4 · el gesto lo lleva a su sitio: el logo aterriza exactamente sobre el
-        logo de la portada y el claim sobre su carril, y el campo se desvanece
-
-  El paso 4 no necesita trucos porque los dos campos son el MISMO azul: al irse
-  este, debajo hay idéntico color con las mismas piezas en la misma posición.
-
-  Con "menos movimiento" activado no se muestra: nada que esperar.
+  Mientras espera, bloquea el scroll de la página real para que no se mueva
+  por debajo. Con "menos movimiento" activado, no se muestra: nada que esperar.
 */
-import CarrilClaim from "./CarrilClaim.astro";
 ---
 
 <div id="loader" aria-hidden="true">
-  <div class="cover" id="loaderCover">
-    <p class="mark">
-      <span class="scr">the</span> <span class="hvy">STUDIO</span>
-      <span class="scr">by</span> <span class="hvy">ATIS</span>
-    </p>
-    {/* El claim de la portada, ya aquí: es el mismo que luego corre en el carril */}
-    <CarrilClaim quieto />
-  </div>
+  <p class="mark">
+    <span class="scr">the</span> <span class="hvy">STUDIO</span>
+    <span class="scr">by</span> <span class="hvy">ATIS</span>
+  </p>
 </div>
 
 <style>
@@ -43,61 +23,13 @@ import CarrilClaim from "./CarrilClaim.astro";
     inset: 0;
     z-index: 100;
     background: var(--azul);
-    /*
-      Columna flexible, NO rejilla. Con `display: grid` la única columna es
-      `auto`, que se dimensiona al contenido máximo y puede pasarse del
-      contenedor: el carril es una cinta de doce copias y estiraba el bloque a
-      casi 4.000 px, con lo que el logo se iba fuera de la pantalla. En columna
-      flexible el bloque hereda el ancho del campo y la cinta se recorta dentro
-      de su carril, como en la portada.
-    */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     overflow: hidden;
     transition: transform 0.9s cubic-bezier(0.76, 0, 0.24, 1);
   }
   #loader.done {
     transform: translateY(-101%);
-  }
-  /*
-    El bloque de portada. Crece a los 1,9 s, o sea justo cuando el logo termina
-    de trazarse: primero se lee el logo, después ocupa la pantalla.
-  */
-  .cover {
-    width: 100%;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: calc(var(--row) * 0.42);
-  }
-  /*
-    El crecimiento es SOLO de escritorio, igual que el relevo con la portada.
-    En móvil esta pantalla sigue siendo la de siempre (logo a su tamaño y
-    deslizamiento hacia arriba), porque allí la portada usa el logo vertical y
-    no hay nada sobre lo que aterrizar.
-  */
-  @media (min-width: 901px) {
-    .cover {
-      transform: scale(0.62);
-      animation: crecer 0.85s cubic-bezier(0.2, 0.7, 0.2, 1) 1.9s forwards;
-    }
-    /* Empieza a parpadear cuando ya ha crecido del todo (1.9s + 0.85s) */
-    #loader .mark {
-      animation-delay: 2.85s;
-    }
-  }
-  /*
-    Hasta dónde crece lo calcula el script: el destino es que el logo mida
-    EXACTAMENTE lo que mide el de la portada, para que el relevo posterior sea
-    un viaje en vertical y nada más. El 2 es solo el respaldo por si el script
-    no llegara a medir; a ojo se queda corto, pero no roto.
-  */
-  @keyframes crecer {
-    to {
-      transform: scale(var(--crecido, 2));
-    }
   }
   /*
     El logo se traza SIN máscara (2026-08-08, tercer intento y el bueno).
@@ -110,7 +42,8 @@ import CarrilClaim from "./CarrilClaim.astro";
 
     Ahora el texto se pinta ENTERO, sin nada encima. Lo que se mueve es una tapa
     del mismo azul del fondo que se encoge hacia la derecha y va descubriendo el
-    logo de izquierda a derecha.
+    logo de izquierda a derecha. Mismo efecto, y sin máscara no hay nada que
+    pueda recortar una letra, en ningún navegador.
   */
   #loader .mark {
     position: relative;
@@ -131,8 +64,7 @@ import CarrilClaim from "./CarrilClaim.astro";
       precisamente para que este relleno no falsee la escala.
     */
     padding: 0.2em 0.36em;
-    /* Justo al terminar de destaparse (0.3s + 1.5s); en escritorio espera al
-       crecimiento, ver más abajo. */
+    /* Empieza a parpadear justo cuando termina de destaparse (0.3s + 1.5s). */
     animation: parpadeo 1.8s ease-in-out 1.8s infinite;
   }
   /*
@@ -189,27 +121,6 @@ import CarrilClaim from "./CarrilClaim.astro";
     font-size: clamp(1.6rem, 12vw, 5rem);
     letter-spacing: -0.03em;
   }
-  /*
-    El claim aparece cuando el logo ya ha crecido, no antes: primero la marca,
-    después la frase. Solo en escritorio — en móvil el relevo con la portada no
-    se hace (allí el logo de portada es el vertical) y esta pantalla se sigue
-    deslizando como siempre.
-  */
-  #loader :global(.claim-banner) {
-    width: 100%;
-    opacity: 0;
-    animation: asomar 0.6s ease 2.5s forwards;
-  }
-  @keyframes asomar {
-    to {
-      opacity: 1;
-    }
-  }
-  @media (max-width: 900px) {
-    #loader :global(.claim-banner) {
-      display: none;
-    }
-  }
 
   @media (prefers-reduced-motion: reduce) {
     #loader {
@@ -226,139 +137,81 @@ import CarrilClaim from "./CarrilClaim.astro";
     const overflowPrevio = html.style.overflow;
     html.style.overflow = "hidden"; // la página real no se mueve mientras se espera
 
-    const cover = document.getElementById("loaderCover");
-    const marca = loader.querySelector<HTMLElement>(".mark");
-    const claimCarga = loader.querySelector<HTMLElement>(".claim-banner");
-    const logoDestino = document.querySelector<HTMLElement>(".logo-h1");
-    const claimDestino = document.getElementById("claimPortada");
-
     /*
-      La caja de las PALABRAS, no la del elemento. Los dos extremos lo
-      necesitan: el <h1> de la portada ocupa el ancho entero de la rejilla y
-      centra el texto dentro, así que su rectángulo es el de la pantalla; y el
-      logo de aquí lleva relleno para que Safari no le recorte los rasgos. Con
-      cualquiera de las dos cajas, la escala saldría mal.
+      ── El logo de la carga SE CONVIERTE en el de la portada (2026-08-09) ──
+
+      En escritorio la pantalla de carga ya no se desliza hacia arriba: el logo
+      crece hasta el tamaño y la posición exactos del logo grande de la portada
+      y allí se releva. Funciona sin trucos porque los dos campos son el MISMO
+      azul: al desvanecerse la carga, debajo hay idéntico color y el mismo
+      wordmark en el mismo sitio, así que no hay costura que ver.
+
+      La caja de destino se mide de las palabras, no del <h1>: el <h1> ocupa el
+      ancho entero de la rejilla y centra el texto dentro, así que su rectángulo
+      es el de la pantalla y escalar contra él dejaría el logo enorme.
+
+      En móvil no se hace: allí la portada usa el logo vertical oficial, que no
+      tiene la misma forma que este wordmark y no habría nada que encajar.
     */
+    const marca = loader.querySelector<HTMLElement>(".mark");
+    const destino = document.querySelector<HTMLElement>(".logo-h1");
+
     const cajaDeLasPalabras = (el: HTMLElement) => {
       const cajas = Array.from(el.children)
         .map((k) => k.getBoundingClientRect())
         .filter((r) => r.width > 0);
       if (!cajas.length) return el.getBoundingClientRect();
-      return new DOMRect(
-        Math.min(...cajas.map((r) => r.left)),
-        Math.min(...cajas.map((r) => r.top)),
-        Math.max(...cajas.map((r) => r.right)) - Math.min(...cajas.map((r) => r.left)),
-        Math.max(...cajas.map((r) => r.bottom)) - Math.min(...cajas.map((r) => r.top))
-      );
+      return {
+        left: Math.min(...cajas.map((r) => r.left)),
+        right: Math.max(...cajas.map((r) => r.right)),
+        top: Math.min(...cajas.map((r) => r.top)),
+        bottom: Math.max(...cajas.map((r) => r.bottom)),
+      };
     };
 
-    // Escala que arrastra el bloque de portada en este instante. Las
-    // traslaciones de los hijos van en el espacio del padre, así que hay que
-    // dividirlas por ella o el recorrido se queda corto.
-    const escalaDelPadre = () => {
-      if (!cover) return 1;
-      const m = new DOMMatrixReadOnly(getComputedStyle(cover).transform);
-      return m.a || 1;
-    };
-
-    const llevar = (
-      pieza: HTMLElement,
-      origen: DOMRect,
-      destino: DOMRect,
-      s: number,
-      desdeLaIzquierda: boolean
-    ) => {
-      const escala = destino.width / origen.width;
-      const ox = desdeLaIzquierda ? origen.left : origen.left + origen.width / 2;
-      const dx = desdeLaIzquierda ? destino.left : destino.left + destino.width / 2;
-      const oy = origen.top + origen.height / 2;
-      const dy = destino.top + destino.height / 2;
-      pieza.style.transformOrigin = desdeLaIzquierda ? "0 50%" : "50% 50%";
-      pieza.style.transition = "transform 0.95s cubic-bezier(0.62, 0, 0.2, 1)";
-      pieza.style.transform = `translate(${((dx - ox) / s).toFixed(1)}px, ${((dy - oy) / s).toFixed(1)}px) scale(${escala.toFixed(4)})`;
-    };
-
-    /*
-      Cuánto tiene que crecer el bloque para que el logo de la carga acabe
-      midiendo lo mismo que el de la portada. Se mide, no se estima: el de la
-      portada lo ajusta su propio script al ancho de la ventana, así que
-      cualquier número fijo aquí quedaría mal en cuanto cambiase la pantalla.
-      Con esto, el viaje posterior es solo vertical.
-    */
-    const medirCrecimiento = () => {
-      if (!cover || !marca || !logoDestino) return;
-      if (!matchMedia("(min-width: 901px)").matches) return;
-      const s = escalaDelPadre();
-      const ahora = cajaDeLasPalabras(marca).width / s;
-      const meta = cajaDeLasPalabras(logoDestino).width;
-      if (ahora > 0 && meta > 0) cover.style.setProperty("--crecido", (meta / ahora).toFixed(4));
-    };
-
-    /*
-      El relevo con la portada. Solo escritorio: en móvil la portada usa el logo
-      vertical oficial, que no tiene esta forma, y no habría nada que encajar.
-      Si se recargó a media página, el destino no está donde toca y tampoco.
-    */
-    const relevarConLaPortada = () => {
-      if (!cover || !marca || !logoDestino) return false;
+    const crecerHastaLaPortada = () => {
+      if (!marca || !destino) return false;
       if (!matchMedia("(min-width: 901px)").matches) return false;
+      // Si se recargó a media página, el logo de destino no está donde toca.
       if (scrollY > 4) return false;
 
-      // El bloque se congela donde esté: si el gesto llega mientras todavía
-      // está creciendo, su animación seguiría moviendo lo que ya hemos medido.
-      const s = escalaDelPadre();
-      cover.style.animation = "none";
-      cover.style.transform = `scale(${s})`;
+      const d = cajaDeLasPalabras(destino);
+      // También del origen se miden LAS PALABRAS: el logo lleva relleno para
+      // que Safari no le recorte los rasgos, y con la caja la escala saldría
+      // corta.
+      const m = cajaDeLasPalabras(marca);
+      const ancho = d.right - d.left;
+      const anchoM = m.right - m.left;
+      if (!(ancho > 0) || !(anchoM > 0)) return false;
 
-      const origenLogo = cajaDeLasPalabras(marca);
-      const destinoLogo = cajaDeLasPalabras(logoDestino);
-      if (!(origenLogo.width > 0) || !(destinoLogo.width > 0)) return false;
+      const escala = ancho / anchoM;
+      const dx = (d.left + d.right) / 2 - (m.left + m.right) / 2;
+      const dy = (d.top + d.bottom) / 2 - (m.top + m.bottom) / 2;
 
       marca.style.animation = "none"; // fuera el parpadeo, estorba al relevo
-      llevar(marca, origenLogo, destinoLogo, s, false);
-
-      /*
-        El carril viaja desde su borde izquierdo, no desde su centro: la cinta
-        está desplazada media cinta hacia la izquierda (fotograma 0 del
-        desfile), así que es el borde izquierdo el punto que coincide en los
-        dos, y escalando desde ahí el texto cae encima de sí mismo.
-      */
-      if (claimCarga && claimDestino) {
-        const o = claimCarga.getBoundingClientRect();
-        const d = claimDestino.getBoundingClientRect();
-        if (o.width > 0 && d.width > 0) {
-          claimCarga.style.animation = "none";
-          claimCarga.style.opacity = "1";
-          llevar(claimCarga, o, d, s, true);
-        }
-      }
-
+      marca.style.transition = "transform 0.95s cubic-bezier(0.62, 0, 0.2, 1)";
+      marca.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${escala.toFixed(4)})`;
       // Se desvanece al final del recorrido, ya encajado sobre su gemelo.
       loader.style.transition = "opacity 0.3s ease 0.75s";
       loader.style.opacity = "0";
       return true;
     };
 
-    /*
-      Se mide tres veces, todas antes de que arranque el crecimiento (1,9 s):
-      al cargar, cuando las fuentes están listas y una vez más pasado un
-      momento, porque el logo de la portada lo dimensiona OTRO script y no hay
-      garantía de cuál de los dos termina antes.
-    */
-    medirCrecimiento();
-    if (document.fonts) document.fonts.ready.then(medirCrecimiento);
-    setTimeout(medirCrecimiento, 900);
-    addEventListener("resize", medirCrecimiento, { passive: true });
-
     let salido = false;
     const salir = () => {
       if (salido) return;
       salido = true;
-      if (!relevarConLaPortada()) loader.classList.add("done");
+      if (!crecerHastaLaPortada()) loader.classList.add("done");
       quitarEscuchas();
       // Red de seguridad: el scroll no puede quedarse bloqueado si no llega
       // ninguna transición. Se arma AQUÍ, al salir, no al cargar.
-      setTimeout(() => terminar(), 1800);
+      setTimeout(() => terminar(), 1600);
+      // El scroll de la página real se queda bloqueado hasta que el loader
+      // termine de deslizar del todo (ver "transitionend" más abajo). Antes se
+      // desbloqueaba en el mismo instante del gesto, así que la home ya
+      // arrancaba a moverse mientras el loader todavía se estaba yendo: se
+      // veían las dos cosas deslizando a la vez. Ahora primero termina de
+      // salir la pantalla de carga, y solo entonces empieza a responder la home.
     };
 
     const gestos = ["wheel", "touchstart", "keydown", "click"] as const;
@@ -369,24 +222,25 @@ import CarrilClaim from "./CarrilClaim.astro";
 
     /*
       Una vez fuera (deslizada o desvanecida) deja de existir, para que no
-      capture clics, y es entonces cuando se libera el scroll de la home y el
-      carril de la portada echa a correr — ni antes, o se vería moverse por
-      debajo mientras el de aquí todavía está aterrizando encima.
+      capture clics, y es entonces cuando se libera el scroll de la home.
+
+      Se atiende a las dos salidas: el deslizamiento mueve el propio loader
+      (transform) y el relevo con la portada lo desvanece (opacity), y el
+      transform que se anima ahí es el del logo, que llega hasta aquí por
+      propagación. La red de seguridad por plazo se arma dentro de `salir`.
     */
     let terminado = false;
     const terminar = () => {
       if (terminado) return;
       terminado = true;
       html.style.overflow = overflowPrevio;
-      claimDestino?.classList.remove("quieto");
       loader.remove();
     };
     loader.addEventListener("transitionend", (e) => {
-      if (e.target !== loader) return;
-      if (e.propertyName === "opacity" || e.propertyName === "transform") terminar();
+      if (e.propertyName === "opacity" && e.target === loader) terminar();
+      else if (e.propertyName === "transform" && e.target === loader) terminar();
     });
   } else {
     loader?.remove();
-    document.getElementById("claimPortada")?.classList.remove("quieto");
   }
 </script>

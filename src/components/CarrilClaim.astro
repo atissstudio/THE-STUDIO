@@ -63,7 +63,14 @@ const { id, quieto = false } = Astro.props;
   }
   .claim-cinta span {
     font-family: var(--script);
-    font-size: clamp(1.5rem, 3.4vw, 2.6rem);
+    /*
+      El cuerpo se puede escalar desde fuera con `--claim-esc` (lo usa la
+      portada para que el carril entre pequeño y crezca hasta su tamaño). Se
+      toca el TAMAÑO DE LETRA y no una transformación del carril a propósito:
+      transformar una cinta que ya es más ancha que la pantalla la saca por los
+      lados, y así la franja mide siempre el ancho entero.
+    */
+    font-size: calc(clamp(1.5rem, 3.4vw, 2.6rem) * var(--claim-esc, 1));
     line-height: 1.5;
     padding: 10px 0;
     color: var(--plata-clara);
