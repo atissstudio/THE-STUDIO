@@ -147,7 +147,7 @@ Las sesiones se encarecen porque **cada mensaje reenvía todo el contexto**. Reg
 
 ### Sesión 2026-08-06 — verificación real y tres correcciones (HECHA)
 
-**Se encontró por qué la sesión anterior no pudo verificar nada.** El navegador de Claude mantiene la página en `document.hidden`, y en ese estado el navegador **no dispara eventos de `scroll` ni ejecuta `requestAnimationFrame`**: toda la coreografía se queda congelada en el fotograma cero. Se salta sustituyendo `requestAnimationFrame` por ejecución síncrona y disparando el `scroll` a mano. **Limitación que queda:** las capturas solo rasterizan lo pintado al cargar, así que se puede *medir* cualquier posición pero no *mirarla*. Los juicios estéticos siguen dependiendo de Alejandro.
+**Se encontró por qué la sesión anterior no pudo verificar nada.** El navegador de Claude mantiene la página en `document.hidden`, y en ese estado el navegador **no dispara eventos de `scroll` ni ejecuta `requestAnimationFrame`**: toda la coreografía se queda congelada en el fotograma cero. Se salta sustituyendo `requestAnimationFrame` por ejecución síncrona y disparando el `scroll` a mano. ~~**Limitación que queda:** las capturas solo rasterizan lo pintado al cargar, así que se puede *medir* cualquier posición pero no *mirarla*.~~ **ESTO ERA FALSO Y COSTÓ CARO, corregido el 2026-08-09: ver "Cómo MIRAR la web" más abajo.** Dar por buena esa limitación llevó a entregar tres tandas seguidas de trabajo "verificado" por medidas mientras en pantalla se veía otra cosa.
 
 **Verificado y correcto** (medido, no supuesto): carril de portada (12 copias idénticas, bucle sin costura, izquierda a derecha) · islas de Sobre Atis (cero solapes, nada cortado, separación mínima 40-48 px en 1280/1440/375/390) · zoom por isla (vuelve a 1 entre islas, picos 7,7×/12×/8,9×, plata al 100 %, texto casi negro) · cierre en caja de cristal real · scroll libre en móvil (`proximity`, sin `stop: always`) · pie sin hueco muerto · acceso a cuenta con contraseña · **el `100vh` de `como-trabajamos` está detrás de un `matchMedia` de escritorio, así que NO corta en iOS**.
 
@@ -202,6 +202,25 @@ Las sesiones se encarecen porque **cada mensaje reenvía todo el contexto**. Reg
 - **Shader suavizado** (`ShaderFondo.astro`): seguía leyéndose como manchas. Dos perillas a la vez — opacidad 0,28 → **0,13** y reparto de octavas volcado al **grano fino** (la octava grande baja de 0,50 a 0,22, la fina sube a 0,45), más una compresión del rango contra el gris neutro (`0.5 + (n-0.5)*0.5`), que en soft-light es "no toques el color". Pendiente del ojo de Alejandro.
 - **Siguiente paso pactado:** maquetar el contenido de cada diapositiva. `.05` servicios y `.06` datos dejan de ser tarjetas sueltas y pasan a dar algo más de información, con poco texto y buscando rematar la convicción.
 
+### 🔬 Cómo MIRAR la web, no solo medirla (2026-08-09, comprobado)
+
+Durante meses se dio por hecho que Claude no podía ver el resultado. **Es falso.** Comprobado con un experimento: se inyecta un recuadro de color con JavaScript y se saca captura — **el recuadro sale**. Las capturas repintan bajo demanda aunque la página esté en `document.hidden`. Lo único congelado es `requestAnimationFrame`.
+
+**El método que funciona:**
+
+1. Sustituir el bucle de fotogramas por ejecución síncrona: `window.requestAnimationFrame = f => { f(performance.now()); return 0; }`.
+2. Retirar la pantalla de carga **como lo haría un visitante**, con `dispatchEvent(new WheelEvent('wheel'))`. Nunca borrándola a mano: media docena de fallos reales solo aparecen pasando por ahí (el último, el carril corriendo cuando debía estar quieto).
+3. Para ver un punto concreto de una coreografía, **forzar sus variables CSS** (`--intro`, `--rx`, `--o100`…) **sin tocar el scroll**, y capturar.
+4. Para ver una sección que está más abajo, **ocultar lo que tiene encima** (`display: none`) para subirla a lo alto de la página, y forzar sus variables.
+
+**Lo que NO funciona, y da capturas basura que parecen buenas:**
+
+- **Capturar después de un scroll por JavaScript.** El compositor no actualiza su desplazamiento en segundo plano: sale la página descuadrada, con el pie navy ocupando media pantalla o la franja del menú a media altura. **Si en una captura el menú no está pegado arriba, la captura es mentira, no es un fallo de la web.**
+- **`computer` (scroll o clic de verdad)**: da tiempo de espera agotado con el panel oculto.
+- **Tocar el scroll antes de forzar una variable**: el propio guion la recalcula y pisa el valor. Primero el scroll, después la variable.
+
+**Regla de comunicación que sale de aquí:** distinguir siempre **medido** de **visto**. Medir no es mirar, y presentar lo uno como lo otro fue exactamente lo que rompió la confianza en la sesión del 2026-08-09.
+
 ### 🎯 Lo que toca en la sesión siguiente
 
 **1 · Los cuatro hallazgos de la auditoría, sin resolver.** Salieron el 2026-08-05 y siguen abiertos:
@@ -215,7 +234,7 @@ Las sesiones se encarecen porque **cada mensaje reenvía todo el contexto**. Reg
 - 🟡 **`.filete` es código muerto.** La utilidad está definida en `tokens.css:303` y **no se aplica en ningún sitio**. El filete como elemento de maquetación sí está resuelto, pero por otras reglas (`.read .k` abre cada bloque sobre su enunciado, más `.cells`, `.datos`, `.pointlist` y el carril de portada). O se usa la utilidad o se borra.
 - 🟡 **Medio scroll sin nada que contar en el reel.** La animación de la casa termina en y=1070 y el bloque sigue hasta y=1790: 720 px en los que la composición ya acabada solo se desliza. No es plata vacía, pero se puede apretar.
 
-**2 · Verificación visual pendiente (mucho menos que antes).** Con el método de la sesión del 2026-08-06 ya se puede medir cualquier posición, pero **no mirarla** (las capturas solo rasterizan lo pintado al cargar). Queda que Alejandro confirme en pantalla lo que es puro juicio estético: si el shader se lee como **grano y no como manchas**, y cómo quedan en movimiento las nuevas diapositivas de escritorio.
+**2 · Verificación visual: ya se puede hacer aquí.** Ver "Cómo MIRAR la web" más arriba. Lo que sigue dependiendo de Alejandro es el **juicio** (si algo es bonito o si transmite), no la comprobación de si se ve bien o está roto: eso ahora se mira.
 
 **3 · Pendientes de negocio:** cifra de facturación objetivo · nicho sin decidir (dental vs. reformas, INV-01) · páginas de servicio cortas (200-350 palabras; INV-07 pide 3.000-5.000, se amplían con contenido real, nunca con humo) · redes sin cuentas, los iconos del pie no enlazan · datos legales de la cooperativa · dominio sin elegir.
 
