@@ -24,12 +24,17 @@ const { id, quieto = false } = Astro.props;
   <div class="claim-cinta">
     {
       /*
-        Doce repeticiones: seis por mitad. La animación desplaza justo la mitad
-        de la cinta, así que cada mitad tiene que ser por sí sola más ancha que
-        la pantalla o al reiniciar el bucle asomaría un hueco. Seis cubren hasta
-        unos 3.200 px de ancho.
+        Veinticuatro repeticiones: doce por mitad. La animación desplaza justo
+        la mitad de la cinta, así que cada mitad tiene que ser por sí sola más
+        ancha que la pantalla o al reiniciar el bucle asoma un hueco.
+
+        Eran doce y se quedaban cortas (2026-08-09): en la portada el carril
+        entra al 55% del cuerpo, y a ese tamaño media cinta medía unos 1.090 px
+        contra una pantalla de 1.280 o más. Se veía el final del texto y un
+        vacío a la derecha, como si la cinta estuviese parada a la izquierda.
+        Doce por mitad cubren hasta unos 2.100 px incluso encogidas.
       */
-      Array.from({ length: 12 }).map(() => (
+      Array.from({ length: 24 }).map(() => (
         <span>la p*ta primera cooperativa creativa ·&nbsp;</span>
       ))
     }
@@ -51,7 +56,14 @@ const { id, quieto = false } = Astro.props;
   .claim-cinta {
     display: flex;
     width: max-content;
-    animation: desfile 26s linear infinite;
+    /*
+      La duración va atada al tamaño de la letra. El desfile recorre media
+      cinta, y media cinta encogida es mucho menos distancia: con la duración
+      fija, el carril pequeño de la portada avanzaba a la mitad de velocidad y
+      parecía casi parado. Atándola, la cinta corre a los mismos píxeles por
+      segundo esté al tamaño que esté.
+    */
+    animation: desfile calc(26s * var(--claim-esc, 1)) linear infinite;
   }
   /*
     Parado en el fotograma 0, que es exactamente translateX(-50%). Al soltarlo

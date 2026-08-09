@@ -231,8 +231,6 @@ const destacados = todos.slice(0, 3);
       top: 0;
       height: 100svh;
       overflow: hidden;
-      /* Estado de partida. El script lo va bajando a 0 con el scroll. */
-      --intro: 1;
     }
     /*
       ── El campo azul de la portada es un VELO, no el fondo del bloque ───────
@@ -287,7 +285,28 @@ const destacados = todos.slice(0, 3);
     .reel {
       position: relative;
       z-index: 0;
-      margin-top: calc(var(--hero-h, 306px) - 100svh);
+      /*
+        Los 24 px de más son a propósito: la casa sube un poco POR DEBAJO del
+        bloque de portada, que es opaco y va por delante, así que no se ve. Sin
+        ese solape, cualquier píxel de diferencia entre lo medido y lo real
+        deja asomar el fondo blanco de la página en una franja bajo el carril
+        (visto en producción el 2026-08-09). Solapar no cuesta nada; no
+        solapar tiene un fallo visible.
+      */
+      margin-top: calc(var(--hero-h, 306px) - 100svh - 24px);
+      /*
+        Y durante la entrada la casa VIAJA con el carril, pegada a él. El margen
+        de arriba la deja en su sitio final, pero mientras la portada está
+        desplegada el bloque baja hasta el centro de la pantalla y, sin esto,
+        entre el carril y la casa quedaba un hueco de hasta 600 px. Mientras el
+        velo es opaco no se nota, pero en cuanto empieza a apagarse por ese
+        hueco se veía el fondo blanco de la página: la franja que se colaba
+        antes de seguir bajando.
+
+        Es una transformación, no un margen: no toca la maquetación, así que la
+        página no cambia de alto mientras se hace scroll.
+      */
+      transform: translateY(calc(-1 * var(--intro, 0) * (100svh - var(--intro-dy, 0px))));
     }
     /*
       El carril crece de PEQUEÑO A GRANDE (2026-08-09, pedido de Alejandro).
@@ -820,6 +839,12 @@ const destacados = todos.slice(0, 3);
     const heroEl = document.querySelector<HTMLElement>(".hero");
     const claim = document.getElementById("claimPortada");
     const logo = document.querySelector<HTMLElement>(".logo-h1");
+    /*
+      Las variables de la entrada viven en la RAÍZ, no en la portada: la casa es
+      hermana de la portada, no hija, y también las necesita para viajar pegada
+      al carril. Desde la raíz las hereda toda la página.
+    */
+    const raiz = document.documentElement;
     const grande = matchMedia("(min-width: 901px)");
     const hayIntro = () => !!(pin && portada && heroEl) && grande.matches && !reduce;
 
@@ -836,8 +861,8 @@ const destacados = todos.slice(0, 3);
       let dy = 0;
       const medirIntro = () => {
         if (!hayIntro()) {
-          heroEl.style.removeProperty("--intro-dy");
-          heroEl.style.removeProperty("--claim-dy");
+          raiz.style.removeProperty("--intro-dy");
+          raiz.style.removeProperty("--claim-dy");
           return;
         }
         /*
@@ -847,14 +872,14 @@ const destacados = todos.slice(0, 3);
           daba números falsos: con el carril todavía pequeño el bloque mide 278
           px en vez de 306 y la casa subía 28 px de más, metiéndose debajo.
         */
-        const previo = pin.style.getPropertyValue("--intro");
-        pin.style.setProperty("--intro", "0");
+        const previo = raiz.style.getPropertyValue("--intro");
+        raiz.style.setProperty("--intro", "0");
 
         const alto = heroEl.offsetHeight;
         const cajaLogo = logo?.getBoundingClientRect();
         const cajaClaim = claim?.getBoundingClientRect();
 
-        pin.style.setProperty("--intro", previo || "1");
+        raiz.style.setProperty("--intro", previo || "1");
 
         /*
           El logo se centra en el 42% de la pantalla, no en el 50: por debajo
@@ -863,7 +888,7 @@ const destacados = todos.slice(0, 3);
         */
         if (cajaLogo) {
           dy = innerHeight * 0.42 - (cajaLogo.top + cajaLogo.height / 2);
-          heroEl.style.setProperty("--intro-dy", dy.toFixed(1) + "px");
+          raiz.style.setProperty("--intro-dy", dy.toFixed(1) + "px");
         }
         /*
           Y el carril baja hasta apoyar su línea inferior en el borde de la
@@ -880,7 +905,7 @@ const destacados = todos.slice(0, 3);
           claim?.style.removeProperty("--claim-esc");
 
           const destino = innerHeight - altoPequeno;
-          heroEl.style.setProperty(
+          raiz.style.setProperty(
             "--claim-dy",
             (destino - (cajaClaim.top + dy)).toFixed(1) + "px"
           );
@@ -890,18 +915,18 @@ const destacados = todos.slice(0, 3);
           hueco que sobra de la pantalla anclada. Se mide del propio bloque
           porque su alto depende del logo, que se ajusta al ancho de ventana.
         */
-        document.documentElement.style.setProperty("--hero-h", alto + "px");
+        raiz.style.setProperty("--hero-h", alto + "px");
       };
 
       const introUpdate = () => {
         if (!hayIntro()) {
-          pin.style.setProperty("--intro", "0");
+          raiz.style.setProperty("--intro", "0");
           claim?.classList.remove("quieto");
           return;
         }
         const total = portada.offsetHeight - innerHeight;
         const p = total > 0 ? clamp01(-portada.getBoundingClientRect().top / total) : 1;
-        pin.style.setProperty("--intro", (1 - p).toFixed(3));
+        raiz.style.setProperty("--intro", (1 - p).toFixed(3));
         // El desfile arranca cuando el carril ya es un carril, no antes.
         claim?.classList.toggle("quieto", p < 0.97);
       };
@@ -922,6 +947,13 @@ const destacados = todos.slice(0, 3);
         { passive: true }
       );
       if (document.fonts) document.fonts.ready.then(medirIntro);
+      /*
+        Y se vuelve a medir cada vez que el bloque cambia de alto. El alto
+        depende del logo, que lo dimensiona otro script cuando cargan las
+        fuentes: si esa medida se queda vieja, la casa sube de menos y por el
+        hueco se ve el fondo blanco de la página.
+      */
+      if ("ResizeObserver" in window) new ResizeObserver(() => medirIntro()).observe(heroEl);
       /*
         Red de seguridad (misma idea que en reveal.ts): si algo dejara el
         script mudo, a los 6 s el claim corre igual y el logo se queda en su
