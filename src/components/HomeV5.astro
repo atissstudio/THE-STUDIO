@@ -37,7 +37,13 @@ const destacados = todos.slice(0, 3);
         La manuscrita entra aquí como decoración repetida, que es el uso que el
         manual le permite fuera del logo, nunca como texto de lectura.
       */}
-      <CarrilClaim id="claimPortada" quieto />
+      {/*
+        SIN `quieto`: la frase entra ya corriendo (pedido de Alejandro,
+        2026-08-09). Ocupa el ancho del logo y crece con el scroll igual que
+        antes, pero el desfile no espera a ser carril: se mueve desde el primer
+        momento en que se ve.
+      */}
+      <CarrilClaim id="claimPortada" />
     </section>
   </div>
 </div>
@@ -889,8 +895,6 @@ const destacados = todos.slice(0, 3);
     const grande = matchMedia("(min-width: 901px)");
     const hayIntro = () => !!(pin && portada && heroEl) && grande.matches && !reduce;
 
-    // Sin portada en dos tiempos, el carril corre desde el primer momento.
-    if (!hayIntro()) claim?.classList.remove("quieto");
 
     if (pin && portada && heroEl) {
       /*
@@ -960,25 +964,18 @@ const destacados = todos.slice(0, 3);
       const introUpdate = () => {
         if (!hayIntro()) {
           raiz.style.setProperty("--intro", "0");
-          claim?.classList.remove("quieto");
           return;
         }
         const total = portada.offsetHeight - innerHeight;
         const p = total > 0 ? clamp01(-portada.getBoundingClientRect().top / total) : 1;
         raiz.style.setProperty("--intro", (1 - p).toFixed(3));
-        // El desfile arranca cuando el carril ya es un carril, no antes.
         /*
-          ORDEN: la frase no echa a correr hasta que la caja ya es un carril
-          (dos tercios del recorrido). Antes arrancaba al primer gesto, con lo
-          que se ponía a desfilar siendo todavía la bajada del logo, y no se
-          entendía qué era. Ahora se lee: frase quieta → la caja se abre y
-          aparecen las líneas → y entonces la cinta arranca.
-
-          Parada en el fotograma 0 cae justo en la juntura entre dos copias
-          (son 24 y la animación parte de media cinta), así que en la caja
-          estrecha se lee UNA frase entera y no un trozo cortado.
+          El desfile NO se para en ningún momento (2026-08-09). Se probaron las
+          dos cosas: arrancar al primer gesto y esperar a ser carril; Alejandro
+          quiere que la frase se mueva **desde que se ve**, con la caja al
+          ancho del logo, y que lo que crezca sea solo la caja. Aquí no queda
+          nada que decidir, por eso este hueco.
         */
-        claim?.classList.toggle("quieto", p < 0.65);
       };
 
       medirIntro();
@@ -1005,12 +1002,12 @@ const destacados = todos.slice(0, 3);
       */
       if ("ResizeObserver" in window) new ResizeObserver(() => medirIntro()).observe(heroEl);
       /*
-        Red de seguridad (misma idea que en reveal.ts): si algo dejara el
-        script mudo, a los 6 s el claim corre igual y el logo se queda en su
-        sitio, en vez de una portada congelada a medio camino.
+        Red de seguridad (misma idea que en reveal.ts): si algo dejara el guion
+        mudo con la página ya bajada, la portada se quedaría desplegada encima
+        del contenido. A los 6 s se recalcula, y si ya no toca estar en la
+        portada, se coloca.
       */
       setTimeout(() => {
-        if (!claim?.classList.contains("quieto")) return;
         if (scrollY > innerHeight * 0.9) introUpdate();
       }, 6000);
     }
