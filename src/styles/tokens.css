@@ -216,59 +216,6 @@ body {
   background: var(--navy);
   color: var(--plata-clara);
 }
-/*
-  ── Fundido entre campos (2026-08-08) ─────────────────────────────────────
-
-  Los campos se cortaban a cuchillo y el salto de claro a azul chocaba. Cada
-  campo se trae ahora su propio color en degradado sobre el campo anterior, en
-  una banda por encima de sí mismo.
-
-  Por qué así y no enumerando parejas: hay cuatro campos, o sea doce
-  combinaciones posibles, y habría que mantenerlas a mano. De este modo cada
-  campo solo tiene que saber DE QUÉ COLOR ES; el de arriba, sea cual sea, se
-  ve por debajo del degradado.
-
-  `* + .f-…` es deliberado: solo se aplica cuando el campo tiene algo delante.
-  Así la portada, que es lo primero de la página, no se pinta una banda encima
-  de la barra de navegación.
-
-  La banda no captura el ratón y va fuera del campo, así que no puede taparle
-  su propio contenido. Para ajustar el efecto basta con `--fundido`.
-*/
-:root {
-  --fundido: 72px;
-}
-.f-azul,
-.f-claro,
-.f-blanco,
-.f-navy {
-  position: relative;
-}
-* + .f-azul::before,
-* + .f-claro::before,
-* + .f-blanco::before,
-* + .f-navy::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(-1 * var(--fundido));
-  height: var(--fundido);
-  pointer-events: none;
-}
-* + .f-azul::before {
-  background: linear-gradient(to bottom, rgba(51, 75, 164, 0), var(--azul));
-}
-* + .f-claro::before {
-  background: linear-gradient(to bottom, rgba(238, 241, 247, 0), var(--plata-clara));
-}
-* + .f-blanco::before {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--blanco));
-}
-* + .f-navy::before {
-  background: linear-gradient(to bottom, rgba(11, 18, 48, 0), var(--navy));
-}
-
 /* campo de plata líquida con textura, ver .liquid-field más abajo */
 .f-plata {
   background: var(--plata-mid);

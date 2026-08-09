@@ -31,57 +31,54 @@
   #loader.done {
     transform: translateY(-101%);
   }
+  /*
+    El logo se traza SIN máscara (2026-08-08, tercer intento y el bueno).
+
+    Historia corta: esto animaba `mask-size` sobre el propio texto, y en Safari
+    el logo salía recortado — sobre todo "the" y "by", que son manuscrita y
+    tienen los rasgos largos. Se agrandó la máscara al 300% y aun así seguía
+    cortando en producción. Enmascarar texto es frágil y cada motor lo resuelve
+    a su manera, así que se quita el problema en vez de seguir ajustándolo.
+
+    Ahora el texto se pinta ENTERO, sin nada encima. Lo que se mueve es una tapa
+    del mismo azul del fondo que se encoge hacia la derecha y va descubriendo el
+    logo de izquierda a derecha. Mismo efecto, y sin máscara no hay nada que
+    pueda recortar una letra, en ningún navegador.
+  */
   #loader .mark {
+    position: relative;
     color: var(--plata-clara);
     white-space: nowrap;
     line-height: 1;
     margin: 0;
-    /*
-      Degradado bien formado (2026-08-05). Antes era `linear-gradient(90deg,
-      #000 0 0)`: los dos topes en la misma posición, o sea un degradado de
-      longitud cero. Los navegadores no lo resuelven igual — en WebKit puede
-      dar una máscara vacía o a medias, y de ahí que el logo se viera cortado
-      en Safari. Con dos topes en 0% y 100% la máscara es sólida sin ambigüedad.
-    */
-    /*
-      La máscara tiene que ser MÁS GRANDE que la caja del texto (2026-08-08).
-
-      Con `mask-size: 0% 100%` cubría exactamente la caja, y medido aquí la
-      letra se sale de ella: 6 px por abajo en las cuatro partes y 5 px por
-      arriba en STUDIO y ATIS. Todo eso quedaba fuera de la máscara y se veía
-      recortado — se notaba sobre todo en "the" y "by", que son manuscrita y
-      tienen los rasgos largos. La causa de fondo es el `line-height: 1`, que
-      deja la caja más baja que la tinta.
-
-      300% de alto y centrada resuelve el corte vertical sin tocar la
-      maquetación; el respiro horizontal lo da el padding, para los rasgos que
-      salen por los lados. El barrido sigue siendo de izquierda a derecha.
-    */
-    padding: 0 0.6vw;
-    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 100%);
-    mask-image: linear-gradient(90deg, #000 0%, #000 100%);
-    -webkit-mask-position: left center;
-    mask-position: left center;
-    -webkit-mask-size: 0% 300%;
-    mask-size: 0% 300%;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    /*
-      Las dos animaciones van juntas desde el principio, nunca una sustituyendo
-      a la otra. El parpadeo arranca justo cuando el trazado termina (0.3s + 1.5s
-      = 1.8s de retraso). Antes el parpadeo se aplicaba cambiando la propiedad
-      "animation" entera al llegar a #loader.en-espera, lo que reemplazaba el
-      trazado y con él se perdía el mask-size:100% que mantenía en pantalla
-      (fill-mode: forwards solo sostiene su valor mientras esa animación sigue
-      activa) — el logo no parpadeaba, directamente desaparecía.
-    */
-    animation: trazar 1.5s cubic-bezier(0.45, 0, 0.15, 1) 0.3s forwards,
-      parpadeo 1.8s ease-in-out 1.8s infinite;
+    /* Empieza a parpadear justo cuando termina de destaparse (0.3s + 1.5s). */
+    animation: parpadeo 1.8s ease-in-out 1.8s infinite;
   }
-  @keyframes trazar {
+  /*
+    La tapa se pasa de generosa por los cuatro lados a propósito: así cubre
+    también los rasgos de la manuscrita, que se salen de la caja del texto
+    (medido: 6 px por abajo y 5 por arriba). Se DESLIZA hacia la derecha, que es
+    lo que descubre el logo de izquierda a derecha.
+
+    Se desliza en vez de encogerse: `scaleX` necesita `transform-origin: right`
+    y ahí el navegador resolvía el origen al centro, con lo que la tapa se
+    abría desde el medio hacia los dos lados en vez de barrer. Un
+    desplazamiento no depende del origen y no admite esa duda. Adonde se va la
+    tapa es campo azul igualmente, así que no se ve pasar.
+  */
+  #loader .mark::after {
+    content: "";
+    position: absolute;
+    top: -60%;
+    bottom: -60%;
+    left: -4%;
+    right: -4%;
+    background: var(--azul);
+    animation: destapar 1.5s cubic-bezier(0.45, 0, 0.15, 1) 0.3s forwards;
+  }
+  @keyframes destapar {
     to {
-      -webkit-mask-size: 100% 300%;
-      mask-size: 100% 300%;
+      transform: translateX(102%);
     }
   }
   /* Sutil, no un parpadeo agresivo: entre opaco y semi-transparente */

@@ -100,19 +100,6 @@ const destacados = todos.slice(0, 3);
     <p class="read-cta">
       <GlassButton href="/como-trabajamos">Ver el método completo, paso a paso</GlassButton>
     </p>
-    {/*
-      Tres pasos, un camino. La línea se dibuja hacia abajo y cada nudo se
-      enciende al llegar. Es el filete de 1 px del manual, puesto a contar el
-      proceso en vez de solo separar.
-    */}
-    <div class="slide-art art-proceso" data-art aria-hidden="true">
-      <span class="pr-trazo"></span>
-      <ol class="pr-pasos">
-        <li class="pr-paso"><span class="pr-nudo"></span><span class="pr-eti"></span></li>
-        <li class="pr-paso"><span class="pr-nudo"></span><span class="pr-eti"></span></li>
-        <li class="pr-paso"><span class="pr-nudo"></span><span class="pr-eti"></span></li>
-      </ol>
-    </div>
   </div>
 </section>
 
@@ -622,57 +609,6 @@ const destacados = todos.slice(0, 3);
       left: 0;
     }
 
-    /*
-      .03 · El camino de tres pasos, con su nombre.
-
-      Antes eran tres bolas sueltas en una línea: se veía el recorrido pero no
-      qué era cada parada. Ahora cada nudo lleva su título, y el título no se
-      escribe aquí — lo copia el JS del propio párrafo, para que si cambia el
-      copy no queden dos versiones diciendo cosas distintas.
-    */
-    .art-proceso {
-      position: absolute;
-    }
-    .pr-trazo {
-      position: absolute;
-      left: 5px;
-      top: 0.6em;
-      bottom: 0.6em;
-      width: 2px;
-      background: var(--azul);
-      transform-origin: top center;
-    }
-    .pr-pasos {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      /* Separación generosa: con poco hueco el conjunto mide 130 px y se lee
-         como una lista corta, no como un recorrido. */
-      gap: clamp(40px, 8svh, 84px);
-    }
-    .pr-paso {
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .pr-nudo {
-      flex: 0 0 auto;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      border: 2px solid var(--azul);
-      background: var(--plata-clara);
-    }
-    .pr-eti {
-      font-family: var(--sans);
-      font-weight: 700;
-      font-size: clamp(0.82rem, 1.05vw, 0.98rem);
-      line-height: 1.3;
-      letter-spacing: 0.01em;
-      color: var(--azul);
-    }
   }
   @media (max-width: 900px) {
     .slide-art {
@@ -809,56 +745,5 @@ const destacados = todos.slice(0, 3);
   contarCifras(".datos .big");
 
   if (!quieto && escritorio) {
-    /*
-      .03 · El camino de tres pasos se dibuja hacia abajo, y cada parada dice
-      cómo se llama.
-
-      Los títulos NO se escriben en el marcado: se copian del arranque en
-      negrita de cada párrafo ("Te auditamos.", "Lo diseñamos contigo.",
-      "Lo implementamos de la mano."). Así el gráfico y el texto no pueden
-      acabar contando cosas distintas si mañana se retoca el copy.
-
-      Cada nudo se enciende cuando el trazo pasa por él, y el tiempo se saca de
-      su posición real en pantalla, no de números escritos a mano: si se
-      cambian los espacios entre pasos, los tiempos se recalculan solos.
-    */
-    const camino = document.querySelector<HTMLElement>(".art-proceso");
-    if (camino) {
-      const bloque = camino.closest(".read");
-      const titulares = Array.from(bloque?.querySelectorAll<HTMLElement>("p > .em") ?? []);
-      const etiquetas = gsap.utils.toArray<HTMLElement>(".pr-eti");
-      const nudos = gsap.utils.toArray<HTMLElement>(".pr-nudo");
-      const trazo = camino.querySelector<HTMLElement>(".pr-trazo");
-
-      etiquetas.forEach((eti, i) => {
-        // Sin punto final: es un rótulo, no una frase.
-        eti.textContent = (titulares[i]?.textContent ?? "").trim().replace(/\.$/, "");
-      });
-
-      if (trazo && nudos.length) {
-        const DURACION = 1.5;
-        const arriba = trazo.getBoundingClientRect().top;
-        const alto = trazo.getBoundingClientRect().height || 1;
-
-        gsap.set(trazo, { scaleY: 0 });
-        gsap.set(nudos, { scale: 0 });
-        gsap.set(etiquetas, { opacity: 0, x: -10 });
-
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: camino,
-            start: "top 78%",
-            toggleActions: "play none none reverse",
-          },
-        });
-        tl.to(trazo, { scaleY: 1, duration: DURACION, ease: "none" });
-        nudos.forEach((nudo, i) => {
-          const centro = nudo.getBoundingClientRect().top + nudo.getBoundingClientRect().height / 2;
-          const cuando = Math.max(0, ((centro - arriba) / alto) * DURACION);
-          tl.to(nudo, { scale: 1, duration: 0.3, ease: "back.out(2)" }, cuando);
-          tl.to(etiquetas[i], { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, cuando + 0.05);
-        });
-      }
-    }
   }
 </script>
