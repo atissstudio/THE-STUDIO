@@ -906,7 +906,9 @@ const destacados = todos.slice(0, 3);
 
         const alto = heroEl.offsetHeight;
         const anchoLogo = logo ? palabras(logo) : 0;
-        const unaCopia = claim?.querySelector("span")?.getBoundingClientRect().width ?? 0;
+        // La FRASE sola, sin el separador: es lo que tiene que llenar el ancho
+        // del logo en la portada. Con la copia entera se colaba el punto.
+        const unaCopia = claim?.querySelector(".frase")?.getBoundingClientRect().width ?? 0;
 
         /*
           Cuánto tiene que subir la casa para quedar justo debajo del logo: el

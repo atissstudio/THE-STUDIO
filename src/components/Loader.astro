@@ -234,6 +234,18 @@
       if (terminado) return;
       terminado = true;
       html.style.overflow = overflowPrevio;
+      /*
+        El carril NO se suelta aquí si la portada tiene entrada: mientras el
+        claim es la bajada del logo va parado a propósito, y quien lo suelta es
+        el scroll (HomeV5). Soltarlo aquí era tener dos dueños para lo mismo:
+        esta línea lo ponía a correr al irse la carga y, como todavía no había
+        habido ningún gesto de scroll, nadie lo volvía a parar. La frase se
+        veía cortada por los dos lados en la primera pantalla (visto en
+        producción el 2026-08-09).
+      */
+      if (!document.querySelector(".portada-pin")) {
+        document.getElementById("claimPortada")?.classList.remove("quieto");
+      }
       loader.remove();
     };
     loader.addEventListener("transitionend", (e) => {

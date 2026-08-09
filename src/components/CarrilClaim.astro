@@ -35,7 +35,14 @@ const { id, quieto = false } = Astro.props;
         Doce por mitad cubren hasta unos 2.100 px incluso encogidas.
       */
       Array.from({ length: 24 }).map(() => (
-        <span>la p*ta primera cooperativa creativa ·&nbsp;</span>
+        <span>
+          {/*
+            La frase va marcada aparte del separador para poder MEDIRLA sola:
+            en la portada la caja se ajusta al ancho de la frase, sin el punto,
+            para que ahí se lea limpia y el separador quede recortado fuera.
+          */}
+          <i class="frase">la p*ta primera cooperativa creativa</i> ·&nbsp;
+        </span>
       ))
     }
   </div>
@@ -72,6 +79,9 @@ const { id, quieto = false } = Astro.props;
   */
   .claim-banner.quieto .claim-cinta {
     animation-play-state: paused;
+  }
+  .claim-cinta .frase {
+    font-style: inherit;
   }
   .claim-cinta span {
     font-family: var(--script);
