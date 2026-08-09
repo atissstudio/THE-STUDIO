@@ -223,14 +223,17 @@ const destacados = todos.slice(0, 3);
   */
   @media (min-width: 901px) {
     .portada {
-      position: relative;
-      /* La pantalla de más es el recorrido de scroll que dura la transformación */
-      height: 200svh;
-    }
-    .portada {
       /* Manda sobre la casa, que ahora vive por debajo de esta pantalla */
       position: relative;
       z-index: 1;
+      /*
+        El recorrido de la entrada baja de una pantalla entera a 62 (2026-08-09,
+        pedido de Alejandro: "a esta altura ya tiene que haber llegado al
+        final"). Una pantalla completa de scroll para colocar un logo se hacía
+        larga: a media pantalla bajada la portada seguía a medio camino y la
+        casa aún se veía teñida de azul.
+      */
+      height: 162svh;
     }
     .portada-pin {
       position: sticky;
@@ -256,7 +259,13 @@ const destacados = todos.slice(0, 3);
       position: absolute;
       inset: 0;
       background: var(--azul);
-      opacity: min(1, calc(var(--intro, 0) * 4));
+      /*
+        Se apaga del todo cuando aún queda un 40% de recorrido, no en el último
+        suspiro: así, en la segunda mitad de la entrada, la casa ya se ve limpia
+        y lo único que sigue moviéndose es el tamaño del logo y del carril. Con
+        el x4 de antes, a media pantalla bajada la casa seguía teñida de azul.
+      */
+      opacity: clamp(0, calc((var(--intro, 0) - 0.4) * 2.5), 1);
       z-index: 0;
     }
     .hero {

@@ -134,6 +134,34 @@
 
   if (loader && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
     const html = document.documentElement;
+    /*
+      ── Al recargar se vuelve arriba, SIEMPRE (2026-08-09) ───────────────────
+
+      El navegador restaura por su cuenta la posición del scroll al recargar, y
+      eso rompía la entrada de dos maneras a la vez: el relevo del logo exige
+      estar arriba (si no, se cae a la animación vieja, el deslizamiento), y la
+      portada aparecía medio desplegada porque sus medidas se toman en el sitio
+      equivocado. Alejandro lo vio en producción: "cuando recargas, la animación
+      del principio es la vieja".
+
+      Es la práctica normal en cualquier página con pantalla de entrada: si hay
+      una secuencia que empieza arriba, se le quita al navegador la restauración
+      y se empieza donde toca. Solo se hace donde hay pantalla de carga, o sea
+      en la home.
+    */
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    /*
+      Y se insiste, porque no basta con pedirlo una vez: el navegador vuelve a
+      colocar el scroll cuando la página termina de cargar y cuando crece al
+      llegar las imágenes. Medido: sin esta insistencia se recargaba y aparecía
+      a 2.768 px de altura.
+    */
+    const arriba = () => scrollTo(0, 0);
+    arriba();
+    addEventListener("load", arriba, { once: true });
+    setTimeout(arriba, 0);
+    setTimeout(arriba, 300);
+
     const overflowPrevio = html.style.overflow;
     html.style.overflow = "hidden"; // la página real no se mueve mientras se espera
     /*
