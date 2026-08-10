@@ -11,11 +11,13 @@
 ---
 
 <div id="loader" aria-hidden="true">
-  <p class="mark">
-    <span class="scr">the</span> <span class="hvy">STUDIO</span>
-    <span class="scr">by</span> <span class="hvy">ATIS</span>
-  </p>
-  <div class="barra"><div class="barra-relleno"></div></div>
+  <div class="loader-inner">
+    <p class="mark">
+      <span class="scr">the</span> <span class="hvy">STUDIO</span>
+      <span class="scr">by</span> <span class="hvy">ATIS</span>
+    </p>
+    <div class="barra"><div class="barra-relleno"></div></div>
+  </div>
 </div>
 
 <style>
@@ -46,6 +48,11 @@
     logo de izquierda a derecha. Mismo efecto, y sin máscara no hay nada que
     pueda recortar una letra, en ningún navegador.
   */
+  #loader .loader-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
   #loader .mark {
     position: relative;
     color: var(--plata-clara);
@@ -127,7 +134,7 @@
      del logo (0.3s de espera + 1.5s) y se queda llena mientras parpadea. */
   #loader .barra {
     position: relative;
-    margin-top: 1.4em;
+    margin-top: 0.5em;
     width: clamp(120px, 30vw, 220px);
     height: 1px;
     background: color-mix(in srgb, var(--plata-clara) 30%, transparent);
