@@ -1,16 +1,18 @@
 ---
 /*
-  Capa de shader interactiva (2026-08-05).
+  Capa de shader interactiva (2026-08-05, redibujada como mar el 2026-08-10).
 
   Un único lienzo WebGL fijo sobre toda la página, en modo de fusión
-  "soft-light". Esa es la clave de que se adapte al fondo sin tocar nada: la
-  fusión se calcula contra lo que haya debajo, así que la misma capa se ve
-  plateada sobre el azul, cálida sobre los campos claros y profunda sobre el
-  navy, sin que el shader necesite saber en qué sección está.
+  "soft-light". Hasta el 2026-08-10 pintaba en toda la página por igual; ahora
+  el propio guion mide dónde están los campos `.f-azul` del DOM en cada
+  fotograma y solo pinta ahí (fuera de esas bandas, alfa 0): sobre blanco no
+  hace nada, tal como se pidió. Dentro del azul, el ruido se estira en
+  horizontal y con más contraste que antes, para que lea como oleaje —sombra y
+  brillo de verdad, no solo vibración— en vez de una textura genérica.
 
-  Reacciona al puntero: donde está el ratón (o el dedo) el ruido se estira y
-  se aclara, y la reacción persigue al cursor con retardo para que no vaya a
-  tirones.
+  Reacciona al puntero: cerca del cursor el agua se empuja como una estela, y
+  además se dispara un anillo que se expande desde ahí, como si tocaras el
+  agua. La reacción persigue al cursor con retardo para que no vaya a tirones.
 
   Frenos, a propósito:
     · No se carga nada si el visitante pide menos movimiento.
@@ -42,16 +44,20 @@
   }
   #shader-fondo.listo {
     /*
-      0.55 -> 0.28 -> 0.13 (2026-08-09). Seguía leyéndose como manchas y como
-      suciedad sobre el azul, que es exactamente lo que no queremos: la textura
-      tiene que estar por debajo del umbral de "¿esto qué es?". A 0.13 se nota
-      que el campo no es plano y no se ve una sola mancha.
+      Historial: 0.55 -> 0.28 -> 0.13 -> 0.07, bajando cada vez porque el ruido
+      se leía como suciedad sobre el azul. El 2026-08-10 sube a 0.30, y no es
+      una vuelta atrás: antes la capa cubría TODA la página, así que cualquier
+      opacidad que hiciera visible la textura la hacía visible también sobre los
+      campos claros, donde solo podía ensuciar. Ahora el shader solo pinta
+      dentro de los campos azules (ver la máscara de bandas en el guion), que es
+      donde tiene algo que representar: el mar. Ahí sí necesita cuerpo, o no hay
+      ni sombra ni brillo que ver.
 
-      Este número y el contraste del ruido (más abajo, en el shader) son las dos
-      perillas: la opacidad decide cuánto se ve, el contraste decide si es grano
-      fino o mancha grande. Se han bajado las dos.
+      0.3 se probó y se vio en pantalla: emborronaba el logo y el texto que
+      cae encima, más estática de televisor que agua. 0.16 es el punto donde
+      se nota el oleaje sin tapar lo que hay escrito por encima.
     */
-    opacity: 0.07;
+    opacity: 0.16;
   }
   @media (prefers-reduced-motion: reduce) {
     #shader-fondo {
@@ -97,10 +103,21 @@
       `;
 
       /*
-        Ruido de valor con tres capas, arrastrado por el tiempo y deformado
-        alrededor del puntero. No pinta color de marca: devuelve grises que la
-        fusión "soft-light" convierte en luz o sombra del campo que tenga
-        debajo. Por eso funciona igual sobre azul, claro o navy.
+        ── El mar, solo sobre azul (2026-08-10) ──────────────────────────────
+
+        Antes esto era ruido genérico sobre TODA la página: se leía como una
+        textura, no como nada en concreto, y sobre los campos claros solo podía
+        ensuciar (no hay "mar" que fingir ahí). Ahora la capa sabe DÓNDE están
+        los campos azules de la página (`uBandas`, hasta 8 tramos verticales,
+        medidos en el propio DOM — ver más abajo) y solo pinta dentro de ellos;
+        fuera, alfa 0, así que sobre blanco no pasa nada, tal cual se pidió.
+
+        Dentro del azul, el ruido deja de repartirse en octavas isótropas y se
+        ESTIRA en horizontal, como oleaje real, y el contraste sube (antes se
+        comprimía hacia el gris medio para dar solo "vibración"; ahora se
+        expande, para que haya sombra y brillo de verdad). El puntero no solo
+        empuja el muestreo (como antes): además dispara un anillo que se
+        expande desde donde está, como si tocaras el agua.
       */
       const fragment = `
         precision mediump float;
@@ -108,6 +125,8 @@
         uniform float uTiempo;
         uniform vec2 uRaton;
         uniform vec2 uMedida;
+        uniform vec2 uBandas[8];
+        uniform int uNumBandas;
 
         float azar(vec2 p) {
           return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -126,41 +145,57 @@
 
         void main() {
           vec2 uv = vUv;
-          float rel = uMedida.x / uMedida.y;
-          vec2 p = vec2(uv.x * rel, uv.y);
-          vec2 raton = vec2(uRaton.x * rel, uRaton.y);
 
-          // Cerca del puntero el ruido se estira: es la "interacción".
+          // ¿Este píxel cae dentro de algún campo azul? Si no, fuera.
+          float dentro = 0.0;
+          for (int i = 0; i < 8; i++) {
+            if (i >= uNumBandas) continue;
+            vec2 b = uBandas[i];
+            if (uv.y <= b.x && uv.y >= b.y) dentro = 1.0;
+          }
+          if (dentro < 0.5) {
+            gl_FragColor = vec4(0.5, 0.5, 0.5, 0.0);
+            return;
+          }
+
+          float rel = uMedida.x / uMedida.y;
+          // Oleaje: el muestreo se estira en horizontal, no es ruido isótropo.
+          vec2 p = vec2(uv.x * rel * 1.2, uv.y * 0.8);
+          vec2 raton = vec2(uRaton.x * rel * 1.2, uRaton.y * 0.8);
+
+          // Cerca del puntero el agua se empuja, como una estela.
           float d = distance(p, raton);
           float tiron = exp(-d * 4.0);
-          p += (p - raton) * tiron * 0.28;
+          p += (p - raton) * tiron * 0.3;
 
           /*
-            Reparto de octavas rebalanceado (2026-08-09). Antes mandaba la
-            octava grande (p*6, peso 0.5) y era ella la que dibujaba las manchas
-            del tamaño de un puño. Ahora manda la fina: nubes grandes casi
-            testimoniales, grano fino con casi todo el peso.
+            Manda la escala grande (olas), el grano fino queda casi
+            testimonial. La primera versión pesaba igual las tres octavas y,
+            sumada al contraste, se leía como estática de televisor, no como
+            agua: demasiado ruido de alta frecuencia para el ojo.
           */
-          float t = uTiempo * 0.06;
-          float n = ruido(p * 9.0 + vec2(t, -t)) * 0.08;
-          n += ruido(p * 26.0 - vec2(t * 1.7, t)) * 0.27;
-          n += ruido(p * 70.0 + vec2(-t * 2.3, t * 1.3)) * 0.65;
+          float t = uTiempo * 0.05;
+          float n = ruido(p * 2.2 + vec2(t, t * 0.3)) * 0.5;
+          n += ruido(p * 6.0 - vec2(t * 1.6, t * 0.5)) * 0.32;
+          n += ruido(p * 16.0 + vec2(-t * 2.1, t * 1.2)) * 0.18;
 
-          // Un halo suave siguiendo al puntero, para que se note quién manda.
-          n += tiron * 0.1;
+          // El anillo que se expande al tocar el agua, no solo un tirón.
+          float onda = sin(d * 26.0 - uTiempo * 2.6) * exp(-d * 5.0) * 0.12;
+          n += onda + tiron * 0.1;
 
           /*
-            Comprimido contra el gris medio. En soft-light, 0.5 es "no toques
-            nada": cuanto más lejos de 0.5, más oscurece o aclara. Acercando
-            todo el rango al centro, la textura deja de ensuciar el color del
-            campo y solo lo vibra.
+            Contraste ampliado pero contenido: lo suficiente para que se note
+            sombra y brillo, no tanto que tape el texto que hay encima. Bajado
+            de 1.7 a 1.15 tras verlo en pantalla —a 1.7 el logo se leía
+            borroso, no solo "sobre agua".
           */
-          n = 0.5 + (n - 0.5) * 0.5;
+          n = clamp(0.5 + (n - 0.5) * 1.15, 0.0, 1.0);
 
           gl_FragColor = vec4(vec3(n), 1.0);
         }
       `;
 
+      const MAX_BANDAS = 8;
       const program = new Program(gl, {
         vertex,
         fragment,
@@ -168,6 +203,8 @@
           uTiempo: { value: 0 },
           uRaton: { value: new Vec2(0.5, 0.5) },
           uMedida: { value: new Vec2(1, 1) },
+          uBandas: { value: new Array(MAX_BANDAS * 2).fill(0) },
+          uNumBandas: { value: 0 },
         },
       });
 
@@ -179,6 +216,29 @@
       };
       medir();
       addEventListener("resize", medir, { passive: true });
+
+      /*
+        Dónde están los campos azules AHORA MISMO, en las mismas coordenadas
+        que usa el shader (0 abajo, 1 arriba, como `uRaton`). Se mide en cada
+        fotograma, no solo al cargar o al hacer resize: varias portadas
+        mueven sus campos con `transform` durante el scroll (la entrada de la
+        home, por ejemplo), y con una medida fija el mar se habría quedado
+        pintando el sitio de ayer.
+      */
+      const bandasBuffer = program.uniforms.uBandas.value as number[];
+      const medirBandas = () => {
+        const els = document.querySelectorAll<HTMLElement>(".f-azul");
+        let n = 0;
+        for (const el of els) {
+          if (n >= MAX_BANDAS) break;
+          const r = el.getBoundingClientRect();
+          if (r.bottom <= 0 || r.top >= innerHeight || r.height <= 0) continue;
+          bandasBuffer[n * 2] = 1 - r.top / innerHeight;
+          bandasBuffer[n * 2 + 1] = 1 - r.bottom / innerHeight;
+          n++;
+        }
+        program.uniforms.uNumBandas.value = n;
+      };
 
       // El puntero se persigue con retardo: el salto seco se vería artificial.
       const destino = { x: 0.5, y: 0.5 };
@@ -203,6 +263,7 @@
         actual.y += (destino.y - actual.y) * 0.06;
         program.uniforms.uRaton.value.set(actual.x, actual.y);
         program.uniforms.uTiempo.value = (ahora - t0) / 1000;
+        medirBandas();
         renderer.render({ scene: malla });
         requestAnimationFrame(bucle);
       }
