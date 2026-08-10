@@ -293,6 +293,15 @@ const destacados = todos.slice(0, 3);
       height: calc(var(--intro, 0) * var(--intro-dy, 0px));
       background: var(--azul);
       z-index: 0;
+      /*
+        El borde de abajo se apaga en degradado, no a filo. Sin esto, este
+        azul sólido se cortaba en seco justo donde empieza el velo (que va a
+        media opacidad en este tramo), y esa unión se veía como una línea recta
+        cruzando la pantalla. Difuminando el propio final del parche, la
+        transición hacia el velo de debajo queda continua.
+      */
+      mask-image: linear-gradient(to bottom, #000 0%, #000 75%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 75%, transparent 100%);
     }
     .hero {
       /* El bloque entero baja hasta el centro de la pantalla y vuelve a subir */
