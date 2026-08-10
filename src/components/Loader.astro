@@ -11,13 +11,10 @@
 ---
 
 <div id="loader" aria-hidden="true">
-  <div class="loader-inner">
-    <p class="mark">
-      <span class="scr">the</span> <span class="hvy">STUDIO</span>
-      <span class="scr">by</span> <span class="hvy">ATIS</span>
-    </p>
-    <div class="barra"><div class="barra-relleno"></div></div>
-  </div>
+  <p class="mark">
+    <span class="scr">the</span> <span class="hvy">STUDIO</span>
+    <span class="scr">by</span> <span class="hvy">ATIS</span>
+  </p>
 </div>
 
 <style>
@@ -48,11 +45,6 @@
     logo de izquierda a derecha. Mismo efecto, y sin máscara no hay nada que
     pueda recortar una letra, en ningún navegador.
   */
-  #loader .loader-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
   #loader .mark {
     position: relative;
     color: var(--plata-clara);
@@ -128,30 +120,6 @@
     font-weight: 800;
     font-size: clamp(1.6rem, 12vw, 5rem);
     letter-spacing: -0.03em;
-  }
-
-  /* Filete fino debajo del logo: se rellena al mismo ritmo que el destape
-     del logo (0.3s de espera + 1.5s) y se queda llena mientras parpadea. */
-  #loader .barra {
-    position: relative;
-    margin-top: 0.9em;
-    width: 100%;
-    height: 1px;
-    background: color-mix(in srgb, var(--plata-clara) 30%, transparent);
-    overflow: hidden;
-  }
-  #loader .barra-relleno {
-    position: absolute;
-    inset: 0;
-    transform-origin: left;
-    transform: scaleX(0);
-    background: var(--plata-clara);
-    animation: rellenar 1.5s cubic-bezier(0.45, 0, 0.15, 1) 0.3s forwards;
-  }
-  @keyframes rellenar {
-    to {
-      transform: scaleX(1);
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
