@@ -228,25 +228,53 @@
         pintando el sitio de ayer.
       */
       const bandasBuffer = program.uniforms.uBandas.value as number[];
+      const raiz = document.documentElement;
       /*
         `.f-azul` sola se quedaba corta en la home: la portada pinta su azul
         sólido con pseudo-elementos (el velo y el parche del logo, ver
         HomeV5.astro), no con un `.f-azul` de verdad, así que esa franja
         quedaba sin tratar y se notaba la costura contra el logo, que sí
-        estaba dentro de un `.f-azul`. Se añade `.portada-pin` (el contenedor
-        entero de la portada) para que TODA esa zona reciba el mismo mar,
-        no un mosaico de dos azules distintos.
+        estaba dentro de un `.f-azul`.
+
+        Probar con TODO el alto de `.portada-pin` (2026-08-10, primer intento)
+        se pasó de frenada: ese contenedor sigue midiendo 100svh mucho después
+        de que el velo se apague y aparezca la casa, así que el mar seguía
+        pintándose sobre la plata de la casa — otra costura, esta vez entre
+        "mar" y "sin mar" a mitad de la fachada. La franja de `.portada-pin`
+        que es SIEMPRE azul sólido es exactamente la misma que calcula su CSS
+        para el parche (`intro * intro-dy + hero-h`, ver HomeV5.astro): se
+        replica aquí la misma cuenta en vez de adivinar, para que el mar
+        cubra justo lo que de verdad es azul y ni un píxel más.
       */
+      const medirBandaPortada = (pin: HTMLElement) => {
+        const intro = parseFloat(getComputedStyle(raiz).getPropertyValue("--intro")) || 0;
+        const introDy = parseFloat(getComputedStyle(raiz).getPropertyValue("--intro-dy")) || 0;
+        const heroH = parseFloat(getComputedStyle(raiz).getPropertyValue("--hero-h")) || 306;
+        const alto = Math.min(intro * introDy + heroH, pin.getBoundingClientRect().height);
+        return alto;
+      };
+
       const medirBandas = () => {
-        const els = document.querySelectorAll<HTMLElement>(".f-azul, .portada-pin");
         let n = 0;
-        for (const el of els) {
+        const azules = document.querySelectorAll<HTMLElement>(".f-azul");
+        for (const el of azules) {
           if (n >= MAX_BANDAS) break;
           const r = el.getBoundingClientRect();
           if (r.bottom <= 0 || r.top >= innerHeight || r.height <= 0) continue;
           bandasBuffer[n * 2] = 1 - r.top / innerHeight;
           bandasBuffer[n * 2 + 1] = 1 - r.bottom / innerHeight;
           n++;
+        }
+        const pin = document.querySelector<HTMLElement>(".portada-pin");
+        if (pin && n < MAX_BANDAS) {
+          const r = pin.getBoundingClientRect();
+          if (r.bottom > 0 && r.top < innerHeight) {
+            const altoAzul = medirBandaPortada(pin);
+            const bottom = r.top + altoAzul;
+            bandasBuffer[n * 2] = 1 - r.top / innerHeight;
+            bandasBuffer[n * 2 + 1] = 1 - bottom / innerHeight;
+            n++;
+          }
         }
         program.uniforms.uNumBandas.value = n;
       };
