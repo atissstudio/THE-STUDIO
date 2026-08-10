@@ -42,10 +42,6 @@ import { servicios } from "../../data/servicios";
               <span class="fhead">{s.heading}</span>
             </span>
             <span class="fd">{s.card}</span>
-            <span class="fgo" aria-hidden="true">
-              ＋
-            </span>
-            <img class="fisla" src={s.isla} alt="" loading="lazy" />
           </button>
           <div class="panel" id={`panel-${s.slug}`}>
             <div class="panel-inner">
@@ -64,7 +60,6 @@ import { servicios } from "../../data/servicios";
 
   <section class="f-azul closer row12">
     <div class="closer-inner">
-      <p class="k">Tu plan gratis</p>
       <h2>¿No sabes por dónde empezar?</h2>
       <p>
         Normal. Para eso está la auditoría. Cuéntanos qué necesitas y vemos juntos cuál de estos
@@ -76,6 +71,19 @@ import { servicios } from "../../data/servicios";
 </BaseLayout>
 
 <style>
+  /*
+    Este cierre en concreto, sin la línea de arriba ni el rótulo "Tu plan
+    gratis" (2026-08-10, pedido de Alejandro: aquí no se quiere mencionar lo
+    de gratis). El filete de `.closer .closer-inner` es una regla compartida
+    por TODAS las páginas (ver tokens.css), así que se sobrescribe solo AQUÍ,
+    con el alcance del propio componente, en vez de tocar la regla global y
+    quitárselo también a las demás.
+  */
+  .closer .closer-inner {
+    border-top: 0;
+    padding-top: 0;
+  }
+
   .lista {
     list-style: none;
     margin: 0;
@@ -91,7 +99,7 @@ import { servicios } from "../../data/servicios";
     position: relative;
     overflow: hidden;
     display: grid;
-    grid-template-columns: 90px minmax(230px, 1.1fr) minmax(0, 1.4fr) 60px;
+    grid-template-columns: 90px minmax(230px, 1.1fr) minmax(0, 1.4fr);
     align-items: center;
     gap: 24px;
     width: 100%;
@@ -142,57 +150,6 @@ import { servicios } from "../../data/servicios";
     position: relative;
     z-index: 2;
   }
-  /* El "+" gira a aspa cuando el servicio está abierto */
-  /* Insignia de cristal para el "+" (mismo lenguaje que el resto de botones) */
-  /*
-    Se veía casi invisible sobre este fondo tan claro: mismo color de fondo
-    que la propia página, sin sombra que la separase. Ahora es blanco de
-    verdad (no tinte azul apenas perceptible) con una sombra que la levanta
-    del fondo, para que se note como una pieza flotante, no como un adorno.
-  */
-  .fgo {
-    justify-self: end;
-    width: 36px;
-    height: 36px;
-    display: grid;
-    place-items: center;
-    font-size: 1.2rem;
-    font-weight: 300;
-    color: var(--azul-deep);
-    background: rgba(255, 255, 255, 0.55);
-    backdrop-filter: blur(12px) saturate(1.6);
-    -webkit-backdrop-filter: blur(12px) saturate(1.6);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 50%;
-    box-shadow: 0 8px 20px -8px rgba(51, 75, 164, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-    position: relative;
-    z-index: 2;
-    transition: transform 0.3s ease, background 0.2s ease, box-shadow 0.2s ease;
-  }
-  .fila:hover .fgo {
-    background: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 10px 24px -8px rgba(51, 75, 164, 0.55), inset 0 1px 0 rgba(255, 255, 255, 1);
-  }
-  .fila[aria-expanded="true"] .fgo {
-    transform: rotate(135deg);
-  }
-  .fisla {
-    position: absolute;
-    right: 4%;
-    bottom: -60%;
-    width: 190px;
-    opacity: 0;
-    transform: translateY(30%) scale(0.8);
-    transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
-    z-index: 1;
-    pointer-events: none;
-  }
-  .fila:hover .fisla,
-  .fila[aria-expanded="true"] .fisla {
-    opacity: 0.9;
-    transform: translateY(8%) scale(1);
-  }
-
   /*
     El desplegable. Se abre por CSS al pasar el ratón sobre la fila (":has" con
     respaldo para navegadores sin soporte, ver más abajo) y por JS al hacer
@@ -259,10 +216,6 @@ import { servicios } from "../../data/servicios";
     }
     .fd {
       grid-column: 2;
-    }
-    .fgo,
-    .fisla {
-      display: none;
     }
     .panel-inner {
       padding: 0 20px 28px;
