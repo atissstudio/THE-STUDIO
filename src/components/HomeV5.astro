@@ -233,7 +233,7 @@ const destacados = todos.slice(0, 3);
         larga: a media pantalla bajada la portada seguía a medio camino y la
         casa aún se veía teñida de azul.
       */
-      height: 162svh;
+      height: 145svh;
     }
     .portada-pin {
       position: sticky;
@@ -353,14 +353,21 @@ const destacados = todos.slice(0, 3);
     }
     .hero :global(#claimPortada) {
       transition: opacity 0.6s ease 0.1s, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s;
-      --claim-esc: calc(1 + var(--intro, 0) * (var(--claim-esc-tope, 1) - 1));
-      width: calc(100% - var(--intro, 0) * (100% - var(--claim-ancho, 100%)));
+      /*
+        El carril va POR DELANTE del logo en el recorrido: termina de abrirse
+        cuando aún queda un 35% de entrada. Antes iban al mismo paso y se daba
+        la estampa de "logo ya arriba pegado a la franja blanca y el carril
+        todavía a medio ancho", que es justo lo que no cuadra (2026-08-09).
+      */
+      --claim-p: clamp(0, calc((var(--intro, 0) - 0.35) / 0.65), 1);
+      --claim-esc: calc(1 + var(--claim-p) * (var(--claim-esc-tope, 1) - 1));
+      width: calc(100% - var(--claim-p) * (100% - var(--claim-ancho, 100%)));
       margin-inline: auto;
       /* Pegado al logo en la portada, y con su aire de siempre en el carril */
-      margin-top: calc(var(--row) * 0.42 * (1 - 0.55 * var(--intro, 0)));
+      margin-top: calc(var(--row) * 0.42 * (1 - 0.55 * var(--claim-p)));
       /* Sin líneas mientras es una bajada de logo: aparecen al hacerse carril */
-      border-top-color: rgba(255, 255, 255, calc(0.85 * (1 - var(--intro, 0))));
-      border-bottom-color: rgba(255, 255, 255, calc(0.85 * (1 - var(--intro, 0))));
+      border-top-color: rgba(255, 255, 255, calc(0.85 * (1 - var(--claim-p))));
+      border-bottom-color: rgba(255, 255, 255, calc(0.85 * (1 - var(--claim-p))));
     }
   }
   /*

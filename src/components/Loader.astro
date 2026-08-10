@@ -161,6 +161,16 @@
     addEventListener("load", arriba, { once: true });
     setTimeout(arriba, 0);
     setTimeout(arriba, 300);
+    /*
+      Y por si el navegador insiste más tarde todavía (Safari recoloca cuando
+      terminan de cargar las imágenes y la página crece), mientras la pantalla
+      de carga está puesta CUALQUIER intento de estar en otro sitio se corrige.
+      Esto es lo que arregla el fallo que veía Alejandro: la carga se retiraba
+      con la página ya bajada, así que aparecía la home en su estado final —el
+      logo pegado arriba, sin portada— y solo al deslizar "saltaba" a la
+      portada. No era un salto: era que nunca había empezado desde arriba.
+    */
+    addEventListener("scroll", arriba, { passive: true });
 
     const overflowPrevio = html.style.overflow;
     html.style.overflow = "hidden"; // la página real no se mueve mientras se espera
@@ -237,6 +247,15 @@
     const salir = () => {
       if (salido) return;
       salido = true;
+      /*
+        Última garantía, y la que de verdad cuenta: justo antes de medir el
+        relevo, arriba del todo. Es síncrono y no depende de que el navegador
+        dispare ningún evento de scroll. Si la página estuviese bajada en este
+        instante, el relevo se cancelaría (exige `scrollY <= 4`) y al retirarse
+        la carga aparecería la home en su estado final en lugar de la portada:
+        el "salto a la home antigua" que veía Alejandro.
+      */
+      arriba();
       if (!crecerHastaLaPortada()) loader.classList.add("done");
       quitarEscuchas();
       // Red de seguridad: el scroll no puede quedarse bloqueado si no llega
@@ -270,6 +289,7 @@
       if (terminado) return;
       terminado = true;
       html.style.overflow = overflowPrevio;
+      removeEventListener("scroll", arriba); // ya puede moverse la página
       // Se va la carga y entra la frase de debajo del logo: segundo tiempo.
       html.classList.remove("cargando");
       loader.remove();

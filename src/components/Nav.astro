@@ -596,9 +596,39 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
 
     const isOpen = () => panel.classList.contains("open");
 
-    // Ratón: se abre al acercarse a la franja, se cierra al salir del panel.
-    bar.addEventListener("mouseenter", () => setOpen(true));
-    panel.addEventListener("mouseleave", () => setOpen(false));
+    /*
+      ── Ratón: se abre al acercarse a la franja, pero CON INTENCIÓN ──────────
+
+      Sigue abriéndose sin hacer clic, que es como tiene que ser, pero ya no
+      basta con rozar la franja de camino a otro sitio: hay que quedarse en
+      ella. Es el patrón de "intención al pasar" de toda la vida — una pequeña
+      espera antes de abrir, que se cancela si el ratón sigue de largo — y evita
+      justo lo que molestaba: cruzar por arriba y que se te venga el panel
+      encima (2026-08-09).
+
+      Y no se abre mientras se está haciendo scroll: al bajar o subir con el
+      trackpad el puntero acaba muchas veces en la parte de arriba sin que nadie
+      esté pidiendo el menú.
+    */
+    const ESPERA = 420; // ms de permanencia en la franja antes de abrir
+    const TRAS_SCROLL = 600; // ms de gracia después de mover la página
+    let temporizador = 0;
+    let ultimoScroll = 0;
+    addEventListener("scroll", () => (ultimoScroll = Date.now()), { passive: true });
+    addEventListener("wheel", () => (ultimoScroll = Date.now()), { passive: true });
+
+    bar.addEventListener("mouseenter", () => {
+      clearTimeout(temporizador);
+      temporizador = window.setTimeout(() => {
+        if (Date.now() - ultimoScroll < TRAS_SCROLL) return;
+        setOpen(true);
+      }, ESPERA);
+    });
+    bar.addEventListener("mouseleave", () => clearTimeout(temporizador));
+    panel.addEventListener("mouseleave", () => {
+      clearTimeout(temporizador);
+      setOpen(false);
+    });
 
     // Teclado y toque: el botón "Menú"/"Cerrar" y la equis abren y cierran.
     toggle.addEventListener("click", () => setOpen(!isOpen()));
