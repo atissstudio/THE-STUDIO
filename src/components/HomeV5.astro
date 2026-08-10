@@ -278,6 +278,22 @@ const destacados = todos.slice(0, 3);
       opacity: clamp(0, calc((var(--intro, 0) - 0.4) * 2.5), 1);
       z-index: 0;
     }
+    /*
+      El hueco que el logo deja libre POR ENCIMA suyo mientras baja (el mismo
+      desplazamiento que anima `.hero`) se tapa aparte, siempre a azul sólido,
+      sin el desvanecido del velo. Sin esto, esa franja quedaba a medio camino
+      entre el azul y el brillo de la casa —una sombra grisácea que no es ni
+      un color ni el otro— porque el velo se apaga por igual en TODA la
+      pantalla, y esa franja no tiene casa detrás que revelar, es aire.
+    */
+    .portada-pin::after {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: calc(var(--intro, 0) * var(--intro-dy, 0px));
+      background: var(--azul);
+      z-index: 0;
+    }
     .hero {
       /* El bloque entero baja hasta el centro de la pantalla y vuelve a subir */
       transform: translateY(calc(var(--intro, 0) * var(--intro-dy, 0px)));
