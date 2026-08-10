@@ -279,29 +279,27 @@ const destacados = todos.slice(0, 3);
       z-index: 0;
     }
     /*
-      El hueco que el logo deja libre POR ENCIMA suyo mientras baja (el mismo
-      desplazamiento que anima `.hero`) se tapa aparte, siempre a azul sólido,
-      sin el desvanecido del velo. Sin esto, esa franja quedaba a medio camino
-      entre el azul y el brillo de la casa —una sombra grisácea que no es ni
-      un color ni el otro— porque el velo se apaga por igual en TODA la
-      pantalla, y esa franja no tiene casa detrás que revelar, es aire.
+      El hueco que el logo deja libre POR ENCIMA suyo mientras baja se tapa
+      aparte, siempre a azul sólido, SIN desvanecerse nunca. Se probaron dos
+      variantes con desvanecido (a transparente, y a la misma opacidad que el
+      velo) y las dos dejaban ver, durante un tramo, el brillo más claro de la
+      casa asomando justo debajo del logo, donde no pinta nada: esa zona no
+      tiene casa que revelar, es aire, y el aire no se revela, se tapa.
+
+      Por eso el parche no termina en el borde de arriba de `.hero`: se
+      extiende hasta cubrir TODO su alto (`--hero-h`), el mismo azul sólido
+      que ya pinta `.hero` por debajo. Como es idéntico color sobre idéntico
+      color, la costura entre los dos no se puede ver nunca, se solapen donde
+      se solapen. El desvanecido de verdad (revelar la casa) sigue siendo
+      cosa del velo de más abajo, sin tocar.
     */
     .portada-pin::after {
       content: "";
       position: absolute;
       inset: 0 0 auto 0;
-      height: calc(var(--intro, 0) * var(--intro-dy, 0px));
+      height: calc(var(--intro, 0) * var(--intro-dy, 0px) + var(--hero-h, 306px));
       background: var(--azul);
       z-index: 0;
-      /*
-        El borde de abajo se apaga en degradado, no a filo. Sin esto, este
-        azul sólido se cortaba en seco justo donde empieza el velo (que va a
-        media opacidad en este tramo), y esa unión se veía como una línea recta
-        cruzando la pantalla. Difuminando el propio final del parche, la
-        transición hacia el velo de debajo queda continua.
-      */
-      mask-image: linear-gradient(to bottom, #000 0%, #000 75%, transparent 100%);
-      -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 75%, transparent 100%);
     }
     .hero {
       /* El bloque entero baja hasta el centro de la pantalla y vuelve a subir */
