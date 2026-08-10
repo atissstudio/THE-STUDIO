@@ -256,6 +256,8 @@
         el "salto a la home antigua" que veía Alejandro.
       */
       arriba();
+      // Y que la portada se recoloque ANTES de medir dónde aterriza el logo.
+      (window as any).atisColocarPortada?.();
       if (!crecerHastaLaPortada()) loader.classList.add("done");
       quitarEscuchas();
       // Red de seguridad: el scroll no puede quedarse bloqueado si no llega

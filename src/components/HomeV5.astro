@@ -223,9 +223,17 @@ const destacados = todos.slice(0, 3);
   */
   @media (min-width: 901px) {
     .portada {
-      /* Manda sobre la casa, que ahora vive por debajo de esta pantalla */
       position: relative;
-      z-index: 1;
+      /*
+        RED DE SEGURIDAD: el fondo de este tramo es la PLATA de la casa, no el
+        blanco de la página. El mando lo lleva `.portada-pin` (ahí abajo, con su
+        z-index), no este contenedor, y por eso este fondo queda POR DEBAJO de
+        la casa y no la tapa: solo se ve si alguna vez quedara un hueco entre el
+        carril y la casa. Si eso pasa, se verá plata —el propio color del campo
+        que viene— en vez de una franja blanca. El hueco en sí es un fallo y se
+        arregla en el guion; esto solo evita que, si vuelve, se vea feo.
+      */
+      background: var(--plata-mid);
       /*
         El recorrido de la entrada baja de una pantalla entera a 62 (2026-08-09,
         pedido de Alejandro: "a esta altura ya tiene que haber llegado al
@@ -240,6 +248,8 @@ const destacados = todos.slice(0, 3);
       top: 0;
       height: 100svh;
       overflow: hidden;
+      /* La portada manda sobre la casa, que viaja por detrás */
+      z-index: 1;
     }
     /*
       ── El campo azul de la portada es un VELO, no el fondo del bloque ───────
@@ -996,6 +1006,50 @@ const destacados = todos.slice(0, 3);
 
       medirIntro();
       introUpdate();
+      /*
+        ── Mientras la carga está puesta, la entrada se vigila cada fotograma ──
+
+        Es el arreglo del fallo que Alejandro veía al recargar: la pantalla de
+        carga se retiraba y aparecía el logo arriba con una franja blanca
+        debajo, y solo al deslizar salía la portada. El motivo es que el estado
+        de la entrada se calcula desde EVENTOS de scroll, y en el arranque hay
+        movimientos de página que no siempre los disparan (la restauración del
+        navegador al recargar, y la corrección que hace la propia pantalla de
+        carga). Si uno de esos se pierde, la entrada se queda creyendo que ya
+        has bajado —el logo colocado arriba— mientras la página está en 0 y la
+        casa, que se posiciona con el scroll, todavía no ha llegado: entre el
+        carril y la casa se ve el fondo blanco.
+
+        Vigilando por fotograma no hay evento que perder. Solo dura lo que dura
+        la carga, que es cuando puede pasar; después manda el scroll como
+        siempre.
+      */
+      /*
+        Enganche para la pantalla de carga. Al retirarse, ella devuelve la
+        página arriba y acto seguido MIDE dónde está el logo para aterrizar el
+        suyo encima. Entre las dos cosas hace falta recolocar la portada aquí
+        mismo, en el momento, porque si no el logo de la carga aterrizaría sobre
+        la posición vieja —la de la home ya bajada— y al fotograma siguiente el
+        de la portada saltaría a su sitio.
+      */
+      (window as any).atisColocarPortada = () => {
+        medirIntro();
+        introUpdate();
+      };
+
+      const vigilar = () => {
+        introUpdate();
+        if (document.documentElement.classList.contains("cargando")) {
+          requestAnimationFrame(vigilar);
+        }
+      };
+      requestAnimationFrame(vigilar);
+      // Volver atrás en el navegador restaura la página desde su caché, y ahí
+      // no hay carga ni scroll: se recoloca a mano.
+      addEventListener("pageshow", () => {
+        medirIntro();
+        introUpdate();
+      });
       addEventListener(
         "scroll",
         () => requestAnimationFrame(introUpdate),
