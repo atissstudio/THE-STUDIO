@@ -169,16 +169,13 @@ const destacados = todos.slice(0, 3);
       <h2>Vamos a que se note.</h2>
       <p>Déjame tu correo y te mando un plan gratis, hecho para ti. Sin compromiso.</p>
       <form class="ctaform" id="ctaform" action="/api/lead" method="post">
-        <div class="ctaform-fila">
-          <input
-            type="email"
-            name="email"
-            placeholder="tu@correo.com"
-            aria-label="Tu correo"
-            required
-          />
-          <GlassButton type="submit" withDot={false}>Pídeme mi plan</GlassButton>
-        </div>
+        <input
+          type="email"
+          name="email"
+          placeholder="tu@correo.com"
+          aria-label="Tu correo"
+          required
+        />
         <textarea
           class="ctaform-msg"
           name="message"
@@ -186,6 +183,7 @@ const destacados = todos.slice(0, 3);
           placeholder="Cuéntanos qué necesitas (opcional)"
           aria-label="Cuéntanos qué necesitas"
         ></textarea>
+        <GlassButton type="submit" withDot={false}>Envíame el plan</GlassButton>
       </form>
     </div>
   </div>
@@ -662,6 +660,17 @@ const destacados = todos.slice(0, 3);
     margin: 0 auto 28px;
     max-width: 42ch;
   }
+  /*
+    Input, caja de texto y botón AL MISMO ANCHO, uno debajo del otro
+    (2026-08-10, pedido de Alejandro: antes el correo y el botón iban en la
+    misma fila y no medían lo mismo que la caja de mensaje de debajo, así que
+    el bloque entero se veía descuadrado). El botón va el último en el DOM a
+    propósito: cuando la caja de mensaje se abre (ver el script, clase
+    "compacto"), su `max-height` anima de 0 a su alto real, y como el botón
+    es el siguiente elemento en flujo normal, ese mismo cambio de alto lo
+    empuja hacia abajo — es la animación que pide Alejandro, y no hace falta
+    ni una línea de JS de más para lograrla.
+  */
   .ctaform {
     display: flex;
     flex-direction: column;
@@ -669,14 +678,9 @@ const destacados = todos.slice(0, 3);
     margin: 0 auto;
     gap: 12px;
   }
-  .ctaform-fila {
-    display: flex;
-    gap: 12px;
-    align-items: stretch;
-  }
   .ctaform input {
-    flex: 1 1 auto;
-    min-width: 0; /* sin esto el input no encoge y empuja al botón */
+    width: 100%;
+    box-sizing: border-box;
     border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 14px;
     background: rgba(255, 255, 255, 0.96);
@@ -685,10 +689,18 @@ const destacados = todos.slice(0, 3);
     font-size: 0.95rem;
     color: var(--ink);
   }
-  /* La CTA ya no es una píldora, así que solo hay que evitar que se encoja */
+  /*
+    El botón sigue siendo el filete de siempre (nunca una caja, ver
+    CLAUDE.md §4), pero a ancho completo para que su línea quede a ras del
+    input y de la caja de mensaje, no colgando de una palabra suelta.
+  */
   .ctaform :global(.cta) {
-    flex: 0 0 auto;
-    white-space: nowrap;
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 14px 0 12px;
+    margin-top: 4px;
+    font-size: 0.82rem;
   }
   /*
     Campo de "qué necesitas": visible por defecto (si el JS no llega a
