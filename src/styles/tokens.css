@@ -772,12 +772,12 @@ body {
 }
 
 /*
-  La llamada a la acción sobre campo oscuro (2026-08-05).
+  La llamada a la acción sobre campo oscuro (cristal líquido, 2026-08-10).
 
-  Todo el bloque anterior gobernaba la píldora de cristal (fondos translúcidos,
-  sombras, el puntito). Ese estilo se retiró: ahora la CTA es texto con filete,
-  igual en toda la web, así que aquí solo hace falta cambiarle el color para
-  que no quede azul sobre azul.
+  El cristal por defecto del componente va teñido de azul, pensado para campo
+  claro. Aquí se invierte a cristal claro sobre oscuro: MISMOS números que
+  `.cerrar` en `Nav.astro` (el botón de cerrar del menú, que es la referencia
+  que pidió Alejandro), no un ajuste a ojo aparte.
 
   Se cualifica por elemento (a./button.) para ganar en especificidad al estilo
   con ámbito del componente sin recurrir a !important.
@@ -791,7 +791,9 @@ body {
 .portal-main a.cta,
 .portal-main button.cta {
   color: var(--plata-clara);
-  border-bottom-color: rgba(238, 241, 247, 0.5);
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 26px -16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 .f-azul a.cta:hover,
 .f-azul button.cta:hover,
@@ -801,7 +803,8 @@ body {
 .cta-screen button.cta:hover,
 .portal-main a.cta:hover,
 .portal-main button.cta:hover {
-  border-bottom-color: #fff;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 /* El logo va dentro de un <a>; sin esto hereda el azul de enlace del navegador */

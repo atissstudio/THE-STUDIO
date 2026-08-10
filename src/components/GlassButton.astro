@@ -1,17 +1,21 @@
 ---
 /*
-  Llamada a la acción, estilo único de todo el sitio (2026-08-05).
+  Llamada a la acción, cristal líquido (vuelve el 2026-08-10).
 
-  Antes esto era una píldora de cristal con contorno y sombra, y convivía con un
-  segundo estilo de enlace subrayado. En la misma pantalla de la home se veían
-  los dos y no había forma de saber cuál mandaba. Se queda el segundo: sin caja,
-  sin contorno, solo el texto con su filete debajo. Encaja además con la
-  contención del manual mejor que la píldora.
+  El 2026-08-05 esto pasó a ser texto con filete, sin caja: antes había dos
+  estilos de CTA a la vez (píldora de cristal + enlace subrayado) y no se
+  sabía cuál mandaba. Alejandro pide ahora volver al cristal, con el MISMO
+  aspecto que ya tiene el botón de cerrar del menú a pantalla completa
+  (`Nav.astro`, clase `.cerrar`): contorno de 1px, fondo translúcido con
+  desenfoque, esquinas muy redondeadas, brillo interior arriba. No es un
+  estilo nuevo, es reutilizar el que ya existía en un sitio y llevarlo aquí,
+  para que sea uno solo otra vez.
 
-  El color se hereda del campo (ver tokens.css): plata clara sobre azul y navy,
-  azul Atis sobre los campos claros. El componente no necesita saber dónde está.
+  El color se sigue heredando del campo (ver tokens.css): cristal claro sobre
+  azul y navy, cristal azul sobre los campos claros. El componente no
+  necesita saber dónde está.
 
-  `withDot` sigue en la interfaz aunque ya no pinte nada: lo pasan varias
+  `withDot` sigue en la interfaz aunque no pinte nada: lo pasan varias
   páginas y no compensa tocarlas todas para quitar algo inofensivo.
 */
 interface Props {
@@ -29,28 +33,39 @@ const Tag = href ? "a" : "button";
 
 <style>
   .cta {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-family: var(--sans);
     font-weight: 700;
-    font-size: 0.76rem;
-    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     text-decoration: none;
     cursor: pointer;
-    background: none;
-    border: 0;
-    padding: 0 0 3px;
+    padding: 15px 32px;
+    border-radius: 999px;
+    /* Por defecto, sobre campo claro: cristal azul. Los campos oscuros lo
+       invierten a cristal claro en tokens.css (mismos números que .cerrar). */
+    border: 1px solid rgba(51, 75, 164, 0.3);
+    background: rgba(51, 75, 164, 0.06);
+    backdrop-filter: blur(16px) saturate(1.5);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5);
+    box-shadow: 0 12px 26px -16px rgba(31, 41, 74, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6);
     color: var(--azul);
-    border-bottom: 1px solid rgba(51, 75, 164, 0.4);
-    transition:
-      border-color 0.25s ease,
-      color 0.25s ease;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease,
+      box-shadow 0.2s ease;
   }
   .cta:hover {
-    border-bottom-color: var(--azul);
+    background: rgba(51, 75, 164, 0.12);
+    border-color: rgba(51, 75, 164, 0.5);
+    transform: translateY(-1px);
+  }
+  .cta:active {
+    transform: translateY(0);
   }
   .cta:focus-visible {
     outline: 2px solid currentColor;
-    outline-offset: 4px;
+    outline-offset: 3px;
   }
 </style>

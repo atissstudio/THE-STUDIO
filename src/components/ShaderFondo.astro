@@ -54,10 +54,12 @@
       ni sombra ni brillo que ver.
 
       0.3 se probó y se vio en pantalla: emborronaba el logo y el texto que
-      cae encima, más estática de televisor que agua. 0.16 es el punto donde
-      se nota el oleaje sin tapar lo que hay escrito por encima.
+      cae encima, más estática de televisor que agua. 0.16 se quedaba corto
+      una vez corregida la costura de arriba (ver `.portada-pin` en
+      `medirBandas`): a Alejandro le gustó el efecto y pidió notarlo más.
+      0.22 es el punto intermedio.
     */
-    opacity: 0.16;
+    opacity: 0.22;
   }
   @media (prefers-reduced-motion: reduce) {
     #shader-fondo {
@@ -185,11 +187,11 @@
 
           /*
             Contraste ampliado pero contenido: lo suficiente para que se note
-            sombra y brillo, no tanto que tape el texto que hay encima. Bajado
-            de 1.7 a 1.15 tras verlo en pantalla —a 1.7 el logo se leía
-            borroso, no solo "sobre agua".
+            sombra y brillo, no tanto que tape el texto que hay encima. De 1.7
+            (estática de televisor) se bajó a 1.15 (apenas se veía); subido a
+            1.35 al gustar el efecto y pedirse más presencia.
           */
-          n = clamp(0.5 + (n - 0.5) * 1.15, 0.0, 1.0);
+          n = clamp(0.5 + (n - 0.5) * 1.35, 0.0, 1.0);
 
           gl_FragColor = vec4(vec3(n), 1.0);
         }
@@ -226,8 +228,17 @@
         pintando el sitio de ayer.
       */
       const bandasBuffer = program.uniforms.uBandas.value as number[];
+      /*
+        `.f-azul` sola se quedaba corta en la home: la portada pinta su azul
+        sólido con pseudo-elementos (el velo y el parche del logo, ver
+        HomeV5.astro), no con un `.f-azul` de verdad, así que esa franja
+        quedaba sin tratar y se notaba la costura contra el logo, que sí
+        estaba dentro de un `.f-azul`. Se añade `.portada-pin` (el contenedor
+        entero de la portada) para que TODA esa zona reciba el mismo mar,
+        no un mosaico de dos azules distintos.
+      */
       const medirBandas = () => {
-        const els = document.querySelectorAll<HTMLElement>(".f-azul");
+        const els = document.querySelectorAll<HTMLElement>(".f-azul, .portada-pin");
         let n = 0;
         for (const el of els) {
           if (n >= MAX_BANDAS) break;
