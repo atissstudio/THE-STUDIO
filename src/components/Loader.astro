@@ -15,6 +15,7 @@
     <span class="scr">the</span> <span class="hvy">STUDIO</span>
     <span class="scr">by</span> <span class="hvy">ATIS</span>
   </p>
+  <div class="barra"><div class="barra-relleno"></div></div>
 </div>
 
 <style>
@@ -120,6 +121,30 @@
     font-weight: 800;
     font-size: clamp(1.6rem, 12vw, 5rem);
     letter-spacing: -0.03em;
+  }
+
+  /* Filete fino debajo del logo: se rellena al mismo ritmo que el destape
+     del logo (0.3s de espera + 1.5s) y se queda llena mientras parpadea. */
+  #loader .barra {
+    position: relative;
+    margin-top: 1.4em;
+    width: clamp(120px, 30vw, 220px);
+    height: 1px;
+    background: color-mix(in srgb, var(--plata-clara) 30%, transparent);
+    overflow: hidden;
+  }
+  #loader .barra-relleno {
+    position: absolute;
+    inset: 0;
+    transform-origin: left;
+    transform: scaleX(0);
+    background: var(--plata-clara);
+    animation: rellenar 1.5s cubic-bezier(0.45, 0, 0.15, 1) 0.3s forwards;
+  }
+  @keyframes rellenar {
+    to {
+      transform: scaleX(1);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
