@@ -63,7 +63,13 @@ import { servicios } from "../data/servicios";
 
 <style>
   .carril-campo {
-    padding: calc(var(--row) * 0.9) 0 calc(var(--row) * 1);
+    /*
+      Abajo, poco: el carril ya reserva 22 px para su sombra y debajo viene
+      otro campo claro con su propio respiro arriba. Con `--row` entero, entre
+      la última ficha y el texto de abajo quedaban 189 px de claro sin nada,
+      que es el hueco raro que se veía en producción.
+    */
+    padding: calc(var(--row) * 0.9) 0 calc(var(--row) * 0.4);
     /* clip, nunca hidden: `hidden` convierte al elemento en contenedor de
        scroll y rompe cualquier sticky de dentro (trampa ya documentada). */
     overflow-x: clip;
@@ -130,13 +136,27 @@ import { servicios } from "../data/servicios";
 
   .carril {
     display: flex;
-    gap: 0;
+    /* Separadas, no pegadas: son fichas que flotan, no tarjetas a sangre. */
+    gap: 20px;
+    /* Sitio para que la sombra y el desplazamiento al pasar el ratón no se
+       vean recortados por el borde del contenedor de scroll. */
+    padding-top: 12px;
+    padding-bottom: 22px;
     overflow-x: auto;
     scroll-snap-type: x proximity;
     scroll-behavior: smooth;
     /* Arranca donde arranca el texto (una columna + su margen) y termina a
        sangre por la derecha, para que la última ficha quede cortada. */
     padding-left: calc(100% / 12 + 20px);
+    /*
+      ⚠️ Sin esto el ajuste se come el margen. `scroll-snap-align: start`
+      alinea la ficha con el principio de la ZONA de scroll, que por defecto
+      es el borde del contenedor y no su relleno: el navegador desplazaba el
+      carril 123 px él solo y la primera ficha quedaba pegada al borde
+      izquierdo de la pantalla, cortada. Visto en pantalla, no medido.
+      `scroll-padding-left` mueve esa zona hasta donde arranca el contenido.
+    */
+    scroll-padding-left: calc(100% / 12 + 20px);
     /* La barra de scroll del sistema partiría el campo en dos. La orientación
        ya la dan las flechas y la ficha cortada. */
     scrollbar-width: none;
@@ -171,6 +191,7 @@ import { servicios } from "../data/servicios";
     }
     .carril {
       padding-left: 20px;
+      scroll-padding-left: 20px;
     }
   }
 
@@ -182,14 +203,48 @@ import { servicios } from "../data/servicios";
 </style>
 
 <script>
-  import { escalonar } from "../scripts/entradas";
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  gsap.registerPlugin(ScrollTrigger);
 
   /*
-    Las fichas entran en cascada, no de golpe. `escalonar` ya trae la red de
-    seguridad a los 6 s: parte de opacidad cero, así que si el observador no
-    disparara nunca, el catálogo entero sería invisible.
+    Entrada de las fichas, calcada del gesto de la referencia (medido sobre su
+    DOM el 2026-08-11): llegan desenfocadas, un poco más abajo y algo más
+    pequeñas, y se colocan en cascada. No usa `escalonar` porque esa función
+    solo mueve posición y opacidad, y aquí el desenfoque es justo lo que hace
+    que parezca que la ficha "enfoca" al entrar.
+
+    ⚠️ Red de seguridad obligatoria: la animación parte de opacidad cero, así
+    que si el observador no llegara a disparar, el catálogo entero sería
+    invisible para siempre. A los 6 s, al imprimir y al volver de segundo
+    plano se enciende pase lo que pase.
   */
-  escalonar(".carril .ficha", { escalon: 0.07 });
+  {
+    const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const fichas = gsap.utils.toArray<HTMLElement>(".carril .ficha");
+
+    if (!quieto && fichas.length) {
+      const entrada = gsap.from(fichas, {
+        scrollTrigger: { trigger: fichas[0], start: "top 88%", once: true },
+        y: 34,
+        scale: 0.94,
+        opacity: 0,
+        filter: "blur(8px)",
+        duration: 0.8,
+        ease: "power2.out",
+        stagger: 0.08,
+      });
+
+      const encender = () => {
+        if (entrada.progress() === 0) entrada.progress(1);
+      };
+      setTimeout(encender, 6000);
+      addEventListener("beforeprint", encender);
+      addEventListener("visibilitychange", () => {
+        if (!document.hidden) setTimeout(encender, 1200);
+      });
+    }
+  }
 
   {
     const carril = document.querySelector<HTMLElement>("[data-carril]");

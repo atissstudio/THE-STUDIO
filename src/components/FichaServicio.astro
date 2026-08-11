@@ -51,6 +51,7 @@ const campo = indice % 2 === 0 ? "azul" : "navy";
         <img class="medio isla" src={isla} alt="" width="600" height="600" loading="lazy" />
       )
     }
+    <span class="cristal" aria-hidden="true"></span>
     <span class="velo" aria-hidden="true"></span>
 
     <span class="num">{n} / {t}</span>
@@ -86,21 +87,25 @@ const campo = indice % 2 === 0 ? "azul" : "navy";
   }
   .ficha:focus-visible {
     outline: 2px solid var(--azul);
-    outline-offset: -4px;
+    outline-offset: 4px;
+    border-radius: 28px;
   }
 
-  /* Tarjetas a sangre separadas por una línea de 1px, como el resto del
-     sistema v5. Aquí la línea es vertical porque el carril es horizontal. */
-  .ficha + .ficha .lienzo {
-    border-left: 1px solid rgba(238, 241, 247, 0.22);
-  }
-
+  /*
+    Fichas FLOTANTES (2026-08-11, pedido de Alejandro tras verlas pegadas).
+    Van separadas, con esquinas redondas y sombra propia, como en la
+    referencia. Es una excepción consciente a las esquinas en pico del sistema
+    v5, del mismo tipo que la que ya se hizo con la llamada a la acción de
+    cristal: aquí manda el criterio de Alejandro y queda anotado para Notion.
+  */
   .lienzo {
     position: relative;
     aspect-ratio: 4 / 3;
     overflow: hidden;
-    /* Esquinas en pico: regla del sistema, no el radio de la referencia. */
-    border-radius: 0;
+    border-radius: 28px;
+    box-shadow: 0 18px 40px -22px rgba(17, 21, 32, 0.55),
+      0 2px 6px -2px rgba(17, 21, 32, 0.18);
+    transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.24, 1), box-shadow 0.5s ease;
   }
   .campo-azul .lienzo {
     background: var(--azul);
@@ -138,6 +143,36 @@ const campo = indice % 2 === 0 ? "azul" : "navy";
   }
 
   /*
+    Cristal. Es la capa que en la referencia hace que el texto se apoye sobre
+    algo y no directamente sobre la imagen: un desenfoque de lo que hay DEBAJO
+    (backdrop-filter), recortado con una máscara para que solo actúe en la
+    mitad de abajo. Sin la máscara, el desenfoque cubriría la foto entera.
+  */
+  .cristal {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    backdrop-filter: blur(9px);
+    -webkit-backdrop-filter: blur(9px);
+    background: rgba(11, 18, 48, 0.12);
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(0, 0, 0, 0.12) 26%,
+      #000 66%,
+      #000 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(0, 0, 0, 0.12) 26%,
+      #000 66%,
+      #000 100%
+    );
+    transition: backdrop-filter 0.5s ease, background-color 0.5s ease;
+  }
+
+  /*
     Velo en navy, no en negro (el negro no es fondo en este sistema). Se apoya
     en el borde de abajo, que es donde vive el texto, y deja limpia la parte de
     arriba, que es donde está la imagen.
@@ -156,15 +191,30 @@ const campo = indice % 2 === 0 ? "azul" : "navy";
     transition: opacity 0.5s ease;
   }
 
+  /*
+    Contador en píldora de cristal, con los mismos números que el botón de
+    cerrar del menú y que la llamada a la acción (contorno de 1px, fondo
+    translúcido, desenfoque, brillo interior arriba). No es un cristal nuevo,
+    es el que ya existe en el sitio.
+  */
   .num {
     position: absolute;
-    top: 22px;
-    right: 24px;
+    top: 20px;
+    right: 20px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.4);
     font-size: 0.62rem;
     font-weight: 700;
     letter-spacing: 0.18em;
     color: var(--plata-clara);
-    opacity: 0.72;
   }
 
   .pie {
@@ -218,15 +268,22 @@ const campo = indice % 2 === 0 ? "azul" : "navy";
     max-width: 46ch;
     text-wrap: pretty;
   }
+  /* La flecha, en el mismo cristal que la píldora del contador. */
   .flecha {
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 24px -12px rgba(0, 0, 0, 0.4);
     color: var(--plata-clara);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
   }
 
   /*
@@ -257,12 +314,25 @@ const campo = indice % 2 === 0 ? "azul" : "navy";
     .ficha:focus-visible .isla {
       transform: translate(-50%, -62%) scale(1.05);
     }
-    .ficha:hover .velo,
-    .ficha:focus-visible .velo {
-      opacity: 1.08;
+    /* Al acercarse, el cristal se empaña más: es lo que da la sensación de
+       que la ficha reacciona, sin mover ni un texto de sitio. */
+    .ficha:hover .cristal,
+    .ficha:focus-visible .cristal {
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      background: rgba(11, 18, 48, 0.2);
+    }
+    /* Flota un poco más: se separa del campo y la sombra se abre. */
+    .ficha:hover .lienzo,
+    .ficha:focus-visible .lienzo {
+      transform: translateY(-6px);
+      box-shadow: 0 30px 56px -24px rgba(17, 21, 32, 0.6),
+        0 3px 8px -3px rgba(17, 21, 32, 0.2);
     }
     .ficha:hover .flecha {
       transform: translateX(4px);
+      background: rgba(255, 255, 255, 0.28);
+      border-color: rgba(255, 255, 255, 0.7);
     }
   }
 
@@ -279,6 +349,7 @@ const campo = indice % 2 === 0 ? "azul" : "navy";
     */
     .lienzo {
       aspect-ratio: 4 / 5;
+      border-radius: 22px;
     }
     .pie {
       padding: 22px 20px 20px;
@@ -288,6 +359,8 @@ const campo = indice % 2 === 0 ? "azul" : "navy";
   @media (prefers-reduced-motion: reduce) {
     .medio,
     .velo,
+    .cristal,
+    .lienzo,
     .mas,
     .flecha {
       transition: none;
