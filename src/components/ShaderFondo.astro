@@ -207,10 +207,15 @@
                 deshace y queda el oleaje de fondo, que nunca se para.
           */
           float d = distance(p, raton);
-          float cerca = exp(-d * 3.2);
+          /*
+            Campana (gaussiana), no exponencial de la distancia. La diferencia
+            importa: exp(-d) tiene un PICO en el centro y se veía como un
+            pellizco puntiagudo justo donde estaba el cursor. exp(-d*d) es
+            plana arriba, así que la influencia entra y sale sin costura.
+          */
+          float cerca = exp(-d * d * 5.5);
           vec2 q = p;
-          q -= uVel * cerca * (2.0 + 4.0 * uEnergia);
-          q += normalize(p - raton + vec2(0.0001)) * cerca * 0.05 * uEnergia;
+          q -= uVel * cerca * (2.4 + 5.0 * uEnergia);
 
           /*
             ── El oleaje, que se mueve SIEMPRE ────────────────────────────
@@ -263,10 +268,14 @@
           float det = ruido(w * 10.0 + vec2(-t * 0.22, t * 0.10)) * 0.62;
           det += ruido(w * 26.0 + vec2(t * 0.31, -t * 0.18)) * 0.26;
 
-          // El anillo que se expande al tocar el agua. Solo si hay energía.
-          float onda = sin(d * 22.0 - t * 3.2) * exp(-d * 4.2) * 0.16 * (0.2 + uEnergia);
-
-          float n = 0.5 + mar * 0.22 + (det - 0.44) * 0.30 + onda;
+          /*
+            RETIRADO el 2026-08-11: el anillo concéntrico que se expandía desde
+            el cursor. Un anillo centrado en el puntero se lee como una diana,
+            no como agua: lo que deja un objeto que cruza el agua es estela
+            DETRÁS, no círculos alrededor. La reacción al ratón se queda solo
+            en el arrastre direccional de arriba.
+          */
+          float n = 0.5 + mar * 0.22 + (det - 0.44) * 0.30;
 
           /*
             Cresta: el lomo de la ola brilla mucho más que el resto, y es ese
