@@ -142,6 +142,17 @@ const error = Astro.url.searchParams.get("error") === "1";
     text-transform: uppercase;
     letter-spacing: 0.1em;
   }
+  /*
+    Mismos cajones que el formulario de la home (`.ctaform` en HomeV5.astro),
+    con las esquinas más redondeadas (2026-08-11, pedido de Alejandro). De allí
+    vienen el relleno de 16, el cuerpo de 0,95rem y el fondo blanco. Lo único
+    que cambia es el borde: en la home el campo es azul y el contorno va en
+    blanco translúcido, y aquí, sobre campo claro, ese contorno desaparecería.
+
+    Ojo, esto es una excepción consciente a las esquinas en pico del sistema:
+    el pico es para las tarjetas, y un campo de escritura pide lo contrario,
+    que es invitar a meter el dedo o el cursor.
+  */
   input[type="text"],
   input[type="email"],
   textarea {
@@ -151,17 +162,28 @@ const error = Astro.url.searchParams.get("error") === "1";
     text-transform: none;
     letter-spacing: normal;
     background: #fff;
-    border: 1px solid rgba(17, 21, 32, 0.18);
-    padding: 12px 14px;
+    border: 1px solid rgba(17, 21, 32, 0.14);
+    border-radius: 18px;
+    padding: 16px;
     color: var(--ink);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  input[type="text"]:hover,
+  input[type="email"]:hover,
+  textarea:hover {
+    border-color: rgba(17, 21, 32, 0.26);
   }
   input:focus,
   textarea:focus {
     outline: 2px solid var(--azul);
-    outline-offset: -1px;
+    /* Por dentro del borde, para que el redondeo no quede doblado. */
+    outline-offset: -2px;
   }
   textarea {
     resize: vertical;
+    /* Como en la home: la caja de mensaje no se estira a lo ancho ni se
+       arrastra desde una esquina redondeada, que se ve raro. */
+    min-height: 140px;
   }
   .consent {
     flex-direction: row;
