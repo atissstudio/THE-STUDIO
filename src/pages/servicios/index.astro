@@ -79,19 +79,6 @@ import CarrilServicios from "../../components/CarrilServicios.astro";
 </BaseLayout>
 
 <style>
-  /*
-    Este cierre en concreto, sin la línea de arriba ni el rótulo "Tu plan
-    gratis" (2026-08-10, pedido de Alejandro: aquí no se quiere mencionar lo
-    de gratis). El filete de `.closer .closer-inner` es una regla compartida
-    por TODAS las páginas (ver tokens.css), así que se sobrescribe solo AQUÍ,
-    con el alcance del propio componente, en vez de tocar la regla global y
-    quitárselo también a las demás.
-  */
-  .closer .closer-inner {
-    border-top: 0;
-    padding-top: 0;
-  }
-
   .razones {
     padding: calc(var(--row) * 0.6) 0 calc(var(--row) * 1);
   }

@@ -293,11 +293,12 @@ body {
 .f-navy .read .k {
   border-top-color: rgba(238, 241, 247, 0.38);
 }
-/* El cierre también arranca con su filete, a la medida de su columna */
-.closer .closer-inner {
-  border-top: 1px solid rgba(238, 241, 247, 0.38);
-  padding-top: 34px;
-}
+/*
+  El cierre ya NO arranca con filete (2026-08-11): desde que es una tarjeta
+  flotante, el borde de la propia tarjeta hace ese trabajo y una línea dentro
+  quedaba como una raya suelta. Dos páginas lo anulaban a mano; esos parches
+  se retiraron al hacer el cambio.
+*/
 
 /* Utilidad suelta, para cuando una página necesite una línea propia */
 .filete {
@@ -818,13 +819,43 @@ a:has(.logo) {
   background: #fff;
 }
 
-/* Hero de página interior: campo azul a sangre, titular en caja normal */
+/*
+  Hero de página interior y cierre: TARJETA AZUL FLOTANTE, no campo a sangre
+  (2026-08-11, pedido de Alejandro al ver las fichas de /servicios: "que no
+  salga el bloque azul ese, que sea una tarjeta también, lo mismo para el
+  bottom con el cta").
+
+  Cómo funciona: la sección conserva su clase `.f-azul` —y por tanto todas las
+  reglas de color que dependen de ella siguen aplicando dentro de la tarjeta
+  (`.f-azul .k`, `.f-azul a.cta`, el cristal claro de la llamada a la
+  acción...)— pero el azul se muda al bloque de dentro. La sección se queda de
+  campo claro, que es el suelo sobre el que flota la tarjeta.
+
+  En la home el hero NO cambia (la portada es otra cosa); su CTA de cierre sí,
+  y se resuelve en HomeV5.astro con estos mismos números.
+*/
+.hero-field.f-azul,
+.closer.f-azul {
+  background: var(--plata-clara);
+}
+.hero-field.f-azul > .hero-inner,
+.closer.f-azul > .closer-inner {
+  background: var(--azul);
+  color: var(--plata-clara);
+  border-radius: 28px;
+  box-shadow: 0 26px 60px -30px rgba(17, 21, 32, 0.5), 0 3px 8px -3px rgba(17, 21, 32, 0.16);
+}
+
 .hero-field {
-  padding: calc(var(--row) * 1.5) 0 calc(var(--row) * 1);
+  padding: calc(var(--row) * 0.9) 0 calc(var(--row) * 0.7);
 }
 .hero-field .hero-inner {
-  grid-column: 2/11;
-  padding: 0 20px;
+  grid-column: 2/12;
+  /* Los 20 px alinean el borde de la tarjeta con el de las fichas del carril
+     y con el texto de la rejilla. Sin ellos arrancaba 20 px antes que todo lo
+     demás y se veían tres márgenes distintos en la misma página. */
+  margin: 0 20px;
+  padding: clamp(44px, 5vw, 72px) clamp(28px, 3.4vw, 56px);
 }
 .hero-field h1 {
   font-family: var(--sans);
@@ -887,8 +918,9 @@ a:has(.logo) {
   text-align: center;
 }
 .closer .closer-inner {
-  grid-column: 3/11;
-  padding: 0 20px;
+  grid-column: 2/12;
+  margin: 0 20px;
+  padding: clamp(48px, 5.5vw, 78px) clamp(28px, 4vw, 64px);
 }
 .closer h2 {
   font-family: var(--sans);
@@ -911,9 +943,28 @@ a:has(.logo) {
 }
 
 @media (max-width: 900px) {
+  /*
+    En móvil la tarjeta ocupa el ancho útil, pero NO llega a los bordes: si
+    llegara, dejaría de leerse como tarjeta y volvería a ser el campo a
+    sangre de antes. De ahí el margen lateral en la sección.
+  */
+  .hero-field,
+  .closer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
   .hero-field .hero-inner,
   .closer .closer-inner {
     grid-column: 1/13;
+    /* El margen lateral ya lo pone la sección; aquí sumaría dos veces. */
+    margin: 0;
+    padding: 40px 26px;
+  }
+  /* El campo mide una pantalla entera (regla de arriba), así que la tarjeta
+     se centra en él en vez de quedarse pegada arriba. */
+  .hero-field.f-azul,
+  .closer.f-azul {
+    align-content: center;
   }
 }
 

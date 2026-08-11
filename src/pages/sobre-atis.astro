@@ -29,17 +29,6 @@ import SobreAtisHistoria from "../components/SobreAtisHistoria.astro";
 </BaseLayout>
 
 <style>
-  /*
-    Sin línea y sin rótulo (2026-08-11, pedido de Alejandro: quedaba mal). El
-    filete de `.closer .closer-inner` es regla compartida por todas las páginas
-    (tokens.css), así que se anula SOLO aquí, con el alcance del componente,
-    igual que ya se hace en /servicios.
-  */
-  .closer .closer-inner {
-    border-top: 0;
-    padding-top: 0;
-  }
-
   .sidelinks {
     margin: 26px 0 0;
     display: flex;

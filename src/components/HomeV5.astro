@@ -617,15 +617,31 @@ const destacados = todos.slice(0, 3);
   .cta-wrap {
     position: relative;
   }
+  /*
+    La llamada de cierre pasa a TARJETA flotante (2026-08-11, pedido de
+    Alejandro). En la home la portada se queda como está, pero el cierre sigue
+    la misma regla que el resto de páginas (ver tokens.css): la sección se
+    queda de campo claro y el azul se muda al bloque de dentro. La clase
+    `.f-azul` se conserva porque de ella cuelgan los colores de dentro (el
+    cristal claro de la llamada a la acción, entre otros).
+  */
   .cta-screen {
     min-height: 100svh;
     display: grid;
     place-items: center;
     text-align: center;
+    background: var(--plata-clara);
+    padding: 0 20px;
   }
   .cta-inner {
-    max-width: 640px;
-    padding: 0 24px;
+    max-width: 720px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: clamp(48px, 5.5vw, 78px) clamp(28px, 4vw, 64px);
+    background: var(--azul);
+    color: var(--plata-clara);
+    border-radius: 28px;
+    box-shadow: 0 26px 60px -30px rgba(17, 21, 32, 0.5), 0 3px 8px -3px rgba(17, 21, 32, 0.16);
     transform: translateY(var(--cta-y, 40px));
     opacity: var(--cta-o, 0);
     transition: transform 1s 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 1s 0.2s ease;
