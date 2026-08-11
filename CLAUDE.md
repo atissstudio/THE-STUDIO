@@ -243,6 +243,19 @@ Durante meses se dio por hecho que Claude no podía ver el resultado. **Es falso
 
 **Regla de comunicación que sale de aquí:** distinguir siempre **medido** de **visto**. Medir no es mirar, y presentar lo uno como lo otro fue exactamente lo que rompió la confianza en la sesión del 2026-08-09.
 
+### Sesión 2026-08-11 — /servicios pasa a fichas en carril (HECHA)
+
+Referencia pedida por Alejandro: **lorolabs.ai**. Se toma el **mecanismo**, no el acabado.
+
+- **Lo que hace fuerte a la referencia** (medido sobre su DOM, no de vista): la ficha es un **cartel** (imagen 4:3 a sangre, 553×415 a 1280, todo lo demás flotando encima) con **tres datos visibles sin tocar nada** — dónde estás del total (`01 / 06`), **el precio**, y el nombre. Y **tres niveles de lectura**: ficha → una frase al pasar el ratón → detalle al hacer clic. Nadie lee seis descripciones, lee seis títulos y abre una.
+- ⚠️ **HALLAZGO IMPORTANTE: la referencia NO tiene `scroll-snap` en ningún sitio.** Cero elementos. La sensación de "cada scroll una diapositiva, pero con sutileza" que le gustó a Alejandro **no viene de secuestrar el scroll**: viene de una idea por sección, mucho aire (96-128 px), una entrada animada por sección y dos pantallas negras completas de respiro. **Nuestra home hace lo contrario** (`scroll-snap-stop: always`, obligatorio). Conviene revisarlo, pero es tema aparte y no se tocó.
+- **Lo nuestro:** `FichaServicio.astro` + `CarrilServicios.astro`, montados en `/servicios`. Fuera el acordeón de siete filas (era texto sin jerarquía y duplicaba `/servicios/[slug]`, que sigue siendo el destino del clic, mejor para Google que el diálogo de ellos). Carril horizontal con `proximity` (nunca `mandatory`), flechas **sin caja y de 44×44** (uno de los objetivos táctiles pendientes, resuelto aquí), borde derecho siempre cortado. Detrás, el texto que argumenta, nunca antes.
+- **Traducción, no copia:** esquinas **en pico** en vez de 28 px de radio, y velo en **navy** en vez de negro.
+- ⚠️ **Las fotografías NO existen todavía** (las hace Alejandro). El catálogo tiene `foto?` vacío y la ficha cae en la **isla de plata** sobre su campo de color, que es un estado válido y de marca. Al llegar la foto se rellena el campo y no hay que rediseñar nada.
+- **En el sitio del precio va el `entregable`**, no una cifra: INV-04 sigue en espera y no se inventan precios. Los siete los redactó Claude a partir del copy de Alejandro, **pendientes de que los repase**.
+- **Medido:** ficha 589×442 a 1280 (dos y media en pantalla), desplegada 161 px de pie dentro de 442, sin desbordar · móvil 375: ficha **4:5** (en 4:3 el texto se comía 170 de 224 px) y el aire del campo repartido 160/160 · cero desborde horizontal · build limpio.
+- **Sobre Atis:** el cierre pierde el filete y el rótulo "El desenlace" (pedido de Alejandro, quedaba mal).
+
 ### 🎯 Lo que toca en la sesión siguiente
 
 **1 · Los cuatro hallazgos de la auditoría, sin resolver.** Salieron el 2026-08-05 y siguen abiertos:
@@ -309,4 +322,9 @@ Durante meses se dio por hecho que Claude no podía ver el resultado. **Es falso
 - **Brandbook · Identidad visual — elementos animados con función (2026-08-08).** GSAP entra en el sistema, y con una regla: **la animación explica lo que dice el texto, no decora**. Las islas se nivelan porque el copy habla de igualdad de oportunidades; la línea se dibuja porque el copy habla de un proceso. Dos reglas técnicas que son de marca, no de código: (a) **plata sólida `#565E6C` sobre campo claro**, porque la metálica da 2,0:1 y se ve lavada; (b) **ninguna animación puede dejar el contenido invisible o con un dato falso** si se interrumpe — siempre red de seguridad.
 - **Investigaciones · INV-09 — segunda contradicción consciente (2026-08-08).** Se añaden siete movimientos nuevos a la web sabiendo que INV-09 concluyó que el espectáculo resta credibilidad con dueños de negocio de 45-60. Se aceptó con el criterio de que cada uno explique algo concreto. Conviene registrarlo junto a la contradicción de los shaders.
 - **Roadmap al MVP — la web ya NO es pública** (cortina verificada en producción el 2026-08-08) y **la contraseña del admin de Supabase estuvo publicada** en un repositorio abierto: rotarla antes del primer cliente real.
+- **Brandbook · Identidad visual — patrón nuevo: la ficha-cartel y el carril (2026-08-11).** Un catálogo se presenta en **fichas tipo cartel** (imagen a sangre, esquinas en pico, tres datos visibles sin interacción) dentro de un **carril horizontal**, y el texto que argumenta va **después**, nunca antes. Con tres niveles de lectura: ficha → una frase al pasar → página completa. Referencia de la que sale: lorolabs.ai.
+- **Brandbook · Identidad visual — la diapositiva no necesita `scroll-snap` (2026-08-11).** Medido sobre lorolabs.ai: cero elementos con ajuste. La sensación de diapositiva sale de una idea por sección, mucho aire, entrada animada por sección y pantallas de respiro. Contradice a lo que hace hoy nuestra home (`scroll-snap-stop: always`) y merece decidirse.
+- **Roadmap al MVP — hacen falta 7 fotografías de servicio (2026-08-11).** Las fichas de `/servicios` están montadas para llevar foto y hoy caen en la isla de plata. Formato 4:3 en escritorio y 4:5 en móvil.
+- **Investigaciones · INV-04 (Precio) — el hueco ya está maquetado (2026-08-11).** En el sitio donde la referencia pone el precio hoy va el entregable. En cuanto haya cifras cerradas se sustituye el campo, sin tocar el diseño.
+- **Brandbook · Voz — siete "entregables" nuevos (2026-08-11),** uno por servicio, redactados por Claude a partir del copy de Alejandro ("Te llevas la hoja de ruta", "Te llevas las horas que te comen"…). Pendientes de que él los repase antes de darlos por buenos.
 - **Roadmap al MVP — `npm run export` roto** desde que el sitio pasa a render en servidor. Decidir si se recupera o se retira: la web ya está publicada y esa copia offline puede haber dejado de tener sentido.
