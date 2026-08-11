@@ -57,9 +57,14 @@
       cae encima, más estática de televisor que agua. 0.16 se quedaba corto
       una vez corregida la costura de arriba (ver `.portada-pin` en
       `medirBandas`): a Alejandro le gustó el efecto y pidió notarlo más.
-      0.22 es el punto intermedio.
+      0.22 fue el punto intermedio.
+
+      2026-08-11: sube a 0.34 al pedirse otra vez más presencia. Lo que hace
+      que ahora no se lea como suciedad no es la opacidad, es que el dibujo
+      cambió: son trenes de olas con cresta, no ruido. El mismo 0,3 que antes
+      era estática, con olas de verdad se lee como agua.
     */
-    opacity: 0.22;
+    opacity: 0.34;
   }
   @media (prefers-reduced-motion: reduce) {
     #shader-fondo {
@@ -126,8 +131,11 @@
         varying vec2 vUv;
         uniform float uTiempo;
         uniform vec2 uRaton;
+        uniform vec2 uVel;
+        uniform float uEnergia;
         uniform vec2 uMedida;
-        uniform vec2 uBandas[8];
+        uniform vec4 uBandas[8];
+        uniform float uRadio[8];
         uniform int uNumBandas;
 
         float azar(vec2 p) {
@@ -148,12 +156,33 @@
         void main() {
           vec2 uv = vUv;
 
-          // ¿Este píxel cae dentro de algún campo azul? Si no, fuera.
+          /*
+            ¿Este píxel cae dentro de alguna zona azul? Si no, fuera.
+
+            Desde el 2026-08-11 la zona es un RECTÁNGULO (arriba, abajo,
+            izquierda, derecha) y no una banda de lado a lado. Motivo: el azul
+            dejó de ser un campo a sangre y pasó a ser una tarjeta con 20 px de
+            campo claro alrededor. Con bandas, el mar se derramaba sobre ese
+            marco claro, que es justo lo que se pidió que no pasara nunca.
+          */
           float dentro = 0.0;
+          vec2 px = uv * uMedida;
           for (int i = 0; i < 8; i++) {
             if (i >= uNumBandas) continue;
-            vec2 b = uBandas[i];
-            if (uv.y <= b.x && uv.y >= b.y) dentro = 1.0;
+            vec4 b = uBandas[i];
+            /*
+              En PÍXELES, no en uv: el radio de una esquina es circular en
+              pantalla, y uv está normalizado distinto en cada eje, así que
+              medido en uv una esquina redonda saldría ovalada. Es la fórmula
+              corriente de "caja con esquinas redondeadas" por distancia.
+              Radio 0 (campos a sangre) da exactamente la caja de siempre.
+            */
+            vec2 centro = vec2((b.z + b.w) * 0.5, (b.x + b.y) * 0.5) * uMedida;
+            vec2 medio = vec2((b.w - b.z) * 0.5, (b.x - b.y) * 0.5) * uMedida;
+            float r = min(uRadio[i], min(medio.x, medio.y));
+            vec2 q2 = abs(px - centro) - medio + r;
+            float dist = length(max(q2, 0.0)) + min(max(q2.x, q2.y), 0.0) - r;
+            if (dist < 0.0) dentro = 1.0;
           }
           if (dentro < 0.5) {
             gl_FragColor = vec4(0.5, 0.5, 0.5, 0.0);
@@ -161,37 +190,99 @@
           }
 
           float rel = uMedida.x / uMedida.y;
-          // Oleaje: el muestreo se estira en horizontal, no es ruido isótropo.
+          // El muestreo se estira en horizontal: el mar se ve en escorzo.
           vec2 p = vec2(uv.x * rel * 1.2, uv.y * 0.8);
           vec2 raton = vec2(uRaton.x * rel * 1.2, uRaton.y * 0.8);
+          float t = uTiempo;
 
-          // Cerca del puntero el agua se empuja, como una estela.
+          /*
+            ── La estela del puntero ──────────────────────────────────────
+            Dos cosas distintas, y esto es lo que se pidió el 2026-08-11:
+
+            1 · El agua se ARRASTRA en la dirección en la que se mueve el
+                ratón (uVel), no solo "hacia fuera" del cursor. Por eso el
+                movimiento va CON él y no simplemente alrededor.
+            2 · La fuerza depende de uEnergia, que sube al mover el ratón y
+                baja sola al pararlo. Con el puntero quieto la estela se
+                deshace y queda el oleaje de fondo, que nunca se para.
+          */
           float d = distance(p, raton);
-          float tiron = exp(-d * 4.0);
-          p += (p - raton) * tiron * 0.3;
+          float cerca = exp(-d * 3.2);
+          vec2 q = p;
+          q -= uVel * cerca * (2.0 + 4.0 * uEnergia);
+          q += normalize(p - raton + vec2(0.0001)) * cerca * 0.05 * uEnergia;
 
           /*
-            Manda la escala grande (olas), el grano fino queda casi
-            testimonial. La primera versión pesaba igual las tres octavas y,
-            sumada al contraste, se leía como estática de televisor, no como
-            agua: demasiado ruido de alta frecuencia para el ojo.
+            ── El oleaje, que se mueve SIEMPRE ────────────────────────────
+            Antes esto eran tres octavas de ruido a velocidad 0,05: sin ratón
+            encima parecía una foto. Ahora son tres trenes de olas cruzados
+            (senos con dirección, frecuencia y velocidad propias), que es como
+            se representa el mar en tiempo real desde siempre, más el ruido
+            fino encima para el detalle. Los trenes van a distinta velocidad,
+            así que el conjunto nunca repite el mismo dibujo.
           */
-          float t = uTiempo * 0.05;
-          float n = ruido(p * 2.2 + vec2(t, t * 0.3)) * 0.5;
-          n += ruido(p * 6.0 - vec2(t * 1.6, t * 0.5)) * 0.32;
-          n += ruido(p * 16.0 + vec2(-t * 2.1, t * 1.2)) * 0.18;
-
-          // El anillo que se expande al tocar el agua, no solo un tirón.
-          float onda = sin(d * 26.0 - uTiempo * 2.6) * exp(-d * 5.0) * 0.12;
-          n += onda + tiron * 0.1;
+          vec2 deriva = vec2(t * 0.010, t * 0.004);
+          vec2 w = q + deriva;
 
           /*
-            Contraste ampliado pero contenido: lo suficiente para que se note
-            sombra y brillo, no tanto que tape el texto que hay encima. De 1.7
-            (estática de televisor) se bajó a 1.15 (apenas se veía); subido a
-            1.35 al gustar el efecto y pedirse más presencia.
+            Dos aprendizajes de mirar las capturas, el 2026-08-11:
+
+            1 · La DIRECCIÓN manda más que la frecuencia. Con las crestas
+                corriendo en vertical (senos que varían con x) el resultado se
+                leía como manchas de camuflaje. El mar visto de frente se
+                reconoce por bandas HORIZONTALES, así que los senos varían
+                sobre todo con y y solo un poco con x, que es lo que las
+                inclina y evita el efecto persiana.
+            2 · Un seno puro es demasiado regular para ser agua. Se le suma
+                ruido DENTRO de la fase (deformación del dominio): la cresta
+                deja de ser una línea recta y ondula, que es exactamente el
+                truco estándar para simular superficies de agua sin simular
+                física.
           */
-          n = clamp(0.5 + (n - 0.5) * 1.35, 0.0, 1.0);
+          /*
+            ⚠️ LA ESCALA ERA EL FALLO DE FONDO, y venía de largo. El muestreo
+            no va de 0 a 1: el eje vertical se comprime a 0,8 (escorzo).
+            (Ojo: aquí dentro no se pueden usar comillas invertidas, esto es
+            una plantilla de JavaScript y cortarían la cadena. Pasó.)
+            Con frecuencias de 3 a 30, en toda la altura de la pantalla cabía
+            UNA onda y media, así que por muchos trenes que se sumaran el
+            resultado solo podía ser manchas grandes. Para que se lean crestas
+            hacen falta del orden de 45 a 130. Se vio mirando capturas, tras
+            dos intentos de arreglarlo tocando contraste y opacidad, que era
+            tratar el síntoma.
+          */
+          float ond1 = ruido(w * 2.4 + vec2(t * 0.06, 0.0)) * 2.4;
+          float ond2 = ruido(w * 4.2 - vec2(0.0, t * 0.05)) * 1.9;
+
+          float mar = 0.0;
+          mar += sin(w.y * 46.0 + w.x * 7.0 + t * 0.85 + ond1) * 0.50;
+          mar += sin(w.y * 79.0 - w.x * 13.0 - t * 0.66 + ond2) * 0.30;
+          mar += sin(w.y * 132.0 + w.x * 23.0 + t * 1.25) * 0.15;
+
+          // Detalle fino, viajando con la ola (si no, la superficie es plástico).
+          float det = ruido(w * 10.0 + vec2(-t * 0.22, t * 0.10)) * 0.62;
+          det += ruido(w * 26.0 + vec2(t * 0.31, -t * 0.18)) * 0.26;
+
+          // El anillo que se expande al tocar el agua. Solo si hay energía.
+          float onda = sin(d * 22.0 - t * 3.2) * exp(-d * 4.2) * 0.16 * (0.2 + uEnergia);
+
+          float n = 0.5 + mar * 0.22 + (det - 0.44) * 0.30 + onda;
+
+          /*
+            Cresta: el lomo de la ola brilla mucho más que el resto, y es ese
+            destello lo que hace que se lea como agua y no como mancha. Se
+            saca elevando el valor de la ola a una potencia alta, que deja
+            encendidas solo las puntas.
+          */
+          float cresta = pow(max(mar * 0.5 + 0.5, 0.0), 9.0);
+          n += cresta * 0.30;
+
+          /*
+            Contraste. Historial: 1,7 (estática de televisor) → 1,15 (no se
+            veía) → 1,35 → 1,5, al pedir Alejandro que el mar se note más. El
+            tope lo pone el texto que cae encima, no el gusto.
+          */
+          n = clamp(0.5 + (n - 0.5) * 1.5, 0.0, 1.0);
 
           gl_FragColor = vec4(vec3(n), 1.0);
         }
@@ -204,8 +295,11 @@
         uniforms: {
           uTiempo: { value: 0 },
           uRaton: { value: new Vec2(0.5, 0.5) },
+          uVel: { value: new Vec2(0, 0) },
+          uEnergia: { value: 0 },
           uMedida: { value: new Vec2(1, 1) },
-          uBandas: { value: new Array(MAX_BANDAS * 2).fill(0) },
+          uBandas: { value: new Array(MAX_BANDAS * 4).fill(0) },
+          uRadio: { value: new Array(MAX_BANDAS).fill(0) },
           uNumBandas: { value: 0 },
         },
       });
@@ -273,15 +367,42 @@
         return Math.min(alto, pinAlto);
       };
 
+      /*
+        Qué se mide, y por qué no es simplemente `.f-azul`:
+
+        desde que los encabezados y los cierres son TARJETAS (2026-08-11), la
+        sección conserva la clase pero su fondo ya es claro; el azul está en el
+        bloque de dentro. Si se midiera la sección, el mar saldría por el marco
+        claro. Por eso esos tres casos se miden por su hijo, y el resto de
+        campos azules, que siguen siendo a sangre, por sí mismos.
+      */
+      const SELECTOR_AZUL = [
+        ".f-azul:not(.hero-field):not(.closer):not(.cta-screen)",
+        ".hero-field > .hero-inner",
+        ".closer > .closer-inner",
+        ".cta-screen > .cta-inner",
+      ].join(",");
+
+      const radioBuffer = program.uniforms.uRadio.value as number[];
+      const guardar = (n: number, r: DOMRect, radio = 0) => {
+        bandasBuffer[n * 4] = 1 - r.top / innerHeight;
+        bandasBuffer[n * 4 + 1] = 1 - r.bottom / innerHeight;
+        bandasBuffer[n * 4 + 2] = r.left / innerWidth;
+        bandasBuffer[n * 4 + 3] = r.right / innerWidth;
+        radioBuffer[n] = radio;
+      };
+
       const medirBandas = () => {
         let n = 0;
-        const azules = document.querySelectorAll<HTMLElement>(".f-azul");
+        const azules = document.querySelectorAll<HTMLElement>(SELECTOR_AZUL);
         for (const el of azules) {
           if (n >= MAX_BANDAS) break;
           const r = el.getBoundingClientRect();
           if (r.bottom <= 0 || r.top >= innerHeight || r.height <= 0) continue;
-          bandasBuffer[n * 2] = 1 - r.top / innerHeight;
-          bandasBuffer[n * 2 + 1] = 1 - r.bottom / innerHeight;
+          // El radio se lee del propio elemento, no se supone: así los campos
+          // a sangre (radio 0) y las tarjetas (28) salen bien sin distinguirlos.
+          const radio = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
+          guardar(n, r, radio);
           n++;
         }
         const pin = document.querySelector<HTMLElement>(".portada-pin");
@@ -289,21 +410,36 @@
           const r = pin.getBoundingClientRect();
           if (r.bottom > 0 && r.top < innerHeight) {
             const altoAzul = medirBandaPortada(pin);
-            const bottom = r.top + altoAzul;
-            bandasBuffer[n * 2] = 1 - r.top / innerHeight;
-            bandasBuffer[n * 2 + 1] = 1 - bottom / innerHeight;
+            guardar(n, new DOMRect(r.left, r.top, r.width, altoAzul));
             n++;
           }
         }
         program.uniforms.uNumBandas.value = n;
       };
 
-      // El puntero se persigue con retardo: el salto seco se vería artificial.
+      /*
+        El puntero se persigue con retardo: el salto seco se vería artificial.
+
+        Además se guarda su VELOCIDAD y una "energía" (2026-08-11). La energía
+        sube al mover el ratón y baja sola en cuanto se para, y es la que
+        decide cuánta estela hay. Así el mar se comporta como se pidió: solo
+        con su oleaje cuando no hay nadie encima, y arrastrándose con el
+        cursor cuando lo hay. Al sacar el ratón de la ventana, la energía cae
+        igual que si se hubiera parado, sin ningún caso especial.
+      */
       const destino = { x: 0.5, y: 0.5 };
       const actual = { x: 0.5, y: 0.5 };
+      const velocidad = { x: 0, y: 0 };
+      let energia = 0;
       const apuntar = (x: number, y: number) => {
-        destino.x = x / innerWidth;
-        destino.y = 1 - y / innerHeight;
+        const nx = x / innerWidth;
+        const ny = 1 - y / innerHeight;
+        // Distancia recorrida desde el último aviso, en pantallas por evento.
+        const dx = nx - destino.x;
+        const dy = ny - destino.y;
+        energia = Math.min(1, energia + Math.hypot(dx, dy) * 9);
+        destino.x = nx;
+        destino.y = ny;
       };
       addEventListener("pointermove", (e) => apuntar(e.clientX, e.clientY), { passive: true });
 
@@ -317,9 +453,38 @@
       let t0 = performance.now();
       function bucle(ahora: number) {
         if (!vivo) return;
+        const antesX = actual.x;
+        const antesY = actual.y;
         actual.x += (destino.x - actual.x) * 0.06;
         actual.y += (destino.y - actual.y) * 0.06;
+
+        /*
+          La velocidad que ve el shader es la del punto perseguido, no la del
+          ratón en bruto: así la estela sale suave aunque el navegador entregue
+          los eventos a golpes. Se guarda suavizada y en las mismas unidades
+          estiradas que usa el shader para el eje horizontal.
+        */
+        const rel = innerWidth / innerHeight;
+        velocidad.x += ((actual.x - antesX) * rel * 1.2 - velocidad.x) * 0.25;
+        velocidad.y += ((actual.y - antesY) * 0.8 - velocidad.y) * 0.25;
+        /*
+          Con tope. Un manotazo de lado a lado da una velocidad diez veces la
+          normal y, multiplicada dentro del shader, deformaría el agua hasta
+          convertirla en un borrón. El tope deja el gesto rápido igual de
+          enérgico que uno normal, que es lo que hace el agua de verdad.
+        */
+        const vMax = 0.02;
+        const vLen = Math.hypot(velocidad.x, velocidad.y);
+        if (vLen > vMax) {
+          velocidad.x = (velocidad.x / vLen) * vMax;
+          velocidad.y = (velocidad.y / vLen) * vMax;
+        }
+        // Se apaga sola: sin ratón que la alimente, en ~1,5 s no queda nada.
+        energia *= 0.965;
+
         program.uniforms.uRaton.value.set(actual.x, actual.y);
+        program.uniforms.uVel.value.set(velocidad.x, velocidad.y);
+        program.uniforms.uEnergia.value = energia;
         program.uniforms.uTiempo.value = (ahora - t0) / 1000;
         medirBandas();
         renderer.render({ scene: malla });

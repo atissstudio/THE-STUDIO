@@ -261,6 +261,19 @@ Referencia pedida por Alejandro: **lorolabs.ai**. Se toma el **mecanismo**, no e
 - **Los formularios de `/contacto` copian los cajones de la home** con las esquinas a 18 px (otra excepción consciente al pico, y con motivo: un campo donde se escribe pide lo contrario que una tarjeta).
 - ⚠️ **Tres márgenes distintos en la misma página.** La tarjeta arrancaba en 107 y las fichas en 127, porque `grid-column: 2/12` da la columna pero el texto de la rejilla lleva además 20 px de relleno. Las tarjetas llevan ahora `margin: 0 20px` para alinearse con todo lo demás.
 
+### El mar, rehecho (2026-08-11)
+
+Pedido de Alejandro: que se note más, que **se mueva solo** cuando no hay nadie encima, y que **al pasar el ratón el movimiento vaya con él**.
+
+- **Ya no es ruido, son olas.** Tres trenes de senos con dirección, frecuencia y velocidad propias, con **ruido metido dentro de la fase** (deformación del dominio) para que la cresta ondule en vez de ser una raya recta, más el destello de cresta (`pow` alto, que deja encendidas solo las puntas). Es el método corriente para simular agua sin simular física.
+- ⚠️ **EL FALLO DE FONDO ERA LA ESCALA, y venía de largo.** El muestreo comprime el eje vertical a 0,8, y las frecuencias iban de 3 a 30: **en toda la altura de la pantalla cabía una onda y media**, así que solo podía verse como manchas. Por eso los tres intentos anteriores de arreglarlo subiendo contraste y opacidad no funcionaron: trataban el síntoma. Ahora van de **46 a 132**.
+- ⚠️ **La dirección importa más que la frecuencia.** Con las crestas corriendo en vertical se leía como camuflaje. El mar se reconoce por **bandas horizontales**, así que los senos varían sobre todo con `y`.
+- **Sigue vivo sin ratón, y reacciona con él.** El oleaje nunca se para. Además hay una **energía** que sube al mover el ratón y **baja sola al pararlo** (0,965 por fotograma, ~1,5 s), y el agua se **arrastra en la dirección del movimiento** (no solo "hacia fuera" del cursor), con tope de velocidad para que un manotazo no la convierta en un borrón. Al salir el ratón de la ventana se apaga sola, sin caso especial.
+- **Opacidad 0,22 → 0,34.** Lo que hace que ya no se lea como suciedad no es la opacidad, es el dibujo.
+- ⚠️ **La máscara pasa de banda a RECTÁNGULO CON RADIO.** Al convertirse los encabezados en tarjetas, la sección sigue teniendo la clase `.f-azul` pero su fondo ya es claro: midiendo la sección, el mar se derramaba por el marco claro. Ahora se mide el bloque azul de dentro, y **el radio se lee del propio elemento** (`borderTopLeftRadius`), así que campos a sangre (radio 0) y tarjetas (28) funcionan con el mismo código. La cuenta va en **píxeles**, no en uv, o la esquina saldría ovalada.
+- ⚠️ **Dentro del shader no se pueden escribir comillas invertidas**: el GLSL vive en una plantilla de JavaScript y las comillas cortan la cadena. Costó un error de compilación.
+- **Cómo se mira un shader desde aquí** (con la pestaña oculta los fotogramas están congelados): sustituir `requestAnimationFrame` por una **cola** (nunca por ejecución síncrona: el bucle se llama a sí mismo y revienta la pila), fingir `document.hidden = false` y disparar `visibilitychange` para que el bucle vuelva a encolar, y avanzar los fotogramas a mano. **Una captura tomada justo después de un `resize` sale en blanco**: hay que avanzar fotogramas después de redimensionar.
+
 ### 🎯 Lo que toca en la sesión siguiente
 
 **1 · Los cuatro hallazgos de la auditoría, sin resolver.** Salieron el 2026-08-05 y siguen abiertos:
