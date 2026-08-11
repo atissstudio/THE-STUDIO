@@ -625,18 +625,32 @@ const destacados = todos.slice(0, 3);
     `.f-azul` se conserva porque de ella cuelgan los colores de dentro (el
     cristal claro de la llamada a la acción, entre otros).
   */
+  /*
+    La tarjeta ocupa la PANTALLA ENTERA menos el marco de 20 px, igual que el
+    encabezado de las páginas interiores (2026-08-11). Arriba se descuenta
+    además la franja del menú: esta sección es una diapositiva que se detiene
+    con su borde superior en el borde de la ventana, que es justo donde vive
+    la franja fija, y sin descontarla el menú se comería la esquina de la
+    tarjeta.
+  */
   .cta-screen {
     min-height: 100svh;
-    display: grid;
-    place-items: center;
+    box-sizing: border-box;
+    /* Flex y no rejilla: con una sola fila automática, la rejilla centraba el
+       bloque en vez de estirarlo, y la tarjeta se quedaba a media pantalla. */
+    display: flex;
     text-align: center;
     background: var(--plata-clara);
-    padding: 0 20px;
+    padding: calc(var(--menu-h) + 20px) 20px 20px;
   }
   .cta-inner {
-    max-width: 720px;
+    flex: 1;
     width: 100%;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     padding: clamp(48px, 5.5vw, 78px) clamp(28px, 4vw, 64px);
     background: var(--azul);
     color: var(--plata-clara);
@@ -688,7 +702,9 @@ const destacados = todos.slice(0, 3);
   .ctaform {
     display: flex;
     flex-direction: column;
-    max-width: 520px;
+    /* 620 y no 520 desde que la tarjeta ocupa la pantalla entera: en una caja
+       de 1.240 px, un formulario de 520 se veía perdido en el centro. */
+    max-width: 620px;
     margin: 0 auto;
     gap: 12px;
   }
