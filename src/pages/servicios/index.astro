@@ -1,7 +1,15 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import GlassButton from "../../components/GlassButton.astro";
-import { servicios } from "../../data/servicios";
+import CarrilServicios from "../../components/CarrilServicios.astro";
+
+/*
+  Rehecha el 2026-08-11. Antes era un acordeón de siete filas idénticas: todo
+  texto, sin jerarquía y duplicando lo que ya cuenta /servicios/[slug]. Ahora
+  el catálogo entra por fichas en carril (ver CarrilServicios.astro) y el texto
+  llega DESPUÉS, que es el orden de la referencia que pidió Alejandro
+  (lorolabs.ai): primero engancha lo visual, después se argumenta.
+*/
 ---
 
 <BaseLayout
@@ -19,44 +27,44 @@ import { servicios } from "../../data/servicios";
     </div>
   </section>
 
+  <CarrilServicios />
+
   {/*
-    Cada servicio se despliega en la propia lista, no en una página aparte
-    (pedido 2026-08-03). Al pasar el ratón se abre; con clic o teclado se fija
-    abierto, para quien no tiene ratón. La ficha en /servicios/[slug] sigue
-    existiendo para enlazar directo o para SEO, con un enlace dentro del
-    desplegable, nunca como la única forma de leer el texto.
+    El texto que complementa. Tres razones, no siete: la lista de servicios ya
+    está arriba y aquí no se repite, se argumenta por qué se contrata a Atis y
+    no a cualquiera.
   */}
-  <ul class="lista">
-    {
-      servicios.map((s, i) => (
-        <li class="fila-wrap">
-          <button
-            class="fila"
-            type="button"
-            aria-expanded="false"
-            aria-controls={`panel-${s.slug}`}
-          >
-            <span class="fn">{String(i + 1).padStart(2, "0")}</span>
-            <span class="ft">
-              <span class="fname">{s.title}</span>
-              <span class="fhead">{s.heading}</span>
-            </span>
-            <span class="fd">{s.card}</span>
-          </button>
-          <div class="panel" id={`panel-${s.slug}`}>
-            <div class="panel-inner">
-              {s.body.map((p) => (
-                <p>{p}</p>
-              ))}
-              <a class="panel-link" href={`/servicios/${s.slug}`}>
-                Ver la ficha completa →
-              </a>
-            </div>
-          </div>
-        </li>
-      ))
-    }
-  </ul>
+  <section class="f-blanco row12 razones" data-reveal>
+    <div class="datos">
+      <div class="head-cell">
+        <p class="k">Cómo se entra</p>
+        {/* Corto a propósito: `.head-cell h2` va en caja alta, y el manual
+            reserva las mayúsculas a rótulos de 2 a 5 palabras. */}
+        <h2>Uno primero, no los siete.</h2>
+      </div>
+      <div class="dato">
+        <span class="q">Empezamos por lo que más retorno te da</span>
+        <span class="a">
+          Se entra por la auditoría, que es la que dice qué te hace falta de verdad. Desde ahí
+          crecemos contigo, servicio a servicio, nunca al revés.
+        </span>
+      </div>
+      <div class="dato">
+        <span class="q">No le quitamos el trabajo a nadie</span>
+        <span class="a">
+          Hacemos el que nadie quiere hacer. La inteligencia artificial que montamos te devuelve
+          horas, no te sustituye a ti ni a tu equipo.
+        </span>
+      </div>
+      <div class="dato">
+        <span class="q">Además, te lo enseñamos</span>
+        <span class="a">
+          No trabajamos a puerta cerrada. Te explicamos qué hacemos y por qué, para que puedas
+          seguir tú el día que quieras hacerlo por tu cuenta.
+        </span>
+      </div>
+    </div>
+  </section>
 
   <section class="f-azul closer row12">
     <div class="closer-inner">
@@ -84,226 +92,7 @@ import { servicios } from "../../data/servicios";
     padding-top: 0;
   }
 
-  .lista {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .fila-wrap {
-    border-bottom: 1px solid rgba(17, 21, 32, 0.14);
-  }
-  .fila-wrap:first-child {
-    border-top: 1px solid rgba(17, 21, 32, 0.14);
-  }
-  .fila {
-    position: relative;
-    overflow: hidden;
-    display: grid;
-    grid-template-columns: 90px minmax(230px, 1.1fr) minmax(0, 1.4fr);
-    align-items: center;
-    gap: 24px;
-    width: 100%;
-    padding: 30px 40px;
-    border: 0;
-    background: none;
-    text-align: left;
-    font-family: var(--sans);
-    cursor: pointer;
-    color: var(--ink);
-    transition: background 0.3s ease;
-  }
-  .fila:hover,
-  .fila:focus-visible {
-    background: rgba(255, 255, 255, 0.55);
-  }
-  .fn {
-    font-size: 0.66rem;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    color: var(--azul);
-    position: relative;
-    z-index: 2;
-  }
-  .ft {
-    position: relative;
-    z-index: 2;
-  }
-  .fname {
-    display: block;
-    font-weight: 800;
-    text-transform: uppercase;
-    font-size: 1.15rem;
-    letter-spacing: -0.01em;
-    line-height: 1.15;
-  }
-  .fhead {
-    display: block;
-    font-style: italic;
-    font-size: 0.86rem;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-  .fd {
-    font-size: 0.94rem;
-    line-height: 1.6;
-    color: var(--muted);
-    position: relative;
-    z-index: 2;
-  }
-  /*
-    El desplegable. Se abre por CSS al pasar el ratón sobre la fila (":has" con
-    respaldo para navegadores sin soporte, ver más abajo) y por JS al hacer
-    clic o usar el teclado, que es lo que fija la clase .abierta para quien no
-    tiene ratón. Nunca navega solo, siempre hay que pulsar el enlace de dentro.
-  */
-  /*
-    Se abre despacio (2026-08-08). Iba a 0,4s y se sentía como un golpe: la
-    fila daba un tirón y el texto aparecía de una vez. A 0,75s con una curva
-    suave el panel se despliega en vez de saltar.
-  */
-  .panel {
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition:
-      max-height 0.75s cubic-bezier(0.22, 0.61, 0.24, 1),
-      opacity 0.5s ease 0.12s;
-  }
-  .fila-wrap:hover .panel,
-  .fila-wrap.abierta .panel {
-    opacity: 1;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .panel {
-      transition: none;
-    }
-  }
-  .fila-wrap:hover .panel,
-  .fila-wrap.abierta .panel {
-    max-height: 600px;
-  }
-  .panel-inner {
-    padding: 4px 40px 34px 154px;
-  }
-  .panel-inner p {
-    font-size: 0.98rem;
-    line-height: 1.65;
-    color: var(--muted);
-    margin: 0 0 14px;
-    max-width: 62ch;
-  }
-  .panel-link {
-    display: inline-block;
-    margin-top: 6px;
-    font-size: 0.76rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--azul);
-    text-decoration: none;
-    border-bottom: 1px solid rgba(51, 75, 164, 0.4);
-    padding-bottom: 3px;
-  }
-  .panel-link:hover {
-    border-bottom-color: var(--azul);
-  }
-
-  @media (max-width: 900px) {
-    .fila {
-      grid-template-columns: 46px 1fr;
-      gap: 6px 16px;
-      padding: 24px 20px;
-    }
-    .fd {
-      grid-column: 2;
-    }
-    .panel-inner {
-      padding: 0 20px 28px;
-    }
-    /* Sin ratón de verdad: solo se abre con el toque, no con :hover fantasma */
-    .fila-wrap:hover .panel {
-      max-height: 0;
-    }
-    .fila-wrap.abierta .panel {
-      max-height: 1200px;
-    }
+  .razones {
+    padding: calc(var(--row) * 0.9) 0 calc(var(--row) * 1);
   }
 </style>
-
-<script>
-  /*
-    Clic o teclado fija el desplegable abierto (clase .abierta), para quien no
-    tiene ratón. Con ratón, el CSS ya lo abre al posarse encima (:hover); el
-    clic además lo deja fijo aunque se retire el cursor, útil para leer sin
-    tener que quedarse quieto encima.
-  */
-  document.querySelectorAll<HTMLButtonElement>(".fila").forEach((boton) => {
-    boton.addEventListener("click", () => {
-      const wrap = boton.closest(".fila-wrap");
-      const abierta = wrap?.classList.toggle("abierta");
-      boton.setAttribute("aria-expanded", String(!!abierta));
-    });
-  });
-
-  /*
-    Las siete filas entraban de golpe. Ahora se van poniendo una detrás de
-    otra: es el catálogo comercial y conviene que se lea como una lista que se
-    recorre, no como un muro. El escalón es corto (ver `escalonar`) para no
-    obligar a esperar a la séptima.
-  */
-  import { escalonar } from "../../scripts/entradas";
-  escalonar(".lista .fila-wrap");
-
-  /*
-    La fila abierta se centra sola, sin golpes (2026-08-08).
-
-    El problema: al abrir la 6ª o la 7ª, el panel se desplegaba hacia abajo y
-    se quedaba fuera de pantalla, así que había que ir a buscarlo.
-
-    Y el riesgo de arreglarlo mal: como el acordeón se abre AL PASAR EL RATÓN,
-    centrar en cada fila que se toca dejaría la página saltando sin parar
-    mientras se recorre la lista. Por eso solo se centra cuando hace falta de
-    verdad —cuando la fila ya abierta se sale por abajo— y con un retardo, para
-    que pasar de largo con el cursor no dispare nada. Un clic, que sí es
-    intención, se atiende al momento.
-  */
-  import { gsap } from "gsap";
-  import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-  gsap.registerPlugin(ScrollToPlugin);
-
-  {
-    const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const finoDeRaton = matchMedia("(hover: hover) and (pointer: fine)").matches;
-    const filas = Array.from(document.querySelectorAll<HTMLElement>(".lista .fila-wrap"));
-    let pendiente: number | undefined;
-
-    const centrar = (fila: HTMLElement) => {
-      const caja = fila.getBoundingClientRect();
-      // Solo si de verdad no cabe: si ya se ve entera, moverla sería gratuito.
-      if (caja.top >= 0 && caja.bottom <= innerHeight) return;
-      const destino = Math.max(0, scrollY + caja.top - (innerHeight - caja.height) / 2);
-      if (quieto) {
-        scrollTo(0, destino);
-        return;
-      }
-      gsap.to(window, { scrollTo: destino, duration: 0.85, ease: "power2.inOut" });
-    };
-
-    filas.forEach((fila) => {
-      // El panel tarda en desplegarse, así que se mide DESPUÉS de abrirse.
-      const alAbrir = (espera: number) => {
-        clearTimeout(pendiente);
-        pendiente = window.setTimeout(() => centrar(fila), espera);
-      };
-
-      if (finoDeRaton) {
-        // 260 ms: pasar de largo no llega a disparar; pararse a leer, sí.
-        fila.addEventListener("mouseenter", () => alAbrir(260 + 750));
-        fila.addEventListener("mouseleave", () => clearTimeout(pendiente));
-      }
-      // Un clic o el teclado son intención: se atiende en cuanto abre.
-      fila.addEventListener("click", () => alAbrir(780));
-      fila.addEventListener("focusin", () => alAbrir(780));
-    });
-  }
-</script>

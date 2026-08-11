@@ -1,0 +1,296 @@
+---
+/*
+  Ficha de servicio en formato cartel (2026-08-11).
+
+  Sustituye a la fila de acordeón que había en /servicios, que eran siete
+  renglones idénticos de texto sin jerarquía ninguna. Referencia pedida por
+  Alejandro: lorolabs.ai. De allí se toma el MECANISMO, no el acabado:
+
+  1 · La ficha es un cartel, no una caja: imagen a sangre en 4:3 y todo lo
+      demás flotando encima.
+  2 · Tres datos visibles sin tocar nada — dónde estás del total (01/07), qué
+      te llevas y cómo se llama el servicio. En la referencia el dato que
+      cualifica es el precio; aquí es el entregable, porque no hay precios
+      cerrados y no se inventan cifras (ver `servicios.ts`).
+  3 · Tres niveles de lectura: ficha → una frase al pasar el ratón → página
+      completa al hacer clic. Nadie lee siete descripciones, lee siete
+      títulos y abre una.
+
+  Lo que NO se copia de la referencia, por sistema propio (CLAUDE.md §4):
+  esquinas en pico en vez de 28 px de radio, y velo en navy en vez de negro,
+  que como fondo no se usa.
+
+  La foto todavía no existe (la hace Alejandro). Mientras no esté, la ficha
+  pinta su campo de color con la isla de plata del servicio, que es un estado
+  válido y de marca, no un hueco roto. Al llegar la foto se rellena `foto` en
+  el catálogo y no hay que tocar nada más.
+*/
+interface Props {
+  slug: string;
+  title: string;
+  card: string;
+  entregable: string;
+  isla: string;
+  foto?: string;
+  indice: number;
+  total: number;
+}
+const { slug, title, card, entregable, isla, foto, indice, total } = Astro.props;
+const n = String(indice + 1).padStart(2, "0");
+const t = String(total).padStart(2, "0");
+// Alterna azul y navy para que el carril tenga latido. Con foto queda debajo.
+const campo = indice % 2 === 0 ? "azul" : "navy";
+---
+
+<a class={`ficha campo-${campo}`} href={`/servicios/${slug}`}>
+  <div class="lienzo">
+    {
+      foto ? (
+        <img class="medio foto" src={foto} alt="" width="1232" height="924" loading="lazy" />
+      ) : (
+        <img class="medio isla" src={isla} alt="" width="600" height="600" loading="lazy" />
+      )
+    }
+    <span class="velo" aria-hidden="true"></span>
+
+    <span class="num">{n} / {t}</span>
+
+    <div class="pie">
+      <p class="ent">{entregable}</p>
+      <h3>{title}</h3>
+      <div class="mas">
+        <div class="mas-in">
+          <p>{card}</p>
+          <span class="flecha" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+              stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</a>
+
+<style>
+  .ficha {
+    display: block;
+    text-decoration: none;
+    color: var(--plata-clara);
+    /* Ancho de la referencia, adaptado: en escritorio se ven dos fichas y
+       media, así que el borde derecho siempre queda cortado y eso es lo que
+       dice "hay más". */
+    flex: 0 0 min(46vw, 620px);
+    scroll-snap-align: start;
+  }
+  .ficha:focus-visible {
+    outline: 2px solid var(--azul);
+    outline-offset: -4px;
+  }
+
+  /* Tarjetas a sangre separadas por una línea de 1px, como el resto del
+     sistema v5. Aquí la línea es vertical porque el carril es horizontal. */
+  .ficha + .ficha .lienzo {
+    border-left: 1px solid rgba(238, 241, 247, 0.22);
+  }
+
+  .lienzo {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    /* Esquinas en pico: regla del sistema, no el radio de la referencia. */
+    border-radius: 0;
+  }
+  .campo-azul .lienzo {
+    background: var(--azul);
+  }
+  .campo-navy .lienzo {
+    background: var(--navy);
+  }
+
+  .medio {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.7s cubic-bezier(0.22, 0.61, 0.24, 1), filter 0.7s ease;
+  }
+  .foto {
+    object-fit: cover;
+    object-position: center;
+  }
+  /*
+    Sin foto: la isla de plata, centrada y grande. No se desenfoca al pasar el
+    ratón (la foto sí): una silueta desenfocada se lee como error, una
+    fotografía desenfocada se lee como profundidad.
+  */
+  .isla {
+    width: 48%;
+    height: auto;
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    /* Sube por encima del centro: abajo vive el texto y la isla se le metía
+       dentro del titular (visto en pantalla, no medido). */
+    transform: translate(-50%, -62%);
+    opacity: 0.92;
+  }
+
+  /*
+    Velo en navy, no en negro (el negro no es fondo en este sistema). Se apoya
+    en el borde de abajo, que es donde vive el texto, y deja limpia la parte de
+    arriba, que es donde está la imagen.
+  */
+  .velo {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      to top,
+      rgba(11, 18, 48, 0.94) 0%,
+      rgba(11, 18, 48, 0.7) 32%,
+      rgba(11, 18, 48, 0.2) 66%,
+      rgba(11, 18, 48, 0) 86%
+    );
+    transition: opacity 0.5s ease;
+  }
+
+  .num {
+    position: absolute;
+    top: 22px;
+    right: 24px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: var(--plata-clara);
+    opacity: 0.72;
+  }
+
+  .pie {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 26px 24px 24px;
+  }
+  .ent {
+    margin: 0 0 8px;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--plata-clara);
+    opacity: 0.78;
+  }
+  h3 {
+    margin: 0;
+    font-family: var(--sans);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(1.25rem, 2vw, 1.95rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--plata-clara);
+  }
+
+  /*
+    La frase se despliega al pasar el ratón con el truco de la rejilla de altura
+    cero (0fr → 1fr), que es lo que permite animar "de nada a lo que ocupe"
+    sin fijar una altura máxima a ojo.
+  */
+  .mas {
+    display: grid;
+    grid-template-rows: 1fr;
+    margin-top: 14px;
+  }
+  .mas-in {
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+  }
+  .mas p {
+    margin: 0;
+    flex: 1;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--plata-clara);
+    opacity: 0.85;
+    max-width: 46ch;
+    text-wrap: pretty;
+  }
+  .flecha {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    color: var(--plata-clara);
+    transition: transform 0.3s ease;
+  }
+
+  /*
+    Solo con ratón de verdad se esconde la frase. Con el dedo no hay "pasar por
+    encima", así que en móvil se lee siempre: esconderla ahí sería esconderla
+    para siempre.
+  */
+  @media (hover: hover) and (pointer: fine) {
+    .mas {
+      grid-template-rows: 0fr;
+      opacity: 0;
+      margin-top: 0;
+      transition: grid-template-rows 0.5s cubic-bezier(0.22, 0.61, 0.24, 1),
+        opacity 0.4s ease, margin-top 0.5s cubic-bezier(0.22, 0.61, 0.24, 1);
+    }
+    .ficha:hover .mas,
+    .ficha:focus-visible .mas {
+      grid-template-rows: 1fr;
+      opacity: 1;
+      margin-top: 14px;
+    }
+    .ficha:hover .foto,
+    .ficha:focus-visible .foto {
+      transform: scale(1.045);
+      filter: blur(2px);
+    }
+    .ficha:hover .isla,
+    .ficha:focus-visible .isla {
+      transform: translate(-50%, -62%) scale(1.05);
+    }
+    .ficha:hover .velo,
+    .ficha:focus-visible .velo {
+      opacity: 1.08;
+    }
+    .ficha:hover .flecha {
+      transform: translateX(4px);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .ficha {
+      /* La siguiente asoma por el borde: es lo que invita a deslizar. */
+      flex: 0 0 calc(100vw - 76px);
+    }
+    /*
+      En vertical, no en apaisado. Medido a 375: en 4:3 la ficha mide 224 px de
+      alto y el texto se come 170, así que la imagen quedaba en una franja. En
+      4:5 hay sitio para las dos cosas, que es además el formato natural de un
+      cartel en el móvil.
+    */
+    .lienzo {
+      aspect-ratio: 4 / 5;
+    }
+    .pie {
+      padding: 22px 20px 20px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .medio,
+    .velo,
+    .mas,
+    .flecha {
+      transition: none;
+    }
+  }
+</style>
