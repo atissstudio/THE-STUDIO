@@ -250,8 +250,27 @@
         const intro = parseFloat(getComputedStyle(raiz).getPropertyValue("--intro")) || 0;
         const introDy = parseFloat(getComputedStyle(raiz).getPropertyValue("--intro-dy")) || 0;
         const heroH = parseFloat(getComputedStyle(raiz).getPropertyValue("--hero-h")) || 306;
-        const alto = Math.min(intro * introDy + heroH, pin.getBoundingClientRect().height);
-        return alto;
+        const pinAlto = pin.getBoundingClientRect().height;
+        const parche = intro * introDy + heroH;
+        /*
+          El parche (siempre azul sólido) no es TODA la zona azul: mientras el
+          velo sigue opaco —al cargar, antes de mover el scroll— el resto del
+          `.portada-pin` también es azul liso, solo que por opacidad y no por
+          este parche. Quedarse solo con el parche dejaba, en ese momento, una
+          costura horizontal: mar arriba, azul plano sin textura debajo, justo
+          en medio de una pantalla que entera es del mismo color (visto en
+          producción, 2026-08-10).
+
+          La misma cuenta que usa el CSS del velo (`HomeV5.astro`) para su
+          opacidad: por encima de ese umbral el velo ya es opaco de sobra y el
+          mar puede cubrir el `.portada-pin` ENTERO; por debajo, se repliega
+          al parche, que es la única franja que sigue siendo azul de verdad
+          cuando la casa empieza a asomar. Entre medias se interpola, para que
+          el propio borde del mar no dé un salto al cruzar ese punto.
+        */
+        const veloOp = Math.max(0, Math.min(1, (intro - 0.4) * 2.5));
+        const alto = parche + veloOp * (pinAlto - parche);
+        return Math.min(alto, pinAlto);
       };
 
       const medirBandas = () => {
