@@ -137,6 +137,7 @@
         uniform vec2 uMedida;
         uniform vec4 uBandas[8];
         uniform float uRadio[8];
+        uniform float uAlfa[8];
         uniform int uNumBandas;
 
         float azar(vec2 p) {
@@ -166,6 +167,14 @@
             campo claro alrededor. Con bandas, el mar se derramaba sobre ese
             marco claro, que es justo lo que se pidió que no pasara nunca.
           */
+          /*
+            OJO: "dentro" no es un sí o un no, es CUÁNTO de azul es este píxel
+            (2026-08-11). Casi siempre vale 0 o 1, pero el velo de la portada
+            se desvanece, y el mar tiene que desvanecerse con él o acaba
+            pintando sobre la plata. Cuando dos zonas se solapan manda la más
+            azul de las dos, que es la que de verdad se ve.
+            (Y no, aquí dentro no se pueden usar comillas invertidas. Van tres.)
+          */
           float dentro = 0.0;
           vec2 px = uv * uMedida;
           for (int i = 0; i < 8; i++) {
@@ -183,9 +192,9 @@
             float r = min(uRadio[i], min(medio.x, medio.y));
             vec2 q2 = abs(px - centro) - medio + r;
             float dist = length(max(q2, 0.0)) + min(max(q2.x, q2.y), 0.0) - r;
-            if (dist < 0.0) dentro = 1.0;
+            if (dist < 0.0) dentro = max(dentro, uAlfa[i]);
           }
-          if (dentro < 0.5) {
+          if (dentro < 0.01) {
             gl_FragColor = vec4(0.5, 0.5, 0.5, 0.0);
             return;
           }
@@ -303,7 +312,8 @@
           */
           n = clamp(0.5 + (n - 0.5) * 1.55, 0.0, 1.0);
 
-          gl_FragColor = vec4(vec3(n), 1.0);
+          // El alfa lo pone la máscara: así el mar se desvanece con su azul.
+          gl_FragColor = vec4(vec3(n), dentro);
         }
       `;
 
@@ -317,6 +327,7 @@
           uMedida: { value: new Vec2(1, 1) },
           uBandas: { value: new Array(MAX_BANDAS * 4).fill(0) },
           uRadio: { value: new Array(MAX_BANDAS).fill(0) },
+          uAlfa: { value: new Array(MAX_BANDAS).fill(1) },
           uNumBandas: { value: 0 },
         },
       });
@@ -357,31 +368,17 @@
         replica aquí la misma cuenta en vez de adivinar, para que el mar
         cubra justo lo que de verdad es azul y ni un píxel más.
       */
-      const medirBandaPortada = (pin: HTMLElement) => {
-        const intro = parseFloat(getComputedStyle(raiz).getPropertyValue("--intro")) || 0;
-        const introDy = parseFloat(getComputedStyle(raiz).getPropertyValue("--intro-dy")) || 0;
-        const heroH = parseFloat(getComputedStyle(raiz).getPropertyValue("--hero-h")) || 306;
-        const pinAlto = pin.getBoundingClientRect().height;
-        const parche = intro * introDy + heroH;
-        /*
-          El parche (siempre azul sólido) no es TODA la zona azul: mientras el
-          velo sigue opaco —al cargar, antes de mover el scroll— el resto del
-          `.portada-pin` también es azul liso, solo que por opacidad y no por
-          este parche. Quedarse solo con el parche dejaba, en ese momento, una
-          costura horizontal: mar arriba, azul plano sin textura debajo, justo
-          en medio de una pantalla que entera es del mismo color (visto en
-          producción, 2026-08-10).
-
-          La misma cuenta que usa el CSS del velo (`HomeV5.astro`) para su
-          opacidad: por encima de ese umbral el velo ya es opaco de sobra y el
-          mar puede cubrir el `.portada-pin` ENTERO; por debajo, se repliega
-          al parche, que es la única franja que sigue siendo azul de verdad
-          cuando la casa empieza a asomar. Entre medias se interpola, para que
-          el propio borde del mar no dé un salto al cruzar ese punto.
-        */
-        const veloOp = Math.max(0, Math.min(1, (intro - 0.4) * 2.5));
-        const alto = parche + veloOp * (pinAlto - parche);
-        return Math.min(alto, pinAlto);
+      const medirBandaPortada = () => {
+        const raizEstilo = getComputedStyle(raiz);
+        const intro = parseFloat(raizEstilo.getPropertyValue("--intro")) || 0;
+        const introDy = parseFloat(raizEstilo.getPropertyValue("--intro-dy")) || 0;
+        const heroH = parseFloat(raizEstilo.getPropertyValue("--hero-h")) || 306;
+        return {
+          // El parche: siempre azul sólido. Misma cuenta que su CSS.
+          parche: intro * introDy + heroH,
+          // El velo: azul a medias. Misma cuenta que su CSS.
+          veloOp: Math.max(0, Math.min(1, (intro - 0.4) * 2.5)),
+        };
       };
 
       /*
@@ -401,12 +398,20 @@
       ].join(",");
 
       const radioBuffer = program.uniforms.uRadio.value as number[];
-      const guardar = (n: number, r: DOMRect, radio = 0) => {
+      const alfaBuffer = program.uniforms.uAlfa.value as number[];
+      /*
+        `alfa` es CUÁNTO de azul es esa zona, de 0 a 1. Casi siempre vale 1
+        (un campo o una tarjeta azul son azules del todo), pero la portada
+        tiene un velo que se desvanece, y ahí el mar tiene que desvanecerse
+        con él. Ver `medirBandas`.
+      */
+      const guardar = (n: number, r: DOMRect, radio = 0, alfa = 1) => {
         bandasBuffer[n * 4] = 1 - r.top / innerHeight;
         bandasBuffer[n * 4 + 1] = 1 - r.bottom / innerHeight;
         bandasBuffer[n * 4 + 2] = r.left / innerWidth;
         bandasBuffer[n * 4 + 3] = r.right / innerWidth;
         radioBuffer[n] = radio;
+        alfaBuffer[n] = alfa;
       };
 
       const medirBandas = () => {
@@ -426,9 +431,30 @@
         if (pin && n < MAX_BANDAS) {
           const r = pin.getBoundingClientRect();
           if (r.bottom > 0 && r.top < innerHeight) {
-            const altoAzul = medirBandaPortada(pin);
-            guardar(n, new DOMRect(r.left, r.top, r.width, altoAzul));
-            n++;
+            /*
+              ⚠️ DOS zonas, no una (corregido el 2026-08-11). El azul de la
+              portada son dos capas: un parche sólido arriba y un velo que se
+              DESVANECE por debajo. Hasta ahora esto se fingía acortando el
+              rectángulo en proporción a lo transparente que estuviera el
+              velo, y eso está mal por construcción: el mar seguía pintando a
+              plena fuerza sobre una zona que ya solo era azul a medias, y el
+              corte caía donde no toca. Se veía en producción como rayas de
+              mar derramándose sobre la plata y sobre la casa.
+
+              Ahora cada zona lleva su propia opacidad: el parche al 100% y el
+              velo justo a la opacidad que tenga el velo en ese momento. Así
+              el mar se desvanece exactamente al mismo ritmo que el azul que
+              tiene debajo, y no hay ni desbordamiento ni costura.
+            */
+            const { parche, veloOp } = medirBandaPortada();
+            if (veloOp > 0.01 && n < MAX_BANDAS) {
+              guardar(n, r, 0, veloOp);
+              n++;
+            }
+            if (n < MAX_BANDAS) {
+              guardar(n, new DOMRect(r.left, r.top, r.width, Math.min(parche, r.height)));
+              n++;
+            }
           }
         }
         program.uniforms.uNumBandas.value = n;
