@@ -466,17 +466,22 @@
         queda fijo y el giro solo afecta al camino que viene, igual que una
         marea de verdad.
 
-        Los tres frenos que la hacen sutil en vez de un tobogán:
-          · La dirección se persigue con una constante de tiempo de ~0,9 s, así
-            que la marea TARDA en girar y nunca sigue al cursor a la carrera.
-          · Cerca del centro la fuerza se desvanece: ahí no hay una dirección
-            clara y, sin esto, cruzar el medio de la pantalla haría girar el
-            agua bruscamente.
-          · La corriente del ratón es del orden de la corriente de fondo (0,022
-            frente a 0,010), no diez veces mayor.
+        EL GIRO ES RÁPIDO Y DESPUÉS SE RELAJA (2026-08-11, pedido de Alejandro
+        al verlo en movimiento). La velocidad de giro NO es fija: depende de lo
+        lejos que esté la marea de su nuevo rumbo. Si mandas el ratón a la
+        esquina contraria, el error es grande y la marea vira en unos 0,25 s;
+        conforme se acerca al rumbo bueno el propio giro se va frenando hasta
+        ~1,15 s, y por eso el final es un asentamiento y no un frenazo. Es como
+        cambia de rumbo cualquier cosa pesada, y sale de una sola línea: la
+        constante de tiempo se interpola con el error.
+
+        Cerca del centro, además, la fuerza se desvanece: ahí no hay una
+        dirección clara y, sin eso, cruzar el medio de la pantalla haría girar
+        el agua sin motivo.
       */
       const CORRIENTE_BASE = { x: 0.01, y: 0.004 };
-      const CORRIENTE_RATON = 0.022;
+      // 0,055 contra los 0,010 del mar de fondo: se nota, que es lo que se pidió.
+      const CORRIENTE_RATON = 0.055;
       const deriva = { x: 0, y: 0 };
       const marea = { x: 0, y: 0 };
       let t0 = performance.now();
@@ -501,8 +506,14 @@
         const dirX = largo > 0.0001 ? (ox / largo) * fuerza : 0;
         const dirY = largo > 0.0001 ? (oy / largo) * fuerza : 0;
 
-        // Giro suave e independiente de los fotogramas por segundo.
-        const giro = 1 - Math.exp(-dt / 0.9);
+        /*
+          Cuanto más lejos esté del rumbo nuevo, más rápido vira. El error va de
+          0 (ya está) a 2 (rumbo opuesto); con 1 ya se considera un cambio
+          grande. Independiente de los fotogramas por segundo.
+        */
+        const error = Math.min(1, Math.hypot(dirX - marea.x, dirY - marea.y));
+        const constante = 1.15 - 0.9 * error;
+        const giro = 1 - Math.exp(-dt / constante);
         marea.x += (dirX - marea.x) * giro;
         marea.y += (dirY - marea.y) * giro;
 

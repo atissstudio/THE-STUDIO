@@ -179,7 +179,7 @@ const destacados = todos.slice(0, 3);
         <textarea
           class="ctaform-msg"
           name="message"
-          rows="2"
+          rows="4"
           placeholder="Cuéntanos qué necesitas (opcional)"
           aria-label="Cuéntanos qué necesitas"
         ></textarea>
@@ -743,7 +743,14 @@ const destacados = todos.slice(0, 3);
     width: 100%;
     resize: none;
     box-sizing: border-box;
-    max-height: 120px;
+    /*
+      180 y cuatro filas (2026-08-11). Con dos filas y un tope de 120 px, en la
+      tarjeta ancha el cajón quedaba más bajo que su propio texto de ayuda, que
+      se partía en dos líneas y casi lo llenaba: parecía roto. El tope tiene que
+      seguir existiendo porque es lo que anima el desplegado (de 0 a esta
+      altura), así que se sube en vez de quitarse.
+    */
+    max-height: 180px;
     opacity: 1;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.35);
