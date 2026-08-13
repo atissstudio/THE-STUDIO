@@ -834,9 +834,17 @@ a:has(.logo) {
   En la home el hero NO cambia (la portada es otra cosa); su CTA de cierre sí,
   y se resuelve en HomeV5.astro con estos mismos números.
 */
+/*
+  El suelo de la tarjeta es EL DE LA PÁGINA, no un claro propio (corregido el
+  2026-08-11). Estaba puesto en `--plata-clara` (#EEF1F7), que es la plata de
+  los campos de lectura, mientras que la página es `--blanco` (#F7F9FC): dos
+  claros parecidos pero distintos, pegados uno al lado del otro, y se veía la
+  costura alrededor de la tarjeta. Transparente, y así el marco es siempre
+  exactamente el fondo de la página, sea cual sea.
+*/
 .hero-field.f-azul,
 .closer.f-azul {
-  background: var(--plata-clara);
+  background: transparent;
 }
 .hero-field.f-azul > .hero-inner,
 .closer.f-azul > .closer-inner {

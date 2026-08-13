@@ -196,26 +196,22 @@
           float t = uTiempo;
 
           /*
-            ── La estela del puntero ──────────────────────────────────────
-            Dos cosas distintas, y esto es lo que se pidió el 2026-08-11:
-
-            1 · El agua se ARRASTRA en la dirección en la que se mueve el
-                ratón (uVel), no solo "hacia fuera" del cursor. Por eso el
-                movimiento va CON él y no simplemente alrededor.
-            2 · La fuerza depende de uEnergia, que sube al mover el ratón y
-                baja sola al pararlo. Con el puntero quieto la estela se
-                deshace y queda el oleaje de fondo, que nunca se para.
+            ── El ratón, DESACTIVADO a propósito (2026-08-11) ──────────────
+            Se probaron dos versiones y las dos se descartaron mirándolas: la
+            primera pellizcaba (un empuje radial se divide por la distancia y
+            explota justo en el cursor) y la segunda arrastraba el agua, que a
+            Alejandro tampoco le convenció. Hasta que elija entre las tres
+            opciones del laboratorio, la fuerza va a cero y el mar se mueve
+            solo con su oleaje. Cambiar este número es lo único que hace falta
+            para volver a encenderlo.
           */
+          const float FUERZA_RATON = 0.0;
           float d = distance(p, raton);
-          /*
-            Campana (gaussiana), no exponencial de la distancia. La diferencia
-            importa: exp(-d) tiene un PICO en el centro y se veía como un
-            pellizco puntiagudo justo donde estaba el cursor. exp(-d*d) es
-            plana arriba, así que la influencia entra y sale sin costura.
-          */
+          // Campana, no exponencial: exp(-d) tiene un pico en el centro y se
+          // veía como un pellizco. exp(-d*d) entra y sale sin costura.
           float cerca = exp(-d * d * 5.5);
           vec2 q = p;
-          q -= uVel * cerca * (2.4 + 5.0 * uEnergia);
+          q -= uVel * cerca * (2.4 + 5.0 * uEnergia) * FUERZA_RATON;
 
           /*
             ── El oleaje, que se mueve SIEMPRE ────────────────────────────
@@ -256,42 +252,69 @@
             dos intentos de arreglarlo tocando contraste y opacidad, que era
             tratar el síntoma.
           */
-          float ond1 = ruido(w * 2.4 + vec2(t * 0.06, 0.0)) * 2.4;
-          float ond2 = ruido(w * 4.2 - vec2(0.0, t * 0.05)) * 1.9;
+          /*
+            ⚠️ PERSPECTIVA (2026-08-11, elegida por Alejandro entre tres
+            opciones que vio en movimiento). Es LO QUE FALTABA para que esto
+            se lea como una superficie y no como un papel pintado: la ola no
+            puede medir lo mismo arriba que abajo. Arriba es "lejos", así que
+            la onda se aprieta y se aplana; abajo es "cerca", y se abre.
 
+            La variable "lejos" va de 0 (borde de abajo) a 1 (borde de
+            arriba), y de ella cuelgan tres cosas: la frecuencia, la altura de
+            la ola y cuánto ondula la cresta, que de lejos apenas se aprecia.
+            (Recordatorio: aquí dentro NO se pueden usar comillas invertidas,
+            esto es una plantilla de JavaScript y cortan la cadena. Ha vuelto
+            a pasar hoy.)
+          */
+          float lejos = smoothstep(0.05, 1.0, uv.y);
+          float esc = mix(0.55, 3.4, lejos);
+          float amp = mix(1.15, 0.45, lejos);
+
+          float ond1 = ruido(w * 2.4 + vec2(t * 0.06, 0.0)) * 2.4 * mix(1.4, 0.5, lejos);
+          float ond2 = ruido(w * 4.2 - vec2(0.0, t * 0.05)) * 1.9 * mix(1.4, 0.5, lejos);
+
+          float y = w.y * esc;
           float mar = 0.0;
-          mar += sin(w.y * 46.0 + w.x * 7.0 + t * 0.85 + ond1) * 0.50;
-          mar += sin(w.y * 79.0 - w.x * 13.0 - t * 0.66 + ond2) * 0.30;
-          mar += sin(w.y * 132.0 + w.x * 23.0 + t * 1.25) * 0.15;
+          mar += sin(y * 46.0 + w.x * 7.0 + t * 0.85 + ond1) * 0.50;
+          mar += sin(y * 79.0 - w.x * 13.0 - t * 0.66 + ond2) * 0.30;
+          mar += sin(y * 132.0 + w.x * 23.0 + t * 1.25) * 0.15;
+          mar *= amp;
 
           // Detalle fino, viajando con la ola (si no, la superficie es plástico).
-          float det = ruido(w * 10.0 + vec2(-t * 0.22, t * 0.10)) * 0.62;
-          det += ruido(w * 26.0 + vec2(t * 0.31, -t * 0.18)) * 0.26;
+          float det = ruido(vec2(w.x, y) * 10.0 + vec2(-t * 0.22, t * 0.10)) * 0.62;
+          det += ruido(vec2(w.x, y) * 26.0 + vec2(t * 0.31, -t * 0.18)) * 0.26;
+
+          /*
+            Zonas en calma. El brillo de cresta no puede repartirse por igual
+            por toda la superficie: el mar tiene tramos encendidos y tramos
+            tranquilos. Una mancha grande y muy lenta decide dónde brilla.
+          */
+          float calma = smoothstep(0.35, 0.85, ruido(w * 1.3 + vec2(t * 0.03, -t * 0.02)));
 
           /*
             RETIRADO el 2026-08-11: el anillo concéntrico que se expandía desde
             el cursor. Un anillo centrado en el puntero se lee como una diana,
             no como agua: lo que deja un objeto que cruza el agua es estela
-            DETRÁS, no círculos alrededor. La reacción al ratón se queda solo
-            en el arrastre direccional de arriba.
+            DETRÁS, no círculos alrededor.
           */
-          float n = 0.5 + mar * 0.22 + (det - 0.44) * 0.30;
+          float n = 0.5 + mar * 0.20 + (det - 0.44) * 0.24;
 
           /*
             Cresta: el lomo de la ola brilla mucho más que el resto, y es ese
             destello lo que hace que se lea como agua y no como mancha. Se
             saca elevando el valor de la ola a una potencia alta, que deja
-            encendidas solo las puntas.
+            encendidas solo las puntas, y se modula con la calma para que haya
+            tramos encendidos y tramos tranquilos.
           */
           float cresta = pow(max(mar * 0.5 + 0.5, 0.0), 9.0);
-          n += cresta * 0.30;
+          n += cresta * (0.10 + 0.40 * calma);
 
           /*
             Contraste. Historial: 1,7 (estática de televisor) → 1,15 (no se
-            veía) → 1,35 → 1,5, al pedir Alejandro que el mar se note más. El
-            tope lo pone el texto que cae encima, no el gusto.
+            veía) → 1,35 → 1,5 → 1,55 con la perspectiva puesta. El tope lo
+            pone el texto que cae encima, no el gusto.
           */
-          n = clamp(0.5 + (n - 0.5) * 1.5, 0.0, 1.0);
+          n = clamp(0.5 + (n - 0.5) * 1.55, 0.0, 1.0);
 
           gl_FragColor = vec4(vec3(n), 1.0);
         }

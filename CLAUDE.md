@@ -274,6 +274,14 @@ Pedido de Alejandro: que se note más, que **se mueva solo** cuando no hay nadie
 - ⚠️ **Dentro del shader no se pueden escribir comillas invertidas**: el GLSL vive en una plantilla de JavaScript y las comillas cortan la cadena. Costó un error de compilación.
 - **Cómo se mira un shader desde aquí** (con la pestaña oculta los fotogramas están congelados): sustituir `requestAnimationFrame` por una **cola** (nunca por ejecución síncrona: el bucle se llama a sí mismo y revienta la pila), fingir `document.hidden = false` y disparar `visibilitychange` para que el bucle vuelva a encolar, y avanzar los fotogramas a mano. **Una captura tomada justo después de un `resize` sale en blanco**: hay que avanzar fotogramas después de redimensionar.
 
+### El mar con perspectiva (2026-08-11, segunda vuelta)
+
+- ⚠️ **LO QUE FALTABA ERA LA PERSPECTIVA.** Con la ola midiendo lo mismo en toda la superficie, el ojo lo lee como **papel pintado**, no como agua, por muy bien hecha que esté la ola. Ahora la frecuencia y la amplitud dependen de la altura (arriba se aprieta y se aplana, abajo se abre), y el brillo de cresta se modula con una mancha lenta para que haya **zonas encendidas y zonas en calma**. Elegido por Alejandro entre tres opciones que vio en movimiento.
+- ⚠️ **El efecto del ratón está a CERO** (`FUERZA_RATON` en el shader), a la espera de que Alejandro elija. Se han descartado ya dos versiones: el **empuje radial** (se divide por la distancia y explota justo en el cursor, se veía como un pellizco puntiagudo) y el **anillo concéntrico** (se lee como una diana; lo que deja un objeto que cruza el agua es estela detrás, no círculos alrededor). La tercera, el arrastre direccional, tampoco convenció.
+- ⚠️ **El suelo de las tarjetas era un claro DISTINTO al de la página.** Las secciones iban en `--plata-clara` (#EEF1F7) y la página es `--blanco` (#F7F9FC): dos claros parecidos pegados, con costura visible alrededor de la tarjeta. Ahora las secciones van **transparentes**, así que el marco es siempre el fondo de la página.
+- ⚠️ **NO SE PUEDE VER EL SHADER DESDE AQUÍ.** En las capturas del sitio el lienzo WebGL sale sin pintar y la tarjeta se ve azul liso, mientras que en producción sí se ve el agua. Comprobado varias veces. Para mirar el agua hay que usar una **página de laboratorio aparte** (artefacto publicado el 2026-08-11) donde el bucle se avanza a mano con `window.__bucle`, y ahí sí se ve.
+- ⚠️ **Comillas invertidas dentro del shader, otra vez.** El GLSL vive en una plantilla de JavaScript y una comilla invertida en un comentario corta la cadena. Costó un build fallido, y ya está avisado en el propio código.
+
 ### 🎯 Lo que toca en la sesión siguiente
 
 **1 · Los cuatro hallazgos de la auditoría, sin resolver.** Salieron el 2026-08-05 y siguen abiertos:

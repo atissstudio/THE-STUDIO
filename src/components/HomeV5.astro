@@ -640,7 +640,9 @@ const destacados = todos.slice(0, 3);
        bloque en vez de estirarlo, y la tarjeta se quedaba a media pantalla. */
     display: flex;
     text-align: center;
-    background: var(--plata-clara);
+    /* Transparente, no un claro propio: ver la nota de tokens.css. Con un
+       claro distinto al de la página se veía la costura del marco. */
+    background: transparent;
     padding: calc(var(--menu-h) + 20px) 20px 20px;
   }
   .cta-inner {
