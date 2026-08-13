@@ -44,12 +44,12 @@ const { modo = "abre", figura = "rombo", pegado = false } = Astro.props;
   {pegado && <span class="esq d" />}
   {
     figura === "rombo" ? (
-      <svg class="figura" width="142" height="102" viewBox="0 0 142 102">
+      <svg class="figura rombo" viewBox="0 0 142 102">
         <path d="M71 0 L142 51 L71 102 L0 51 Z" class="muesca" />
         <path d="M71 13 L129 51 L71 89 L13 51 Z" class="masa" />
       </svg>
     ) : (
-      <svg class="figura" width="102" height="102" viewBox="0 0 102 102">
+      <svg class="figura circulo" viewBox="0 0 102 102">
         <circle cx="51" cy="51" r="51" class="muesca" />
         <circle cx="51" cy="51" r="38" class="masa" />
       </svg>
@@ -59,8 +59,17 @@ const { modo = "abre", figura = "rombo", pegado = false } = Astro.props;
 
 <style>
   .marco-c {
-    /* El módulo. Cambiar esto cambia el marco entero. */
-    --banda: 44px;
+    /*
+      El módulo. Cambiar esto cambia el marco entero.
+
+      ⚠️ La banda es una LÍNEA, no una franja. Se probó a 44 px y quedaba fatal
+      (visto en producción): con ese grosor, el mismo ancho y el mismo azul que
+      la tarjeta de abajo, la barra se leía como otra tarjeta, como un trozo
+      desprendido con una ranura en medio. Y la figura, al doble de alto que
+      ella, mandaba sobre la barra en vez de ir engarzada. A 18 px es una línea
+      pintada con una cuenta ensartada, que es lo que hay en el dibujo.
+    */
+    --banda: 18px;
     --radio: 28px;
     position: relative;
     height: var(--banda);
@@ -96,6 +105,19 @@ const { modo = "abre", figura = "rombo", pegado = false } = Astro.props;
     clip-path: inset(0);
   }
 
+  /*
+    La figura sobresale POCO de la línea, unos 15 px por lado. Y su muesca de
+    cal se escala con ella: al reducir la figura, el hueco blanco pasa de 13 px
+    a 6, que es un filete y no un recorte.
+  */
+  .figura.rombo {
+    width: 68px;
+    height: 48px;
+  }
+  .figura.circulo {
+    width: 48px;
+    height: 48px;
+  }
   .figura {
     position: absolute;
     top: 50%;
@@ -144,9 +166,12 @@ const { modo = "abre", figura = "rombo", pegado = false } = Astro.props;
     right: 0;
   }
 
-  /* El hueco lo manda la figura */
-  .marco-c:has(svg[width="102"]) {
-    --hueco: 61px;
+  /* El hueco lo manda la figura: su medio ancho más un respiro de 9 */
+  .marco-c:has(.rombo) {
+    --hueco: 43px;
+  }
+  .marco-c:has(.circulo) {
+    --hueco: 33px;
   }
 
   /*
@@ -164,18 +189,22 @@ const { modo = "abre", figura = "rombo", pegado = false } = Astro.props;
   /* En móvil la pieza baja de escala, o se come la pantalla */
   @media (max-width: 900px) {
     .marco-c {
-      --banda: 30px;
+      --banda: 14px;
       --radio: 22px;
-      --hueco: 58px;
     }
-    .marco-c:has(svg[width="102"]) {
-      --hueco: 44px;
+    .marco-c:has(.rombo) {
+      --hueco: 34px;
     }
-    .figura {
-      transform: translate(-50%, -50%) scale(0);
+    .marco-c:has(.circulo) {
+      --hueco: 27px;
     }
-    .marco-c.abierto .figura {
-      transform: translate(-50%, -50%) scale(0.7);
+    .figura.rombo {
+      width: 52px;
+      height: 36px;
+    }
+    .figura.circulo {
+      width: 36px;
+      height: 36px;
     }
   }
 </style>
