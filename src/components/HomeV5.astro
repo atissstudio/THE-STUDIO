@@ -7,6 +7,7 @@
 */
 import GlassButton from "./GlassButton.astro";
 import CarrilClaim from "./CarrilClaim.astro";
+import MarcoCanario from "./MarcoCanario.astro";
 import { servicios as todos } from "../data/servicios";
 
 // En la home solo entran los tres primeros. El resto vive en /servicios.
@@ -140,6 +141,17 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
+{/*
+  El marco ABRE aquí: el campo azul de servicios se acaba y da paso al claro
+  de los datos. Va en su propio tramo, con aire por arriba y por abajo, para
+  que la figura, que sobresale de la barra, no se acerque a ningún texto.
+  No lleva esquinas porque lo de arriba es un campo a sangre, no una tarjeta
+  con redondeo que completar.
+*/}
+<div class="marco-tramo">
+  <MarcoCanario modo="abre" figura="rombo" />
+</div>
+
 <section class="f-blanco row12 field-cards home-slide">
   <span class="field-tag" style="color:var(--azul)">.06</span>
   <div class="datos">
@@ -164,6 +176,12 @@ const destacados = todos.slice(0, 3);
 
 <div class="cta-wrap">
   <div class="cta-screen f-azul home-slide" id="ctaScreen">
+    {/*
+      El marco CIERRA sobre la tarjeta, pegado a ella, y le completa la
+      esquina redondeada. Encima tiene los 64 px de relleno de la sección,
+      así que la figura asoma sobre campo claro sin rozar nada.
+    */}
+    <MarcoCanario modo="cierra" figura="circulo" pegado />
     <div class="cta-inner">
       <p class="k2">.07 · Tu plan gratis</p>
       <h2>Vamos a que se note.</h2>
@@ -637,14 +655,33 @@ const destacados = todos.slice(0, 3);
     min-height: 100svh;
     box-sizing: border-box;
     /* Flex y no rejilla: con una sola fila automática, la rejilla centraba el
-       bloque en vez de estirarlo, y la tarjeta se quedaba a media pantalla. */
+       bloque en vez de estirarlo, y la tarjeta se quedaba a media pantalla.
+       En COLUMNA: por defecto flex apila en fila, y al meter el marco encima
+       de la tarjeta se colocaba a su lado y se quedaba con ancho cero. */
     display: flex;
+    flex-direction: column;
     text-align: center;
     /* Transparente, no un claro propio: ver la nota de tokens.css. Con un
        claro distinto al de la página se veía la costura del marco. */
     background: transparent;
     padding: calc(var(--menu-h) + 20px) 20px 20px;
   }
+  /*
+    El tramo del marco que abre. Fondo claro propio y aire suficiente para que
+    la figura, que sobresale 29 px de la barra, no se acerque a ningún texto.
+    NO lleva clase de campo (.f-blanco y compañía) a propósito: en móvil esas
+    clases dan una pantalla entera de alto, y esto es una franja.
+  */
+  .marco-tramo {
+    background: var(--blanco);
+    padding: 46px 20px 50px;
+  }
+  @media (max-width: 900px) {
+    .marco-tramo {
+      padding: 34px 20px 36px;
+    }
+  }
+
   .cta-inner {
     flex: 1;
     width: 100%;

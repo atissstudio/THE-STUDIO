@@ -1,0 +1,220 @@
+---
+/*
+  El marco canario (2026-08-13).
+
+  Idea y dibujo de Alejandro: la página en blanco es la pared encalada y las
+  tarjetas azules son el mar, así que entre las dos va el recercado pintado de
+  una casa de pueblo marinero.
+
+  Anatomía, leída literal de su dibujo:
+    · La barra NO es corrida. Son DOS barras cortadas a escuadra con un hueco
+      en medio.
+    · En ese hueco se planta una figura lisa —rombo o círculo, nunca las dos
+      combinadas— que sobresale por arriba y por abajo ROMPIENDO la barra.
+    · La figura lleva su MUESCA de cal alrededor. Sin ella, en azul plano, todo
+      lo que toca azul desaparece y el rombo se ve como un triángulo.
+    · Si va pegado a una tarjeta, el marco RELLENA la muesca que deja su
+      esquina redondeada, y las dos piezas se leen como una sola.
+
+  Dato que sostiene todo esto: el azul de los pueblos marineros canarios es la
+  pintura que sobraba de las barcas de pesca. El azul de la fachada y el del
+  mar son literalmente la misma pintura.
+
+  Se abre al entrar en pantalla, del centro hacia fuera. Red de seguridad
+  obligatoria (regla del proyecto): si el observador no dispara, se queda
+  ABIERTO, que es el estado bueno. Nunca deja el marco a medias.
+*/
+interface Props {
+  /** "abre" da paso al blanco, "cierra" vuelve al azul. Solo cambia hacia
+   *  dónde asoman las esquinas. */
+  modo?: "abre" | "cierra";
+  /** Rombo al abrir y círculo al cerrar: si salen las dos, en momentos
+   *  distintos, nunca combinadas. */
+  figura?: "rombo" | "circulo";
+  /** Va pegado a una tarjeta y le completa la esquina redondeada. */
+  pegado?: boolean;
+}
+const { modo = "abre", figura = "rombo", pegado = false } = Astro.props;
+---
+
+<div class:list={["marco-c", modo, { pegado }]} data-marco aria-hidden="true">
+  <span class="barra izq"></span>
+  <span class="barra der"></span>
+  {pegado && <span class="esq i" />}
+  {pegado && <span class="esq d" />}
+  {
+    figura === "rombo" ? (
+      <svg class="figura" width="142" height="102" viewBox="0 0 142 102">
+        <path d="M71 0 L142 51 L71 102 L0 51 Z" class="muesca" />
+        <path d="M71 13 L129 51 L71 89 L13 51 Z" class="masa" />
+      </svg>
+    ) : (
+      <svg class="figura" width="102" height="102" viewBox="0 0 102 102">
+        <circle cx="51" cy="51" r="51" class="muesca" />
+        <circle cx="51" cy="51" r="38" class="masa" />
+      </svg>
+    )
+  }
+</div>
+
+<style>
+  .marco-c {
+    /* El módulo. Cambiar esto cambia el marco entero. */
+    --banda: 44px;
+    --radio: 28px;
+    position: relative;
+    height: var(--banda);
+    /* Por encima de lo que venga: la figura sobresale por los dos lados. */
+    z-index: 3;
+  }
+
+  /*
+    Las dos barras, con su hueco. El hueco lo fija la figura que va dentro:
+    su ancho más la muesca de aire a cada lado.
+  */
+  .barra {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: var(--azul);
+    transition: clip-path 0.9s cubic-bezier(0.22, 0.61, 0.24, 1);
+  }
+  .izq {
+    left: 0;
+    right: calc(50% + var(--hueco, 81px));
+    /* Cerrado: recortada del todo por la izquierda. Al abrir se destapa
+       desde el centro hacia su lado, no se estira. */
+    clip-path: inset(0 0 0 100%);
+  }
+  .der {
+    right: 0;
+    left: calc(50% + var(--hueco, 81px));
+    clip-path: inset(0 100% 0 0);
+  }
+  .marco-c.abierto .izq,
+  .marco-c.abierto .der {
+    clip-path: inset(0);
+  }
+
+  .figura {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: block;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.7s cubic-bezier(0.22, 0.61, 0.24, 1);
+  }
+  .marco-c.abierto .figura {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .muesca {
+    fill: var(--blanco);
+  }
+  .masa {
+    fill: var(--azul);
+  }
+
+  /*
+    La esquina que completa la tarjeta. Un cuadrado azul del tamaño del radio:
+    la mitad que cae sobre la tarjeta es azul sobre azul y no se ve, y la que
+    cae sobre la muesca del redondeo es la que la cierra. Es lo último que
+    encaja, cuando las barras ya han llegado a los bordes.
+  */
+  .esq {
+    position: absolute;
+    width: var(--radio);
+    height: var(--radio);
+    background: var(--azul);
+    opacity: 0;
+    transition: opacity 0.35s ease 0.55s;
+  }
+  .marco-c.abierto .esq {
+    opacity: 1;
+  }
+  .marco-c.abre .esq {
+    top: calc(var(--radio) * -1);
+  }
+  .marco-c.cierra .esq {
+    bottom: calc(var(--radio) * -1);
+  }
+  .esq.i {
+    left: 0;
+  }
+  .esq.d {
+    right: 0;
+  }
+
+  /* El hueco lo manda la figura */
+  .marco-c:has(svg[width="102"]) {
+    --hueco: 61px;
+  }
+
+  /*
+    Menos movimiento: el marco nace abierto y no se anima nada. Lo que no
+    puede pasar nunca es que se quede a medias.
+  */
+  @media (prefers-reduced-motion: reduce) {
+    .barra,
+    .figura,
+    .esq {
+      transition: none;
+    }
+  }
+
+  /* En móvil la pieza baja de escala, o se come la pantalla */
+  @media (max-width: 900px) {
+    .marco-c {
+      --banda: 30px;
+      --radio: 22px;
+      --hueco: 58px;
+    }
+    .marco-c:has(svg[width="102"]) {
+      --hueco: 44px;
+    }
+    .figura {
+      transform: translate(-50%, -50%) scale(0);
+    }
+    .marco-c.abierto .figura {
+      transform: translate(-50%, -50%) scale(0.7);
+    }
+  }
+</style>
+
+<script>
+  /*
+    Se abre al entrar en pantalla. La red de seguridad no es opcional: la
+    pieza parte recortada del todo, así que si el observador no llegara a
+    disparar se quedaría cerrada para siempre. A los 6 s, al imprimir y al
+    volver de segundo plano se abre pase lo que pase.
+  */
+  {
+    const marcos = Array.from(document.querySelectorAll<HTMLElement>("[data-marco]"));
+    const abrir = (el: HTMLElement) => el.classList.add("abierto");
+
+    if (marcos.length) {
+      const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (quieto) {
+        marcos.forEach(abrir);
+      } else {
+        const ojo = new IntersectionObserver(
+          (entradas) => {
+            entradas.forEach((e) => {
+              if (!e.isIntersecting) return;
+              abrir(e.target as HTMLElement);
+              ojo.unobserve(e.target);
+            });
+          },
+          { rootMargin: "0px 0px -12% 0px" }
+        );
+        marcos.forEach((m) => ojo.observe(m));
+
+        const rendirse = () => marcos.forEach(abrir);
+        setTimeout(rendirse, 6000);
+        addEventListener("beforeprint", rendirse);
+        addEventListener("visibilitychange", () => {
+          if (!document.hidden) setTimeout(rendirse, 1500);
+        });
+      }
+    }
+  }
+</script>
