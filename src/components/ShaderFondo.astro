@@ -10,9 +10,12 @@
   horizontal y con más contraste que antes, para que lea como oleaje —sombra y
   brillo de verdad, no solo vibración— en vez de una textura genérica.
 
-  Reacciona al puntero: cerca del cursor el agua se empuja como una estela, y
-  además se dispara un anillo que se expande desde ahí, como si tocaras el
-  agua. La reacción persigue al cursor con retardo para que no vaya a tirones.
+  Reacciona al puntero como una MAREA (2026-08-11): la corriente del agua se
+  orienta poco a poco hacia donde está el cursor, y sigue yendo hacia allí
+  mientras esté ahí. No hay nada que pase debajo del ratón —ni pellizco, ni
+  anillo, ni estela local— porque todas esas versiones se probaron y se
+  descartaron mirándolas. Aquí lo único que cambia es hacia dónde va el mar
+  entero, y tarda cerca de un segundo en girar.
 
   Frenos, a propósito:
     · No se carga nada si el visitante pide menos movimiento.
@@ -130,9 +133,7 @@
         precision mediump float;
         varying vec2 vUv;
         uniform float uTiempo;
-        uniform vec2 uRaton;
-        uniform vec2 uVel;
-        uniform float uEnergia;
+        uniform vec2 uDeriva;
         uniform vec2 uMedida;
         uniform vec4 uBandas[8];
         uniform float uRadio[8];
@@ -192,26 +193,9 @@
           float rel = uMedida.x / uMedida.y;
           // El muestreo se estira en horizontal: el mar se ve en escorzo.
           vec2 p = vec2(uv.x * rel * 1.2, uv.y * 0.8);
-          vec2 raton = vec2(uRaton.x * rel * 1.2, uRaton.y * 0.8);
           float t = uTiempo;
 
-          /*
-            ── El ratón, DESACTIVADO a propósito (2026-08-11) ──────────────
-            Se probaron dos versiones y las dos se descartaron mirándolas: la
-            primera pellizcaba (un empuje radial se divide por la distancia y
-            explota justo en el cursor) y la segunda arrastraba el agua, que a
-            Alejandro tampoco le convenció. Hasta que elija entre las tres
-            opciones del laboratorio, la fuerza va a cero y el mar se mueve
-            solo con su oleaje. Cambiar este número es lo único que hace falta
-            para volver a encenderlo.
-          */
-          const float FUERZA_RATON = 0.0;
-          float d = distance(p, raton);
-          // Campana, no exponencial: exp(-d) tiene un pico en el centro y se
-          // veía como un pellizco. exp(-d*d) entra y sale sin costura.
-          float cerca = exp(-d * d * 5.5);
           vec2 q = p;
-          q -= uVel * cerca * (2.4 + 5.0 * uEnergia) * FUERZA_RATON;
 
           /*
             ── El oleaje, que se mueve SIEMPRE ────────────────────────────
@@ -221,9 +205,12 @@
             se representa el mar en tiempo real desde siempre, más el ruido
             fino encima para el detalle. Los trenes van a distinta velocidad,
             así que el conjunto nunca repite el mismo dibujo.
+
+            ⚠️ La deriva NO se calcula aquí, llega ya sumada desde el guion
+            (uDeriva). Es a propósito y es la única forma de que la marea gire
+            sin dar un salto: ver la explicación larga en el bucle.
           */
-          vec2 deriva = vec2(t * 0.010, t * 0.004);
-          vec2 w = q + deriva;
+          vec2 w = q + uDeriva;
 
           /*
             Dos aprendizajes de mirar las capturas, el 2026-08-11:
@@ -326,9 +313,7 @@
         fragment,
         uniforms: {
           uTiempo: { value: 0 },
-          uRaton: { value: new Vec2(0.5, 0.5) },
-          uVel: { value: new Vec2(0, 0) },
-          uEnergia: { value: 0 },
+          uDeriva: { value: new Vec2(0, 0) },
           uMedida: { value: new Vec2(1, 1) },
           uBandas: { value: new Array(MAX_BANDAS * 4).fill(0) },
           uRadio: { value: new Array(MAX_BANDAS).fill(0) },
@@ -449,29 +434,12 @@
         program.uniforms.uNumBandas.value = n;
       };
 
-      /*
-        El puntero se persigue con retardo: el salto seco se vería artificial.
-
-        Además se guarda su VELOCIDAD y una "energía" (2026-08-11). La energía
-        sube al mover el ratón y baja sola en cuanto se para, y es la que
-        decide cuánta estela hay. Así el mar se comporta como se pidió: solo
-        con su oleaje cuando no hay nadie encima, y arrastrándose con el
-        cursor cuando lo hay. Al sacar el ratón de la ventana, la energía cae
-        igual que si se hubiera parado, sin ningún caso especial.
-      */
+      // El puntero se persigue con retardo: el salto seco se vería artificial.
       const destino = { x: 0.5, y: 0.5 };
       const actual = { x: 0.5, y: 0.5 };
-      const velocidad = { x: 0, y: 0 };
-      let energia = 0;
       const apuntar = (x: number, y: number) => {
-        const nx = x / innerWidth;
-        const ny = 1 - y / innerHeight;
-        // Distancia recorrida desde el último aviso, en pantallas por evento.
-        const dx = nx - destino.x;
-        const dy = ny - destino.y;
-        energia = Math.min(1, energia + Math.hypot(dx, dy) * 9);
-        destino.x = nx;
-        destino.y = ny;
+        destino.x = x / innerWidth;
+        destino.y = 1 - y / innerHeight;
       };
       addEventListener("pointermove", (e) => apuntar(e.clientX, e.clientY), { passive: true });
 
@@ -482,41 +450,72 @@
         if (vivo) requestAnimationFrame(bucle);
       });
 
+      /*
+        ── LA MAREA VA HACIA EL RATÓN (2026-08-11, pedido de Alejandro) ─────
+
+        No es un desplazamiento, es una CORRIENTE. La diferencia importa:
+        colocar el agua un poco hacia el cursor deja el mar quieto en su nueva
+        posición; una corriente hace que el agua siga yendo hacia allí todo el
+        rato, que es lo que se pidió.
+
+        ⚠️ Y por eso el recorrido se ACUMULA aquí, fotograma a fotograma, en
+        vez de calcularse dentro del shader como "dirección × tiempo". Esa
+        fórmula, que es la primera que sale, tiene un fallo grave: al cambiar
+        la dirección se recalcula también todo el pasado, así que el mar entero
+        DA UN SALTO cada vez que mueves el ratón. Acumulando, lo ya recorrido
+        queda fijo y el giro solo afecta al camino que viene, igual que una
+        marea de verdad.
+
+        Los tres frenos que la hacen sutil en vez de un tobogán:
+          · La dirección se persigue con una constante de tiempo de ~0,9 s, así
+            que la marea TARDA en girar y nunca sigue al cursor a la carrera.
+          · Cerca del centro la fuerza se desvanece: ahí no hay una dirección
+            clara y, sin esto, cruzar el medio de la pantalla haría girar el
+            agua bruscamente.
+          · La corriente del ratón es del orden de la corriente de fondo (0,022
+            frente a 0,010), no diez veces mayor.
+      */
+      const CORRIENTE_BASE = { x: 0.01, y: 0.004 };
+      const CORRIENTE_RATON = 0.022;
+      const deriva = { x: 0, y: 0 };
+      const marea = { x: 0, y: 0 };
       let t0 = performance.now();
+      let tPrev = t0;
+
       function bucle(ahora: number) {
         if (!vivo) return;
-        const antesX = actual.x;
-        const antesY = actual.y;
+        // Con tope: al volver de segundo plano el salto sería de varios
+        // segundos y la marea recorrería media pantalla de golpe.
+        const dt = Math.min((ahora - tPrev) / 1000, 0.05);
+        tPrev = ahora;
+
         actual.x += (destino.x - actual.x) * 0.06;
         actual.y += (destino.y - actual.y) * 0.06;
 
-        /*
-          La velocidad que ve el shader es la del punto perseguido, no la del
-          ratón en bruto: así la estela sale suave aunque el navegador entregue
-          los eventos a golpes. Se guarda suavizada y en las mismas unidades
-          estiradas que usa el shader para el eje horizontal.
-        */
+        // Del centro del campo al puntero, en las unidades estiradas del shader.
         const rel = innerWidth / innerHeight;
-        velocidad.x += ((actual.x - antesX) * rel * 1.2 - velocidad.x) * 0.25;
-        velocidad.y += ((actual.y - antesY) * 0.8 - velocidad.y) * 0.25;
-        /*
-          Con tope. Un manotazo de lado a lado da una velocidad diez veces la
-          normal y, multiplicada dentro del shader, deformaría el agua hasta
-          convertirla en un borrón. El tope deja el gesto rápido igual de
-          enérgico que uno normal, que es lo que hace el agua de verdad.
-        */
-        const vMax = 0.02;
-        const vLen = Math.hypot(velocidad.x, velocidad.y);
-        if (vLen > vMax) {
-          velocidad.x = (velocidad.x / vLen) * vMax;
-          velocidad.y = (velocidad.y / vLen) * vMax;
-        }
-        // Se apaga sola: sin ratón que la alimente, en ~1,5 s no queda nada.
-        energia *= 0.965;
+        const ox = (actual.x - 0.5) * rel * 1.2;
+        const oy = (actual.y - 0.5) * 0.8;
+        const largo = Math.hypot(ox, oy);
+        const fuerza = Math.min(1, largo / 0.35);
+        const dirX = largo > 0.0001 ? (ox / largo) * fuerza : 0;
+        const dirY = largo > 0.0001 ? (oy / largo) * fuerza : 0;
 
-        program.uniforms.uRaton.value.set(actual.x, actual.y);
-        program.uniforms.uVel.value.set(velocidad.x, velocidad.y);
-        program.uniforms.uEnergia.value = energia;
+        // Giro suave e independiente de los fotogramas por segundo.
+        const giro = 1 - Math.exp(-dt / 0.9);
+        marea.x += (dirX - marea.x) * giro;
+        marea.y += (dirY - marea.y) * giro;
+
+        /*
+          ⚠️ SIGNO INVERTIDO, y no es un despiste. El shader muestrea en
+          `q + uDeriva`, así que mover el muestreo hacia un lado hace que el
+          dibujo se vea viajar hacia el CONTRARIO. Para que el agua vaya hacia
+          el cursor, la deriva tiene que ir en dirección opuesta a él.
+        */
+        deriva.x += (CORRIENTE_BASE.x - marea.x * CORRIENTE_RATON) * dt;
+        deriva.y += (CORRIENTE_BASE.y - marea.y * CORRIENTE_RATON) * dt;
+
+        program.uniforms.uDeriva.value.set(deriva.x, deriva.y);
         program.uniforms.uTiempo.value = (ahora - t0) / 1000;
         medirBandas();
         renderer.render({ scene: malla });
