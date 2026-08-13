@@ -177,11 +177,16 @@ const destacados = todos.slice(0, 3);
 <div class="cta-wrap">
   <div class="cta-screen f-azul home-slide" id="ctaScreen">
     {/*
-      El marco CIERRA sobre la tarjeta, pegado a ella, y le completa la
-      esquina redondeada. Encima tiene los 64 px de relleno de la sección,
-      así que la figura asoma sobre campo claro sin rozar nada.
+      El marco CIERRA aquí, SEPARADO de la tarjeta por un hueco de cal.
+
+      ⚠️ Se probó pegado, completándole la esquina, y quedaba fatal (visto en
+      producción): contra la tarjeta la barra es azul sobre azul, así que no
+      hay barra que romper, y la figura con su muesca se lee como un mordisco
+      blanco en la tarjeta. Encima, cuadrar la esquina le quita su silueta.
+      La figura solo funciona rompiendo una barra que SE VEA, con cal a los
+      dos lados, que es lo que hay en el dibujo.
     */}
-    <MarcoCanario modo="cierra" figura="circulo" pegado />
+    <MarcoCanario modo="cierra" figura="circulo" />
     <div class="cta-inner">
       <p class="k2">.07 · Tu plan gratis</p>
       <h2>Vamos a que se note.</h2>
@@ -680,6 +685,15 @@ const destacados = todos.slice(0, 3);
     .marco-tramo {
       padding: 34px 20px 36px;
     }
+  }
+
+  /*
+    El hueco entre la barra y la tarjeta. Corto, pero tiene que existir: si se
+    tocan, la barra desaparece contra el azul de la tarjeta y la figura se lee
+    como un mordisco. Arriba, la propia sección le da sus 64 px de cal.
+  */
+  .cta-screen > :global(.marco-c) {
+    margin-bottom: 30px;
   }
 
   .cta-inner {
