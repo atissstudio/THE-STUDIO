@@ -1,0 +1,128 @@
+---
+/*
+  ══ EL MAR DE LA PORTADA ═════════════════════════════════════════════════════
+
+  El azul de la portada de la home, pintado por WebGL con el mar ya dentro.
+
+  ⚠️ POR QUÉ ESTO EXISTE, Y POR QUÉ NO VALÍA LA CAPA GENERAL (2026-08-19).
+  La capa general (`ShaderFondo.astro`) va ENCIMA de la página y solo puede
+  MODULAR lo que encuentre debajo. Con un campo azul quieto es indistinguible
+  de estar dentro del azul, así que durante meses dio igual. Pero el azul de la
+  portada no está quieto: es un velo que se desvanece para destapar la casa, y
+  en cuanto empieza a desvanecerse lo que hay debajo de la capa ya no es azul,
+  es la plata de la casa. Resultado: olas cruzando la plata. Se intentó
+  arreglar dos veces bajándole el alfa al mar (primero al ritmo del velo,
+  después mucho antes), y las dos veces era un parche: o la textura seguía
+  sobre la plata, o desaparecía mientras el campo todavía era azul.
+
+  La raíz no era el número, era la arquitectura: **un mar que va sobre el azul
+  tiene que ser el azul**. Aquí el lienzo no modula nada; pinta él el azul de
+  la portada, con su mar dentro, y se desvanece como una sola cosa. Así el
+  fallo no puede volver, porque ya no hay dos objetos que sincronizar.
+
+  Qué pinta, exactamente lo mismo que pintaban el fondo y los dos
+  pseudo-elementos del bloque anclado (que quedan transparentes mientras esto
+  esté vivo):
+    · el bloque del logo y el carril (`.hero`), azul sólido siempre;
+    · el parche de arriba, azul sólido, que tapa el hueco que el logo deja
+      sobre sí mismo mientras baja;
+    · el velo de abajo, que se desvanece y destapa la casa.
+
+  Si no hay WebGL o el visitante pide menos movimiento, esto no arranca, la
+  clase `mar-portada` no se pone y la portada se queda con su azul plano de
+  CSS, exactamente como antes. Es mejora progresiva, no dependencia.
+*/
+---
+
+<canvas class="mar-portada" aria-hidden="true"></canvas>
+
+<style>
+  .mar-portada {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    display: none;
+  }
+  /* Solo se muestra cuando ha pintado de verdad: ni un fotograma sin azul. */
+  :global(html.mar-vivo) .mar-portada {
+    display: block;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mar-portada {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { crearMar, type Zona } from "../scripts/mar";
+
+  const lienzo = document.querySelector<HTMLCanvasElement>("canvas.mar-portada");
+  const pin = document.querySelector<HTMLElement>(".portada-pin");
+  const hero = document.querySelector<HTMLElement>(".hero");
+
+  if (lienzo && pin && hero) {
+    const raiz = document.documentElement;
+    const grande = matchMedia("(min-width: 901px)");
+
+    /*
+      Las tres zonas son la MISMA cuenta que hacía el CSS, no una aproximación:
+      el parche mide `intro * intro-dy + hero-h` y el velo se apaga con
+      `clamp(0, (intro - 0.4) * 2.5, 1)`. Si algún día se cambia allí, se
+      cambia aquí. (Antes esta duplicación vivía dentro del shader general y era
+      peor: allí ni siquiera podía acertar, ver la cabecera.)
+    */
+    const zonas = (): Zona[] => {
+      const rPin = pin.getBoundingClientRect();
+      const rHero = hero.getBoundingClientRect();
+      // Relativas al lienzo, que ocupa exactamente el bloque anclado.
+      const lista: Zona[] = [
+        {
+          top: rHero.top - rPin.top,
+          bottom: rHero.bottom - rPin.top,
+          left: rHero.left - rPin.left,
+          right: rHero.right - rPin.left,
+        },
+      ];
+
+      if (!grande.matches) return lista;
+
+      const estilo = getComputedStyle(raiz);
+      const intro = parseFloat(estilo.getPropertyValue("--intro")) || 0;
+      const introDy = parseFloat(estilo.getPropertyValue("--intro-dy")) || 0;
+      const heroH = parseFloat(estilo.getPropertyValue("--hero-h")) || 306;
+
+      // El parche: azul sólido, nunca se desvanece.
+      lista.push({ top: 0, bottom: intro * introDy + heroH, left: 0, right: rPin.width });
+      // El velo: todo el bloque, con la opacidad que le toque ahora mismo.
+      lista.push({
+        top: 0,
+        bottom: rPin.height,
+        left: 0,
+        right: rPin.width,
+        alfa: Math.max(0, Math.min(1, (intro - 0.4) * 2.5)),
+      });
+      return lista;
+    };
+
+    crearMar(lienzo, {
+      pintar: true,
+      /*
+        Tiene que valer lo mismo que la opacidad de `#shader-fondo.listo`: es el
+        mismo mar sobre el mismo azul, y si no coincidieran se vería el salto
+        entre la portada y el resto de campos azules del sitio.
+      */
+      fuerza: 0.34,
+      // El lienzo ocupa el bloque anclado, no la ventana.
+      medida: () => {
+        const r = pin.getBoundingClientRect();
+        return { ancho: r.width, alto: r.height };
+      },
+      zonas,
+      alArrancar: () => raiz.classList.add("mar-vivo"),
+    });
+  }
+</script>

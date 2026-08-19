@@ -1,29 +1,21 @@
 ---
 /*
-  Capa de shader interactiva (2026-08-05, redibujada como mar el 2026-08-10).
+  Capa de mar de TODA LA PÁGINA (2026-08-05, redibujada como mar el 2026-08-10,
+  partida en dos el 2026-08-19).
 
-  Un único lienzo WebGL fijo sobre toda la página, en modo de fusión
-  "soft-light". Hasta el 2026-08-10 pintaba en toda la página por igual; ahora
-  el propio guion mide dónde están los campos `.f-azul` del DOM en cada
-  fotograma y solo pinta ahí (fuera de esas bandas, alfa 0): sobre blanco no
-  hace nada, tal como se pidió. Dentro del azul, el ruido se estira en
-  horizontal y con más contraste que antes, para que lea como oleaje —sombra y
-  brillo de verdad, no solo vibración— en vez de una textura genérica.
+  Un único lienzo WebGL fijo, en fusión "soft-light", que solo pinta donde hay
+  campos azules: el guion mide en cada fotograma dónde están en el DOM y fuera
+  de ahí deja alfa 0, así que sobre blanco no hace nada. El dibujo del agua no
+  está aquí, está en `src/scripts/mar.ts`, compartido.
 
-  Reacciona al puntero como una MAREA (2026-08-11): la corriente del agua se
-  orienta poco a poco hacia donde está el cursor, y sigue yendo hacia allí
-  mientras esté ahí. No hay nada que pase debajo del ratón —ni pellizco, ni
-  anillo, ni estela local— porque todas esas versiones se probaron y se
-  descartaron mirándolas. Aquí lo único que cambia es hacia dónde va el mar
-  entero, y tarda cerca de un segundo en girar.
-
-  Frenos, a propósito:
-    · No se carga nada si el visitante pide menos movimiento.
-    · No se carga nada si el navegador no trae WebGL.
-    · La biblioteca (OGL) se importa de forma diferida, después de pintar, así
-      que no retrasa la primera vista. Se eligió OGL y no three.js por peso:
-      unos cientos de KB frente a más de 20 MB en disco.
-    · Se detiene cuando la pestaña no está visible, para no gastar batería.
+  ⚠️ ESTA CAPA YA NO SE OCUPA DE LA PORTADA DE LA HOME, y no es un reparto de
+  tareas caprichoso. Una capa que va ENCIMA de la página puede ponerse delante
+  del azul, pero nunca puede ser parte de él. Los campos azules quietos no
+  notan la diferencia; el velo de la portada, que se desvanece para destapar la
+  casa, sí: la capa se mezclaba con lo que hubiera debajo en ese momento —la
+  plata de la casa— y el mar acababa pintando olas sobre la plata. Eso lo
+  resuelve `MarPortada.astro`, que en vez de modular un azul ajeno pinta él el
+  azul con el mar dentro. Ver la explicación larga en `mar.ts`.
 
   Aviso registrado en su día: INV-09 concluyó que el espectáculo tipo WebGL
   resta credibilidad con el público de Atis. Por eso la capa es sutil (opacidad
@@ -51,21 +43,16 @@
       se leía como suciedad sobre el azul. El 2026-08-10 sube a 0.30, y no es
       una vuelta atrás: antes la capa cubría TODA la página, así que cualquier
       opacidad que hiciera visible la textura la hacía visible también sobre los
-      campos claros, donde solo podía ensuciar. Ahora el shader solo pinta
-      dentro de los campos azules (ver la máscara de bandas en el guion), que es
-      donde tiene algo que representar: el mar. Ahí sí necesita cuerpo, o no hay
-      ni sombra ni brillo que ver.
+      campos claros, donde solo podía ensuciar. Ahora solo pinta dentro de los
+      campos azules, que es donde tiene algo que representar: el mar.
 
-      0.3 se probó y se vio en pantalla: emborronaba el logo y el texto que
-      cae encima, más estática de televisor que agua. 0.16 se quedaba corto
-      una vez corregida la costura de arriba (ver `.portada-pin` en
-      `medirBandas`): a Alejandro le gustó el efecto y pidió notarlo más.
-      0.22 fue el punto intermedio.
+      0.3 emborronaba el logo y el texto. 0.16 se quedaba corto. 0.22 fue el
+      punto intermedio. 2026-08-11: sube a 0.34 al pedirse otra vez más
+      presencia. Lo que hace que no se lea como suciedad no es la opacidad, es
+      que el dibujo son trenes de olas con cresta, no ruido.
 
-      2026-08-11: sube a 0.34 al pedirse otra vez más presencia. Lo que hace
-      que ahora no se lea como suciedad no es la opacidad, es que el dibujo
-      cambió: son trenes de olas con cresta, no ruido. El mismo 0,3 que antes
-      era estática, con olas de verdad se lee como agua.
+      ⚠️ Este número tiene que valer lo mismo que la `fuerza` de MarPortada, o
+      el azul de la portada y el de las demás secciones no casarían.
     */
     opacity: 0.34;
   }
@@ -77,523 +64,52 @@
 </style>
 
 <script>
+  import { crearMar, type Zona } from "../scripts/mar";
+
   const lienzo = document.getElementById("shader-fondo") as HTMLCanvasElement | null;
 
-  const quiereQuieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const hayWebGL = (() => {
-    try {
-      return !!document.createElement("canvas").getContext("webgl");
-    } catch {
-      return false;
-    }
-  })();
+  if (lienzo) {
+    /*
+      Qué se mide, y por qué no es simplemente `.f-azul`:
 
-  if (lienzo && !quiereQuieto && hayWebGL) {
-    // Diferido: primero que la página pinte, después el adorno.
-    const arrancar = async () => {
-      const { Renderer, Program, Mesh, Triangle, Vec2 } = await import("ogl");
-
-      const renderer = new Renderer({
-        canvas: lienzo,
-        alpha: true,
-        // En pantallas muy densas no hace falta el doble de píxeles para un
-        // ruido suave: la mitad se ve igual y cuesta la cuarta parte.
-        dpr: Math.min(devicePixelRatio, 1.5),
-      });
-      const gl = renderer.gl;
-
-      const vertex = `
-        attribute vec2 uv;
-        attribute vec2 position;
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = vec4(position, 0.0, 1.0);
-        }
-      `;
-
-      /*
-        ── El mar, solo sobre azul (2026-08-10) ──────────────────────────────
-
-        Antes esto era ruido genérico sobre TODA la página: se leía como una
-        textura, no como nada en concreto, y sobre los campos claros solo podía
-        ensuciar (no hay "mar" que fingir ahí). Ahora la capa sabe DÓNDE están
-        los campos azules de la página (`uBandas`, hasta 8 tramos verticales,
-        medidos en el propio DOM — ver más abajo) y solo pinta dentro de ellos;
-        fuera, alfa 0, así que sobre blanco no pasa nada, tal cual se pidió.
-
-        Dentro del azul, el ruido deja de repartirse en octavas isótropas y se
-        ESTIRA en horizontal, como oleaje real, y el contraste sube (antes se
-        comprimía hacia el gris medio para dar solo "vibración"; ahora se
-        expande, para que haya sombra y brillo de verdad). El puntero no solo
-        empuja el muestreo (como antes): además dispara un anillo que se
-        expande desde donde está, como si tocaras el agua.
-      */
-      const fragment = `
-        precision mediump float;
-        varying vec2 vUv;
-        uniform float uTiempo;
-        uniform vec2 uDeriva;
-        uniform vec2 uMedida;
-        uniform vec4 uBandas[8];
-        uniform float uRadio[8];
-        uniform float uAlfa[8];
-        uniform int uNumBandas;
-
-        float azar(vec2 p) {
-          return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-        }
-
-        float ruido(vec2 p) {
-          vec2 i = floor(p);
-          vec2 f = fract(p);
-          vec2 u = f * f * (3.0 - 2.0 * f);
-          return mix(
-            mix(azar(i + vec2(0.0, 0.0)), azar(i + vec2(1.0, 0.0)), u.x),
-            mix(azar(i + vec2(0.0, 1.0)), azar(i + vec2(1.0, 1.0)), u.x),
-            u.y
-          );
-        }
-
-        void main() {
-          vec2 uv = vUv;
-
-          /*
-            ¿Este píxel cae dentro de alguna zona azul? Si no, fuera.
-
-            Desde el 2026-08-11 la zona es un RECTÁNGULO (arriba, abajo,
-            izquierda, derecha) y no una banda de lado a lado. Motivo: el azul
-            dejó de ser un campo a sangre y pasó a ser una tarjeta con 20 px de
-            campo claro alrededor. Con bandas, el mar se derramaba sobre ese
-            marco claro, que es justo lo que se pidió que no pasara nunca.
-          */
-          /*
-            OJO: "dentro" no es un sí o un no, es CUÁNTO de mar lleva este
-            píxel (2026-08-11). Casi siempre vale 0 o 1, pero el velo de la
-            portada se desvanece y el mar tiene que irse con él, o acaba
-            pintando sobre la plata. Cuidado: NO es la opacidad del velo, se
-            va bastante antes (ver veloMar en el guion, 2026-08-19). Cuando
-            dos zonas se solapan manda la mayor, que es la que de verdad se
-            ve.
-            (Y no, aquí dentro no se pueden usar comillas invertidas. Van tres.)
-          */
-          float dentro = 0.0;
-          vec2 px = uv * uMedida;
-          for (int i = 0; i < 8; i++) {
-            if (i >= uNumBandas) continue;
-            vec4 b = uBandas[i];
-            /*
-              En PÍXELES, no en uv: el radio de una esquina es circular en
-              pantalla, y uv está normalizado distinto en cada eje, así que
-              medido en uv una esquina redonda saldría ovalada. Es la fórmula
-              corriente de "caja con esquinas redondeadas" por distancia.
-              Radio 0 (campos a sangre) da exactamente la caja de siempre.
-            */
-            vec2 centro = vec2((b.z + b.w) * 0.5, (b.x + b.y) * 0.5) * uMedida;
-            vec2 medio = vec2((b.w - b.z) * 0.5, (b.x - b.y) * 0.5) * uMedida;
-            float r = min(uRadio[i], min(medio.x, medio.y));
-            vec2 q2 = abs(px - centro) - medio + r;
-            float dist = length(max(q2, 0.0)) + min(max(q2.x, q2.y), 0.0) - r;
-            if (dist < 0.0) dentro = max(dentro, uAlfa[i]);
-          }
-          if (dentro < 0.01) {
-            gl_FragColor = vec4(0.5, 0.5, 0.5, 0.0);
-            return;
-          }
-
-          float rel = uMedida.x / uMedida.y;
-          // El muestreo se estira en horizontal: el mar se ve en escorzo.
-          vec2 p = vec2(uv.x * rel * 1.2, uv.y * 0.8);
-          float t = uTiempo;
-
-          vec2 q = p;
-
-          /*
-            ── El oleaje, que se mueve SIEMPRE ────────────────────────────
-            Antes esto eran tres octavas de ruido a velocidad 0,05: sin ratón
-            encima parecía una foto. Ahora son tres trenes de olas cruzados
-            (senos con dirección, frecuencia y velocidad propias), que es como
-            se representa el mar en tiempo real desde siempre, más el ruido
-            fino encima para el detalle. Los trenes van a distinta velocidad,
-            así que el conjunto nunca repite el mismo dibujo.
-
-            ⚠️ La deriva NO se calcula aquí, llega ya sumada desde el guion
-            (uDeriva). Es a propósito y es la única forma de que la marea gire
-            sin dar un salto: ver la explicación larga en el bucle.
-          */
-          vec2 w = q + uDeriva;
-
-          /*
-            Dos aprendizajes de mirar las capturas, el 2026-08-11:
-
-            1 · La DIRECCIÓN manda más que la frecuencia. Con las crestas
-                corriendo en vertical (senos que varían con x) el resultado se
-                leía como manchas de camuflaje. El mar visto de frente se
-                reconoce por bandas HORIZONTALES, así que los senos varían
-                sobre todo con y y solo un poco con x, que es lo que las
-                inclina y evita el efecto persiana.
-            2 · Un seno puro es demasiado regular para ser agua. Se le suma
-                ruido DENTRO de la fase (deformación del dominio): la cresta
-                deja de ser una línea recta y ondula, que es exactamente el
-                truco estándar para simular superficies de agua sin simular
-                física.
-          */
-          /*
-            ⚠️ LA ESCALA ERA EL FALLO DE FONDO, y venía de largo. El muestreo
-            no va de 0 a 1: el eje vertical se comprime a 0,8 (escorzo).
-            (Ojo: aquí dentro no se pueden usar comillas invertidas, esto es
-            una plantilla de JavaScript y cortarían la cadena. Pasó.)
-            Con frecuencias de 3 a 30, en toda la altura de la pantalla cabía
-            UNA onda y media, así que por muchos trenes que se sumaran el
-            resultado solo podía ser manchas grandes. Para que se lean crestas
-            hacen falta del orden de 45 a 130. Se vio mirando capturas, tras
-            dos intentos de arreglarlo tocando contraste y opacidad, que era
-            tratar el síntoma.
-          */
-          /*
-            ⚠️ PERSPECTIVA (2026-08-11, elegida por Alejandro entre tres
-            opciones que vio en movimiento). Es LO QUE FALTABA para que esto
-            se lea como una superficie y no como un papel pintado: la ola no
-            puede medir lo mismo arriba que abajo. Arriba es "lejos", así que
-            la onda se aprieta y se aplana; abajo es "cerca", y se abre.
-
-            La variable "lejos" va de 0 (borde de abajo) a 1 (borde de
-            arriba), y de ella cuelgan tres cosas: la frecuencia, la altura de
-            la ola y cuánto ondula la cresta, que de lejos apenas se aprecia.
-            (Recordatorio: aquí dentro NO se pueden usar comillas invertidas,
-            esto es una plantilla de JavaScript y cortan la cadena. Ha vuelto
-            a pasar hoy.)
-          */
-          float lejos = smoothstep(0.05, 1.0, uv.y);
-          float esc = mix(0.55, 3.4, lejos);
-          float amp = mix(1.15, 0.45, lejos);
-
-          float ond1 = ruido(w * 2.4 + vec2(t * 0.06, 0.0)) * 2.4 * mix(1.4, 0.5, lejos);
-          float ond2 = ruido(w * 4.2 - vec2(0.0, t * 0.05)) * 1.9 * mix(1.4, 0.5, lejos);
-
-          float y = w.y * esc;
-          float mar = 0.0;
-          mar += sin(y * 46.0 + w.x * 7.0 + t * 0.85 + ond1) * 0.50;
-          mar += sin(y * 79.0 - w.x * 13.0 - t * 0.66 + ond2) * 0.30;
-          mar += sin(y * 132.0 + w.x * 23.0 + t * 1.25) * 0.15;
-          mar *= amp;
-
-          // Detalle fino, viajando con la ola (si no, la superficie es plástico).
-          float det = ruido(vec2(w.x, y) * 10.0 + vec2(-t * 0.22, t * 0.10)) * 0.62;
-          det += ruido(vec2(w.x, y) * 26.0 + vec2(t * 0.31, -t * 0.18)) * 0.26;
-
-          /*
-            Zonas en calma. El brillo de cresta no puede repartirse por igual
-            por toda la superficie: el mar tiene tramos encendidos y tramos
-            tranquilos. Una mancha grande y muy lenta decide dónde brilla.
-          */
-          float calma = smoothstep(0.35, 0.85, ruido(w * 1.3 + vec2(t * 0.03, -t * 0.02)));
-
-          /*
-            RETIRADO el 2026-08-11: el anillo concéntrico que se expandía desde
-            el cursor. Un anillo centrado en el puntero se lee como una diana,
-            no como agua: lo que deja un objeto que cruza el agua es estela
-            DETRÁS, no círculos alrededor.
-          */
-          float n = 0.5 + mar * 0.20 + (det - 0.44) * 0.24;
-
-          /*
-            Cresta: el lomo de la ola brilla mucho más que el resto, y es ese
-            destello lo que hace que se lea como agua y no como mancha. Se
-            saca elevando el valor de la ola a una potencia alta, que deja
-            encendidas solo las puntas, y se modula con la calma para que haya
-            tramos encendidos y tramos tranquilos.
-          */
-          float cresta = pow(max(mar * 0.5 + 0.5, 0.0), 9.0);
-          n += cresta * (0.10 + 0.40 * calma);
-
-          /*
-            Contraste. Historial: 1,7 (estática de televisor) → 1,15 (no se
-            veía) → 1,35 → 1,5 → 1,55 con la perspectiva puesta. El tope lo
-            pone el texto que cae encima, no el gusto.
-          */
-          n = clamp(0.5 + (n - 0.5) * 1.55, 0.0, 1.0);
-
-          // El alfa lo pone la máscara: así el mar se desvanece con su azul.
-          gl_FragColor = vec4(vec3(n), dentro);
-        }
-      `;
-
-      const MAX_BANDAS = 8;
-      const program = new Program(gl, {
-        vertex,
-        fragment,
-        uniforms: {
-          uTiempo: { value: 0 },
-          uDeriva: { value: new Vec2(0, 0) },
-          uMedida: { value: new Vec2(1, 1) },
-          uBandas: { value: new Array(MAX_BANDAS * 4).fill(0) },
-          uRadio: { value: new Array(MAX_BANDAS).fill(0) },
-          uAlfa: { value: new Array(MAX_BANDAS).fill(1) },
-          uNumBandas: { value: 0 },
-        },
-      });
-
-      const malla = new Mesh(gl, { geometry: new Triangle(gl), program });
-
-      const medir = () => {
-        renderer.setSize(innerWidth, innerHeight);
-        program.uniforms.uMedida.value.set(innerWidth, innerHeight);
-      };
-      medir();
-      addEventListener("resize", medir, { passive: true });
-
-      /*
-        Dónde están los campos azules AHORA MISMO, en las mismas coordenadas
-        que usa el shader (0 abajo, 1 arriba, como `uRaton`). Se mide en cada
-        fotograma, no solo al cargar o al hacer resize: varias portadas
-        mueven sus campos con `transform` durante el scroll (la entrada de la
-        home, por ejemplo), y con una medida fija el mar se habría quedado
-        pintando el sitio de ayer.
-      */
-      const bandasBuffer = program.uniforms.uBandas.value as number[];
-      const raiz = document.documentElement;
-      /*
-        `.f-azul` sola se quedaba corta en la home: la portada pinta su azul
-        sólido con pseudo-elementos (el velo y el parche del logo, ver
-        HomeV5.astro), no con un `.f-azul` de verdad, así que esa franja
-        quedaba sin tratar y se notaba la costura contra el logo, que sí
-        estaba dentro de un `.f-azul`.
-
-        Probar con TODO el alto de `.portada-pin` (2026-08-10, primer intento)
-        se pasó de frenada: ese contenedor sigue midiendo 100svh mucho después
-        de que el velo se apague y aparezca la casa, así que el mar seguía
-        pintándose sobre la plata de la casa — otra costura, esta vez entre
-        "mar" y "sin mar" a mitad de la fachada. La franja de `.portada-pin`
-        que es SIEMPRE azul sólido es exactamente la misma que calcula su CSS
-        para el parche (`intro * intro-dy + hero-h`, ver HomeV5.astro): se
-        replica aquí la misma cuenta en vez de adivinar, para que el mar
-        cubra justo lo que de verdad es azul y ni un píxel más.
-      */
-      const medirBandaPortada = () => {
-        const raizEstilo = getComputedStyle(raiz);
-        const intro = parseFloat(raizEstilo.getPropertyValue("--intro")) || 0;
-        const introDy = parseFloat(raizEstilo.getPropertyValue("--intro-dy")) || 0;
-        const heroH = parseFloat(raizEstilo.getPropertyValue("--hero-h")) || 306;
-        const veloOp = Math.max(0, Math.min(1, (intro - 0.4) * 2.5));
-        return {
-          // El parche: siempre azul sólido. Misma cuenta que su CSS.
-          parche: intro * introDy + heroH,
-          // El velo: azul a medias. Misma cuenta que su CSS.
-          veloOp,
-          /*
-            ⚠️ EL MAR NO SE DESVANECE AL MISMO RITMO QUE EL VELO, SE VA MUCHO
-            ANTES (2026-08-19). Hasta hoy el mar se pintaba sobre el velo con
-            la opacidad exacta del velo, con el argumento de que así se apaga
-            "al mismo ritmo que el azul que tiene debajo". La cuenta es
-            correcta y el resultado, no: comprobado en pantalla (capturas con
-            y sin la capa, misma posición), a mitad de la entrada el velo ya
-            solo tiñe un poco y lo que se ve ahí es la PLATA de la casa, pero
-            el mar seguía pintando encima a un tercio de fuerza y se leían
-            las olas cruzando la plata. Es lo que Alejandro venía diciendo
-            varias veces.
-
-            El motivo de fondo es que la fusión soft-light no pierde presencia
-            cuando el fondo se aclara: el azul se va, la textura no. Así que
-            el mar tiene que irse por su cuenta, y deprisa: al cubo, ya está
-            en nada cuando el campo todavía es azul de sobra (velo 0,8 -> 0,51
-            · 0,6 -> 0,22 · 0,4 -> 0,06). Los dos primeros tercios de la
-            entrada, con el velo opaco, no cambian ni un píxel.
-
-            Y el escalón entre "con mar" y "sin mar" no se ve porque cae justo
-            en el borde de abajo del carril, que es una línea blanca de
-            verdad: la costura queda escondida detrás de un elemento del
-            diseño, no en mitad de un campo liso.
-          */
-          veloMar: Math.pow(veloOp, 3),
-        };
-      };
-
-      /*
-        Qué se mide, y por qué no es simplemente `.f-azul`:
-
-        desde que los encabezados y los cierres son TARJETAS (2026-08-11), la
+      · desde que los encabezados y los cierres son TARJETAS (2026-08-11), la
         sección conserva la clase pero su fondo ya es claro; el azul está en el
         bloque de dentro. Si se midiera la sección, el mar saldría por el marco
-        claro. Por eso esos tres casos se miden por su hijo, y el resto de
-        campos azules, que siguen siendo a sangre, por sí mismos.
-      */
-      const SELECTOR_AZUL = [
-        ".f-azul:not(.hero-field):not(.closer):not(.cta-screen)",
-        ".hero-field > .hero-inner",
-        ".closer > .closer-inner",
-        ".cta-screen > .cta-inner",
-      ].join(",");
+        claro. Por eso esos tres casos se miden por su hijo.
+      · `.hero` (la portada de la home) queda FUERA: su azul lo pinta
+        `MarPortada.astro`, que además lo desvanece con él. Si esta capa lo
+        tocara, habría dos mares distintos sobre el mismo campo.
+    */
+    const SELECTOR_AZUL = [
+      ".f-azul:not(.hero-field):not(.closer):not(.cta-screen):not(.hero)",
+      ".hero-field > .hero-inner",
+      ".closer > .closer-inner",
+      ".cta-screen > .cta-inner",
+    ].join(",");
 
-      const radioBuffer = program.uniforms.uRadio.value as number[];
-      const alfaBuffer = program.uniforms.uAlfa.value as number[];
-      /*
-        `alfa` es CUÁNTO de azul es esa zona, de 0 a 1. Casi siempre vale 1
-        (un campo o una tarjeta azul son azules del todo), pero la portada
-        tiene un velo que se desvanece, y ahí el mar tiene que desvanecerse
-        con él. Ver `medirBandas`.
-      */
-      const guardar = (n: number, r: DOMRect, radio = 0, alfa = 1) => {
-        bandasBuffer[n * 4] = 1 - r.top / innerHeight;
-        bandasBuffer[n * 4 + 1] = 1 - r.bottom / innerHeight;
-        bandasBuffer[n * 4 + 2] = r.left / innerWidth;
-        bandasBuffer[n * 4 + 3] = r.right / innerWidth;
-        radioBuffer[n] = radio;
-        alfaBuffer[n] = alfa;
-      };
-
-      const medirBandas = () => {
-        let n = 0;
-        const azules = document.querySelectorAll<HTMLElement>(SELECTOR_AZUL);
-        for (const el of azules) {
-          if (n >= MAX_BANDAS) break;
-          const r = el.getBoundingClientRect();
-          if (r.bottom <= 0 || r.top >= innerHeight || r.height <= 0) continue;
-          // El radio se lee del propio elemento, no se supone: así los campos
-          // a sangre (radio 0) y las tarjetas (28) salen bien sin distinguirlos.
-          const radio = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
-          guardar(n, r, radio);
-          n++;
-        }
-        const pin = document.querySelector<HTMLElement>(".portada-pin");
-        if (pin && n < MAX_BANDAS) {
-          const r = pin.getBoundingClientRect();
-          if (r.bottom > 0 && r.top < innerHeight) {
-            /*
-              ⚠️ DOS zonas, no una (corregido el 2026-08-11). El azul de la
-              portada son dos capas: un parche sólido arriba y un velo que se
-              DESVANECE por debajo. Hasta ahora esto se fingía acortando el
-              rectángulo en proporción a lo transparente que estuviera el
-              velo, y eso está mal por construcción: el mar seguía pintando a
-              plena fuerza sobre una zona que ya solo era azul a medias, y el
-              corte caía donde no toca. Se veía en producción como rayas de
-              mar derramándose sobre la plata y sobre la casa.
-
-              Ahora cada zona lleva su propia opacidad: el parche al 100% y el
-              velo justo a la opacidad que tenga el velo en ese momento. Así
-              el mar se desvanece exactamente al mismo ritmo que el azul que
-              tiene debajo, y no hay ni desbordamiento ni costura.
-            */
-            const { parche, veloMar } = medirBandaPortada();
-            if (veloMar > 0.01 && n < MAX_BANDAS) {
-              guardar(n, r, 0, veloMar);
-              n++;
-            }
-            if (n < MAX_BANDAS) {
-              guardar(n, new DOMRect(r.left, r.top, r.width, Math.min(parche, r.height)));
-              n++;
-            }
-          }
-        }
-        program.uniforms.uNumBandas.value = n;
-      };
-
-      // El puntero se persigue con retardo: el salto seco se vería artificial.
-      const destino = { x: 0.5, y: 0.5 };
-      const actual = { x: 0.5, y: 0.5 };
-      const apuntar = (x: number, y: number) => {
-        destino.x = x / innerWidth;
-        destino.y = 1 - y / innerHeight;
-      };
-      addEventListener("pointermove", (e) => apuntar(e.clientX, e.clientY), { passive: true });
-
-      let vivo = true;
-      document.addEventListener("visibilitychange", () => {
-        // Pestaña oculta: se para. No tiene sentido gastar batería en un adorno.
-        vivo = !document.hidden;
-        if (vivo) requestAnimationFrame(bucle);
-      });
-
-      /*
-        ── LA MAREA VA HACIA EL RATÓN (2026-08-11, pedido de Alejandro) ─────
-
-        No es un desplazamiento, es una CORRIENTE. La diferencia importa:
-        colocar el agua un poco hacia el cursor deja el mar quieto en su nueva
-        posición; una corriente hace que el agua siga yendo hacia allí todo el
-        rato, que es lo que se pidió.
-
-        ⚠️ Y por eso el recorrido se ACUMULA aquí, fotograma a fotograma, en
-        vez de calcularse dentro del shader como "dirección × tiempo". Esa
-        fórmula, que es la primera que sale, tiene un fallo grave: al cambiar
-        la dirección se recalcula también todo el pasado, así que el mar entero
-        DA UN SALTO cada vez que mueves el ratón. Acumulando, lo ya recorrido
-        queda fijo y el giro solo afecta al camino que viene, igual que una
-        marea de verdad.
-
-        EL GIRO ES RÁPIDO Y DESPUÉS SE RELAJA (2026-08-11, pedido de Alejandro
-        al verlo en movimiento). La velocidad de giro NO es fija: depende de lo
-        lejos que esté la marea de su nuevo rumbo. Si mandas el ratón a la
-        esquina contraria, el error es grande y la marea vira en unos 0,25 s;
-        conforme se acerca al rumbo bueno el propio giro se va frenando hasta
-        ~1,15 s, y por eso el final es un asentamiento y no un frenazo. Es como
-        cambia de rumbo cualquier cosa pesada, y sale de una sola línea: la
-        constante de tiempo se interpola con el error.
-
-        Cerca del centro, además, la fuerza se desvanece: ahí no hay una
-        dirección clara y, sin eso, cruzar el medio de la pantalla haría girar
-        el agua sin motivo.
-      */
-      const CORRIENTE_BASE = { x: 0.01, y: 0.004 };
-      // 0,055 contra los 0,010 del mar de fondo: se nota, que es lo que se pidió.
-      const CORRIENTE_RATON = 0.055;
-      const deriva = { x: 0, y: 0 };
-      const marea = { x: 0, y: 0 };
-      let t0 = performance.now();
-      let tPrev = t0;
-
-      function bucle(ahora: number) {
-        if (!vivo) return;
-        // Con tope: al volver de segundo plano el salto sería de varios
-        // segundos y la marea recorrería media pantalla de golpe.
-        const dt = Math.min((ahora - tPrev) / 1000, 0.05);
-        tPrev = ahora;
-
-        actual.x += (destino.x - actual.x) * 0.06;
-        actual.y += (destino.y - actual.y) * 0.06;
-
-        // Del centro del campo al puntero, en las unidades estiradas del shader.
-        const rel = innerWidth / innerHeight;
-        const ox = (actual.x - 0.5) * rel * 1.2;
-        const oy = (actual.y - 0.5) * 0.8;
-        const largo = Math.hypot(ox, oy);
-        const fuerza = Math.min(1, largo / 0.35);
-        const dirX = largo > 0.0001 ? (ox / largo) * fuerza : 0;
-        const dirY = largo > 0.0001 ? (oy / largo) * fuerza : 0;
-
-        /*
-          Cuanto más lejos esté del rumbo nuevo, más rápido vira. El error va de
-          0 (ya está) a 2 (rumbo opuesto); con 1 ya se considera un cambio
-          grande. Independiente de los fotogramas por segundo.
-        */
-        const error = Math.min(1, Math.hypot(dirX - marea.x, dirY - marea.y));
-        const constante = 1.15 - 0.9 * error;
-        const giro = 1 - Math.exp(-dt / constante);
-        marea.x += (dirX - marea.x) * giro;
-        marea.y += (dirY - marea.y) * giro;
-
-        /*
-          ⚠️ SIGNO INVERTIDO, y no es un despiste. El shader muestrea en
-          `q + uDeriva`, así que mover el muestreo hacia un lado hace que el
-          dibujo se vea viajar hacia el CONTRARIO. Para que el agua vaya hacia
-          el cursor, la deriva tiene que ir en dirección opuesta a él.
-        */
-        deriva.x += (CORRIENTE_BASE.x - marea.x * CORRIENTE_RATON) * dt;
-        deriva.y += (CORRIENTE_BASE.y - marea.y * CORRIENTE_RATON) * dt;
-
-        program.uniforms.uDeriva.value.set(deriva.x, deriva.y);
-        program.uniforms.uTiempo.value = (ahora - t0) / 1000;
-        medirBandas();
-        renderer.render({ scene: malla });
-        requestAnimationFrame(bucle);
+    /*
+      Se mide en cada fotograma, no solo al cargar o al hacer resize: varias
+      secciones mueven sus campos con `transform` durante el scroll, y con una
+      medida fija el mar se quedaría pintando el sitio de ayer.
+    */
+    const zonas = (): Zona[] => {
+      const lista: Zona[] = [];
+      for (const el of document.querySelectorAll<HTMLElement>(SELECTOR_AZUL)) {
+        const r = el.getBoundingClientRect();
+        if (r.bottom <= 0 || r.top >= innerHeight || r.height <= 0) continue;
+        // El radio se lee del propio elemento, no se supone: así los campos a
+        // sangre (radio 0) y las tarjetas (28) salen bien sin distinguirlos.
+        const radio = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
+        lista.push({ top: r.top, bottom: r.bottom, left: r.left, right: r.right, radio });
       }
-      requestAnimationFrame(bucle);
-      lienzo!.classList.add("listo");
+      return lista;
     };
 
-    if ("requestIdleCallback" in window) {
-      (window as any).requestIdleCallback(arrancar, { timeout: 2500 });
-    } else {
-      addEventListener("load", () => setTimeout(arrancar, 400));
-    }
+    crearMar(lienzo, {
+      // Esta capa es la ventana entera.
+      medida: () => ({ ancho: innerWidth, alto: innerHeight }),
+      zonas,
+      alArrancar: () => lienzo.classList.add("listo"),
+    });
   }
 </script>

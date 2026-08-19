@@ -8,6 +8,7 @@
 import GlassButton from "./GlassButton.astro";
 import CarrilClaim from "./CarrilClaim.astro";
 import MarcoCanario from "./MarcoCanario.astro";
+import MarPortada from "./MarPortada.astro";
 import { servicios as todos } from "../data/servicios";
 
 // En la home solo entran los tres primeros. El resto vive en /servicios.
@@ -28,6 +29,12 @@ const destacados = todos.slice(0, 3);
 */}
 <div class="portada" id="portada">
   <div class="portada-pin">
+    {/*
+      El azul de la portada lo pinta este lienzo, con el mar dentro (ver
+      MarPortada.astro). El fondo azul de CSS que hay más abajo sigue ahí como
+      respaldo: si no hay WebGL, esto no arranca y manda el CSS.
+    */}
+    <MarPortada />
     <section class="f-azul hero row12">
       <h1 class="logo-h1">
         <span class="scr">the</span><span class="hvy">STUDIO</span><span class="scr">by</span><span class="hvy">ATIS</span>
@@ -242,6 +249,30 @@ const destacados = todos.slice(0, 3);
     llegara a ejecutarse, `--intro` vale 0 por defecto y lo que se ve es
     exactamente la portada de antes, no una pantalla rota.
   */
+  /*
+    El lienzo del mar se coloca en absoluto dentro del bloque anclado, así que
+    el bloque tiene que ser contenedor de posición también en móvil (en
+    escritorio ya lo es por el `sticky` de más abajo).
+  */
+  .portada-pin {
+    position: relative;
+  }
+
+  /*
+    ── Cuando el mar está vivo, el azul lo pinta ÉL ────────────────────────────
+
+    El fondo azul de CSS de la portada (el del propio `.hero`, el velo y el
+    parche) se apaga en cuanto el lienzo ha pintado su primer fotograma, y no
+    antes: así no hay ni un instante sin azul si WebGL tarda o no existe.
+    Motivo de fondo, en `MarPortada.astro`: el mar tiene que SER el azul, no ir
+    encima, o vuelve a derramarse sobre la plata al desvanecerse el velo.
+  */
+  :global(html.mar-vivo) .hero,
+  :global(html.mar-vivo) .portada-pin::before,
+  :global(html.mar-vivo) .portada-pin::after {
+    background: transparent;
+  }
+
   @media (min-width: 901px) {
     .portada {
       position: relative;
