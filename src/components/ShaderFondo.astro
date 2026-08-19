@@ -168,11 +168,13 @@
             marco claro, que es justo lo que se pidió que no pasara nunca.
           */
           /*
-            OJO: "dentro" no es un sí o un no, es CUÁNTO de azul es este píxel
-            (2026-08-11). Casi siempre vale 0 o 1, pero el velo de la portada
-            se desvanece, y el mar tiene que desvanecerse con él o acaba
-            pintando sobre la plata. Cuando dos zonas se solapan manda la más
-            azul de las dos, que es la que de verdad se ve.
+            OJO: "dentro" no es un sí o un no, es CUÁNTO de mar lleva este
+            píxel (2026-08-11). Casi siempre vale 0 o 1, pero el velo de la
+            portada se desvanece y el mar tiene que irse con él, o acaba
+            pintando sobre la plata. Cuidado: NO es la opacidad del velo, se
+            va bastante antes (ver veloMar en el guion, 2026-08-19). Cuando
+            dos zonas se solapan manda la mayor, que es la que de verdad se
+            ve.
             (Y no, aquí dentro no se pueden usar comillas invertidas. Van tres.)
           */
           float dentro = 0.0;
@@ -373,11 +375,37 @@
         const intro = parseFloat(raizEstilo.getPropertyValue("--intro")) || 0;
         const introDy = parseFloat(raizEstilo.getPropertyValue("--intro-dy")) || 0;
         const heroH = parseFloat(raizEstilo.getPropertyValue("--hero-h")) || 306;
+        const veloOp = Math.max(0, Math.min(1, (intro - 0.4) * 2.5));
         return {
           // El parche: siempre azul sólido. Misma cuenta que su CSS.
           parche: intro * introDy + heroH,
           // El velo: azul a medias. Misma cuenta que su CSS.
-          veloOp: Math.max(0, Math.min(1, (intro - 0.4) * 2.5)),
+          veloOp,
+          /*
+            ⚠️ EL MAR NO SE DESVANECE AL MISMO RITMO QUE EL VELO, SE VA MUCHO
+            ANTES (2026-08-19). Hasta hoy el mar se pintaba sobre el velo con
+            la opacidad exacta del velo, con el argumento de que así se apaga
+            "al mismo ritmo que el azul que tiene debajo". La cuenta es
+            correcta y el resultado, no: comprobado en pantalla (capturas con
+            y sin la capa, misma posición), a mitad de la entrada el velo ya
+            solo tiñe un poco y lo que se ve ahí es la PLATA de la casa, pero
+            el mar seguía pintando encima a un tercio de fuerza y se leían
+            las olas cruzando la plata. Es lo que Alejandro venía diciendo
+            varias veces.
+
+            El motivo de fondo es que la fusión soft-light no pierde presencia
+            cuando el fondo se aclara: el azul se va, la textura no. Así que
+            el mar tiene que irse por su cuenta, y deprisa: al cubo, ya está
+            en nada cuando el campo todavía es azul de sobra (velo 0,8 -> 0,51
+            · 0,6 -> 0,22 · 0,4 -> 0,06). Los dos primeros tercios de la
+            entrada, con el velo opaco, no cambian ni un píxel.
+
+            Y el escalón entre "con mar" y "sin mar" no se ve porque cae justo
+            en el borde de abajo del carril, que es una línea blanca de
+            verdad: la costura queda escondida detrás de un elemento del
+            diseño, no en mitad de un campo liso.
+          */
+          veloMar: Math.pow(veloOp, 3),
         };
       };
 
@@ -446,9 +474,9 @@
               el mar se desvanece exactamente al mismo ritmo que el azul que
               tiene debajo, y no hay ni desbordamiento ni costura.
             */
-            const { parche, veloOp } = medirBandaPortada();
-            if (veloOp > 0.01 && n < MAX_BANDAS) {
-              guardar(n, r, 0, veloOp);
+            const { parche, veloMar } = medirBandaPortada();
+            if (veloMar > 0.01 && n < MAX_BANDAS) {
+              guardar(n, r, 0, veloMar);
               n++;
             }
             if (n < MAX_BANDAS) {
