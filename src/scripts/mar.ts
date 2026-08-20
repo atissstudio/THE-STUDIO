@@ -97,7 +97,18 @@ const vertex = `
   corta la cadena. Ha costado dos compilaciones fallidas, una de ellas hoy.
 */
 const fragment = `
-  precision mediump float;
+  /*
+    ⚠️ highp, Y NO ES OPCIONAL (2026-08-20). Este shader ACUMULA: la deriva de
+    la marea y el tiempo no dejan de crecer mientras la pestaña esté abierta, y
+    esos números entran multiplicados (hasta x26) en la función de azar. En los
+    GPU de Apple mediump es media precisión de verdad: por encima de 2.048 solo
+    cuenta de uno en uno y el techo son 65.504. Con el ratón parado en un lado
+    la deriva llega a ~10 en tres minutos, o sea coordenadas de ~100.000 en el
+    azar: el mismo valor para bloques enteros de pixeles, que es como se veian
+    esos manchones borrosos que se comian el oleaje. Declarar la precisión
+    buena es la mitad del arreglo; la otra mitad es el ruido en mosaico.
+  */
+  precision highp float;
   varying vec2 vUv;
   uniform float uTiempo;
   uniform vec2 uDeriva;
@@ -114,13 +125,29 @@ const fragment = `
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
   }
 
-  float ruido(vec2 p) {
+  /*
+    Ruido de valor EN MOSAICO: se repite exactamente cada 'per' celdas, sin
+    costura, porque las cuatro esquinas de cada celda se piden ya dadas la
+    vuelta. Es la técnica de siempre para ruido que tiene que repetir.
+
+    ⚠️ AQUÍ NO SE BUSCA QUE REPITA, SE BUSCA QUE NO CREZCA. La entrada llega
+    con la deriva y el tiempo acumulados dentro, o sea sin techo, y una función
+    de azar alimentada con números enormes deja de dar azar (ver la nota de la
+    precisión, arriba). Al dar la vuelta ANTES de trocear en celda y resto, lo
+    que llega al azar vive siempre en un rango pequeño y fijo, dure lo que dure
+    la sesión. El período va sobrado (la pantalla ocupa unas 3 celdas de las 13
+    más grandes), así que la repetición nunca se ve.
+  */
+  float ruido(vec2 p, vec2 per) {
+    p = mod(p, per);
     vec2 i = floor(p);
     vec2 f = fract(p);
     vec2 u = f * f * (3.0 - 2.0 * f);
+    vec2 a = mod(i, per);
+    vec2 b = mod(i + 1.0, per);
     return mix(
-      mix(azar(i + vec2(0.0, 0.0)), azar(i + vec2(1.0, 0.0)), u.x),
-      mix(azar(i + vec2(0.0, 1.0)), azar(i + vec2(1.0, 1.0)), u.x),
+      mix(azar(vec2(a.x, a.y)), azar(vec2(b.x, a.y)), u.x),
+      mix(azar(vec2(a.x, b.y)), azar(vec2(b.x, b.y)), u.x),
       u.y
     );
   }
@@ -219,8 +246,8 @@ const fragment = `
     float esc = mix(0.55, 3.4, lejos);
     float amp = mix(1.15, 0.45, lejos);
 
-    float ond1 = ruido(w * 2.4 + vec2(t * 0.06, 0.0)) * 2.4 * mix(1.4, 0.5, lejos);
-    float ond2 = ruido(w * 4.2 - vec2(0.0, t * 0.05)) * 1.9 * mix(1.4, 0.5, lejos);
+    float ond1 = ruido(w * 2.4 + vec2(t * 0.06, 0.0), vec2(24.0)) * 2.4 * mix(1.4, 0.5, lejos);
+    float ond2 = ruido(w * 4.2 - vec2(0.0, t * 0.05), vec2(42.0)) * 1.9 * mix(1.4, 0.5, lejos);
 
     float y = w.y * esc;
     float mar = 0.0;
@@ -230,15 +257,15 @@ const fragment = `
     mar *= amp;
 
     // Detalle fino, viajando con la ola (si no, la superficie es plástico).
-    float det = ruido(vec2(w.x, y) * 10.0 + vec2(-t * 0.22, t * 0.10)) * 0.62;
-    det += ruido(vec2(w.x, y) * 26.0 + vec2(t * 0.31, -t * 0.18)) * 0.26;
+    float det = ruido(vec2(w.x, y) * 10.0 + vec2(-t * 0.22, t * 0.10), vec2(100.0)) * 0.62;
+    det += ruido(vec2(w.x, y) * 26.0 + vec2(t * 0.31, -t * 0.18), vec2(260.0)) * 0.26;
 
     /*
       Zonas en calma. El brillo de cresta no puede repartirse por igual por toda
       la superficie: el mar tiene tramos encendidos y tramos tranquilos. Una
       mancha grande y muy lenta decide dónde brilla.
     */
-    float calma = smoothstep(0.35, 0.85, ruido(w * 1.3 + vec2(t * 0.03, -t * 0.02)));
+    float calma = smoothstep(0.35, 0.85, ruido(w * 1.3 + vec2(t * 0.03, -t * 0.02), vec2(13.0)));
 
     float n = 0.5 + mar * 0.20 + (det - 0.44) * 0.24;
 
