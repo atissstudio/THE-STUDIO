@@ -1,0 +1,74 @@
+---
+/*
+  ══ EL PAISAJE, MONTADO ══════════════════════════════════════════════════════
+
+  Un lienzo fijo detrás de TODA la página, y el único sitio del sitio donde se
+  calcula `--viaje` (0 a 1), que es el progreso del recorrido.
+
+  ⚠️ VA DEBAJO DE TODO Y PINTA. No es una capa de fusión encima: eso solo puede
+  ponerse DELANTE del color, nunca SER el color, y un paisaje tiene que ser el
+  fondo (lección del 2026-08-19, ver `paisaje.ts`).
+
+  ⚠️ LA CLASE `paisaje-vivo` ES EL INTERRUPTOR DE TODO. Solo se pone cuando el
+  lienzo ha pintado su primer fotograma de verdad. De ella cuelgan las reglas
+  que vuelven translúcidos los campos de color. Sin WebGL, o con "menos
+  movimiento", no se pone y el sitio se ve EXACTAMENTE como hasta hoy: campos
+  planos, mismos contrastes, nada roto. Es mejora progresiva, no dependencia.
+*/
+---
+
+<canvas id="paisaje" aria-hidden="true"></canvas>
+
+<style>
+  #paisaje {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: none;
+    /* Entra fundiendo: que no aparezca de golpe cuando termina de compilar. */
+    opacity: 0;
+    transition: opacity 1s ease;
+  }
+  :global(html.paisaje-vivo) #paisaje {
+    display: block;
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #paisaje {
+      display: none !important;
+    }
+  }
+</style>
+
+<script>
+  import { crearPaisaje } from "../scripts/paisaje";
+
+  const lienzo = document.getElementById("paisaje") as HTMLCanvasElement | null;
+
+  if (lienzo) {
+    const raiz = document.documentElement;
+
+    /*
+      EL ÚNICO CÁLCULO DE `--viaje` DEL SITIO. Se pregunta por fotograma desde
+      el bucle del paisaje, no desde un evento de scroll: en el arranque hay
+      movimientos de página que no siempre disparan evento (la restauración del
+      navegador, la salida de la pantalla de carga), y perder uno dejaba la
+      variable creyendo que estás donde no estás. Ya pasó con `--intro`.
+    */
+    const viaje = () => {
+      const alto = document.documentElement.scrollHeight - innerHeight;
+      if (alto <= 0) return 0;
+      const v = Math.min(1, Math.max(0, scrollY / alto));
+      raiz.style.setProperty("--viaje", v.toFixed(4));
+      return v;
+    };
+
+    crearPaisaje(lienzo, {
+      viaje,
+      alArrancar: () => raiz.classList.add("paisaje-vivo"),
+    });
+  }
+</script>

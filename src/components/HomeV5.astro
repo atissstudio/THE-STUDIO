@@ -81,6 +81,8 @@ const destacados = todos.slice(0, 3);
   <CarrilClaim />
 </div>
 
+<div class="respiradero alto" aria-hidden="true"><span class="tramo-nombre">El archipiélago</span></div>
+
 <section class="f-claro field-pad row12 home-slide" data-reveal data-slides>
   <span class="field-tag" style="color:var(--azul)">.03</span>
   <div class="read">
@@ -129,6 +131,8 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
+<div class="respiradero alto" aria-hidden="true"><span class="tramo-nombre">La montaña de roca</span></div>
+
 <section class="f-azul row12 field-cards home-slide">
   <span class="field-tag">.05</span>
   <div class="cells">
@@ -155,6 +159,8 @@ const destacados = todos.slice(0, 3);
   No lleva esquinas porque lo de arriba es un campo a sangre, no una tarjeta
   con redondeo que completar.
 */}
+<div class="respiradero alto" aria-hidden="true"><span class="tramo-nombre">La playa de picón</span></div>
+
 <div class="marco-tramo">
   <MarcoCanario modo="abre" figura="rombo" />
 </div>
@@ -180,6 +186,8 @@ const destacados = todos.slice(0, 3);
     </div>
   </div>
 </section>
+
+<div class="respiradero" aria-hidden="true"><span class="tramo-nombre">La cumbre</span></div>
 
 <div class="cta-wrap">
   <div class="cta-screen f-azul home-slide" id="ctaScreen">
@@ -489,6 +497,17 @@ const destacados = todos.slice(0, 3);
       scroll-snap-align: start;
       scroll-snap-stop: always;
       align-content: center;
+    }
+    /*
+      ⚠️ CON PAISAJE, EL AJUSTE OBLIGATORIO SE LEVANTA (2026-08-21). Con
+      `scroll-snap-stop: always` el navegador salta de campo a campo y los
+      respiraderos —que es donde el paisaje se ve limpio— no se llegan a ver
+      nunca. Se queda `proximity` heredado, que ajusta al parar cerca pero no
+      obliga. Coincide con lo medido en lorolabs.ai el 2026-08-11: allí la
+      sensación de diapositiva no venía de ningún `scroll-snap`.
+    */
+    html.paisaje-vivo .home-slide {
+      scroll-snap-stop: normal;
     }
     /*
       La etiqueta (.03, .04…) baja por debajo de la franja del menú. Ahora cada

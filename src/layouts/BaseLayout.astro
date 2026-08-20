@@ -4,7 +4,7 @@ import SEO from "../components/SEO.astro";
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
 import Loader from "../components/Loader.astro";
-import ShaderFondo from "../components/ShaderFondo.astro";
+import Paisaje from "../components/Paisaje.astro";
 
 interface Props {
   title: string;
@@ -82,8 +82,13 @@ const breadcrumbLd =
       </defs>
     </svg>
     {showLoader && <Loader />}
-    {/* Capa de shader interactiva, encima de los campos y en modo de fusión */}
-    <ShaderFondo />
+    {/*
+      EL PAISAJE, detrás de todo (2026-08-21). Sustituye a `ShaderFondo`, que
+      era una capa de fusión ENCIMA de la página y por tanto solo podía ponerse
+      delante del color, nunca ser el color. El paisaje va debajo y lo pinta.
+      `ShaderFondo.astro` se queda en el repositorio pero ya no se monta.
+    */}
+    <Paisaje />
     <Nav />
     {/*
       #page se desplaza hacia abajo cuando se abre el menú (clase .dropped) y

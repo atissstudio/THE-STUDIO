@@ -1,6 +1,7 @@
 ---
 import "../styles/tokens.css";
 import GlassButton from "../components/GlassButton.astro";
+import Paisaje from "../components/Paisaje.astro";
 import { COOKIE, huella } from "../middleware";
 import { SITE_GATE_PASSWORD } from "astro:env/server";
 
@@ -53,6 +54,13 @@ if (!sinConfigurar && Astro.request.method === "POST") {
     <title>Acceso — The Studio, by Atis</title>
   </head>
   <body class="gate-body">
+    {/*
+      La cortina es la PRIMERA pantalla del sitio para quien llega invitado, así
+      que enseña el paisaje desde el minuto cero: mar abierto, que es la parada
+      0 del recorrido. No hay scroll aquí, así que `--viaje` se queda en 0 y el
+      lienzo pinta el mar y su cielo, quietos y vivos.
+    */}
+    <Paisaje />
     <main class="gate f-azul">
       <p class="mark">
         <span class="scr">the</span> <span class="hvy">STUDIO</span>
@@ -87,11 +95,24 @@ if (!sinConfigurar && Astro.request.method === "POST") {
     <style>
       .gate-body {
         margin: 0;
-        min-height: 100vh;
+        min-height: 100svh;
         background: var(--azul);
       }
+      /*
+        Con paisaje, el azul plano se aparta y manda el lienzo. Sin WebGL esta
+        regla no aplica y queda el azul de siempre: la cortina nunca depende de
+        que el paisaje arranque.
+      */
+      :global(html.paisaje-vivo) .gate-body {
+        background: transparent;
+      }
+      :global(html.paisaje-vivo) .gate {
+        background: none;
+      }
       .gate {
-        min-height: 100vh;
+        position: relative;
+        z-index: 1;
+        min-height: 100svh;
         display: grid;
         place-content: center;
         justify-items: center;
@@ -104,6 +125,8 @@ if (!sinConfigurar && Astro.request.method === "POST") {
         white-space: nowrap;
         line-height: 1;
         margin: 0;
+        padding: 0.2em 0.36em;
+        text-shadow: 0 2px 26px rgba(11, 18, 48, 0.55);
       }
       .mark .scr {
         font-family: var(--script);
@@ -117,6 +140,7 @@ if (!sinConfigurar && Astro.request.method === "POST") {
       }
       .msg {
         margin: 0;
+        text-shadow: 0 1px 16px rgba(11, 18, 48, 0.6);
         font-family: var(--sans);
         color: rgba(238, 241, 247, 0.78);
         font-size: 0.95rem;
@@ -132,11 +156,14 @@ if (!sinConfigurar && Astro.request.method === "POST") {
         font-family: var(--sans);
         font-size: 1rem;
         padding: 12px 16px;
-        border-radius: 14px;
-        border: 1px solid rgba(238, 241, 247, 0.3);
-        background: rgba(255, 255, 255, 0.1);
+        border-radius: 18px;
+        border: 1px solid rgba(238, 241, 247, 0.34);
+        /* Cristal de verdad sobre el agua, no un azul sobre otro azul. */
+        background: rgba(11, 18, 48, 0.28);
+        backdrop-filter: blur(14px) saturate(1.15);
+        -webkit-backdrop-filter: blur(14px) saturate(1.15);
         color: #fff;
-        min-width: 200px;
+        min-width: 220px;
       }
       .form input::placeholder {
         color: rgba(238, 241, 247, 0.55);

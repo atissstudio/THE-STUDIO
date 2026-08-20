@@ -1077,3 +1077,134 @@ a:has(.logo) {
     margin-top: 0;
   }
 }
+
+/* ==========================================================================
+   EL PAISAJE (2026-08-21) — los campos de color pasan a ser TRAMOS del viaje
+   --------------------------------------------------------------------------
+   Todo lo de aquí abajo cuelga de `html.paisaje-vivo`, que solo se pone cuando
+   el lienzo del paisaje ha pintado un fotograma de verdad. Sin WebGL, o con
+   "menos movimiento", nada de esto aplica y el sitio se ve exactamente igual
+   que antes: campos planos y los mismos contrastes. Es la red de seguridad
+   obligatoria del proyecto, aplicada al cambio más grande desde v5.
+
+   ⚠️ POR QUÉ VELOS Y NO TRANSPARENCIA TOTAL. El paisaje se mueve, así que
+   debajo de un párrafo puede tocarle basalto o puede tocarle cal. Un texto no
+   puede depender de por dónde vaya el scroll. El velo garantiza el peor caso:
+   la opacidad de cada campo está elegida para que el texto siga pasando el
+   contraste aunque debajo esté el material más desfavorable. Si se bajan estos
+   números, hay que volver a medir las 21 páginas.
+   ========================================================================== */
+
+:root {
+  /* Materiales del catálogo aprobado (2026-08-21). Ver design/paisaje/materiales.html */
+  --mar-hondo: #22376f;
+  --mar-orilla: #6e8ad0;
+  --picon: #1e1e22;
+  --basalto: #3b3f45;
+  --tosca: #c9a96b;
+  --barro: #a05a3c;
+  --cal: #f4f2ed;
+  --arena-negra: #38352f;
+  --panza: #c6c9cf;
+  --nubes: #eef1f7;
+}
+
+html.paisaje-vivo body {
+  background: var(--picon);
+}
+
+/* La página deja de tener fondo propio: el fondo es el paisaje. */
+html.paisaje-vivo #page {
+  background: transparent;
+}
+
+/*
+  Campos azules: 0,88 es el suelo medido. Por debajo de 0,85, con cal debajo,
+  el texto claro cae a 3,7 y deja de pasar. No bajar sin volver a medir.
+*/
+html.paisaje-vivo .f-azul {
+  background: color-mix(in srgb, var(--azul) 88%, transparent);
+}
+/* Lectura larga: el texto va en tinta, así que el velo tiene que ser claro. */
+html.paisaje-vivo .f-claro {
+  background: color-mix(in srgb, var(--cal) 82%, transparent);
+}
+html.paisaje-vivo .f-blanco {
+  background: color-mix(in srgb, var(--cal) 76%, transparent);
+}
+/* El pie se queda opaco: es el suelo del sitio, no un tramo del viaje. */
+html.paisaje-vivo .f-navy {
+  background: var(--navy);
+}
+html.paisaje-vivo .f-plata {
+  background: color-mix(in srgb, var(--plata-mid) 72%, transparent);
+}
+
+/*
+  Las tarjetas azules (encabezados y cierres) van MÁS opacas que los campos:
+  son piezas pequeñas con texto corto y mucho contraste alrededor, y ahí el
+  paisaje colándose por debajo se lee como suciedad, no como material.
+*/
+html.paisaje-vivo .hero-field.f-azul > .hero-inner,
+html.paisaje-vivo .closer.f-azul > .closer-inner,
+html.paisaje-vivo .cta-screen > .cta-inner {
+  background: color-mix(in srgb, var(--azul) 92%, transparent);
+}
+
+/*
+  RESPIRADEROS. Sin esto el paisaje no se ve nunca, porque todos los campos
+  llevan velo. Son las costuras entre secciones: una banda sin nada donde el
+  material se ve limpio y se entiende por dónde va el viaje.
+*/
+.respiradero {
+  position: relative;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.6s ease;
+}
+html.paisaje-vivo .respiradero {
+  height: clamp(180px, 30svh, 340px);
+}
+html.paisaje-vivo .respiradero.alto {
+  height: clamp(280px, 52svh, 560px);
+}
+/* Una línea de cal a cada lado: es el filete del sistema, no un borde nuevo. */
+html.paisaje-vivo .respiradero::before,
+html.paisaje-vivo .respiradero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: color-mix(in srgb, var(--cal) 55%, transparent);
+}
+html.paisaje-vivo .respiradero::before {
+  top: 0;
+}
+html.paisaje-vivo .respiradero::after {
+  bottom: 0;
+}
+
+/*
+  El rótulo del tramo, dentro del respiradero: dice en qué parte del paisaje
+  estás. Va en cal porque el material de debajo puede ser cualquiera, y la cal
+  es el único color que se lee sobre los doce (medido).
+*/
+.respiradero .tramo-nombre {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--cal);
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-shadow: 0 1px 14px rgba(11, 18, 48, 0.75);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  white-space: nowrap;
+}
+html.paisaje-vivo .respiradero .tramo-nombre {
+  opacity: 0.9;
+}
