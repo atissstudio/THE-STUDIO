@@ -1,0 +1,358 @@
+<title>Tres paisajes canarios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap">
+<style>
+  /*
+    Fondo FIJO a propósito, sin tema claro/oscuro. Esta página existe para
+    juzgar color: si el fondo cambiara con el tema del visitante, cambiaría
+    justo lo que se está mirando. Se pinta el suelo del propio sitio (#F7F9FC).
+  */
+  :root{
+    --suelo:#F7F9FC; --ink:#111520; --azul:#334BA4; --plata:#565E6C;
+    --line:#DCE3F2; --luz:#F4F6FB;
+    --sans:Arial,"Helvetica Neue",Helvetica,sans-serif;
+    --script:"Pinyon Script","Snell Roundhand",cursive;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--suelo); color:var(--ink);
+    font-family:var(--sans); line-height:1.6; hyphens:manual;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:56px 20px 96px}
+
+  .k{
+    font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--plata);margin:0 0 10px;font-weight:700;
+  }
+  .filete{height:1px;background:var(--line);border:0;margin:0 0 18px}
+  h1{
+    font-size:clamp(2.1rem,3.6vw,3.1rem);line-height:1.1;margin:0 0 18px;
+    text-wrap:balance;font-weight:700;max-width:22ch;
+  }
+  .lead{max-width:62ch;font-size:1.06rem;margin:0 0 14px}
+  .lead b{color:var(--azul)}
+  .nota{
+    max-width:62ch;font-size:.92rem;color:var(--plata);
+    border-left:2px solid var(--line);padding-left:14px;margin:22px 0 0;
+  }
+
+  h2{font-size:1.5rem;margin:64px 0 6px;font-weight:700;text-wrap:balance}
+
+  /* ── Las tres columnas ───────────────────────────────────── */
+  .tres{
+    display:grid;gap:28px;margin-top:26px;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  }
+  .pal{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line)}
+  .pal > header{padding:20px 20px 16px;border-bottom:1px solid var(--line)}
+  .pal h3{margin:0;font-size:1.24rem;font-weight:700;letter-spacing:-.01em}
+  .pal .tesis{margin:8px 0 0;font-size:.95rem;color:var(--plata)}
+
+  /* El viaje: seis bandas, de mar a cumbre */
+  .viaje{display:flex;flex-direction:column}
+  .banda{
+    padding:18px 18px 16px;min-height:104px;position:relative;
+    display:flex;flex-direction:column;justify-content:center;gap:6px;
+  }
+  .banda .est{
+    font-size:.66rem;letter-spacing:.15em;text-transform:uppercase;
+    opacity:.72;font-weight:700;
+  }
+  .banda .frase{font-size:1.02rem;line-height:1.35;max-width:26ch;text-wrap:pretty}
+  .banda .frase.manuscrita{font-family:var(--script);font-size:1.7rem;line-height:1.2;padding:.08em .2em}
+  .meta{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    font-size:.7rem;letter-spacing:.04em;opacity:.78;
+    font-variant-numeric:tabular-nums;margin-top:2px;
+  }
+  .chip{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:13px;height:13px;display:inline-block;border:1px solid rgba(128,128,128,.45)}
+  .aviso{
+    background:#B3261E;color:#fff;font-weight:700;padding:2px 7px;
+    font-size:.66rem;letter-spacing:.06em;
+  }
+
+  .pros{padding:18px 20px 22px;border-top:1px solid var(--line);flex:1}
+  .pros dt{
+    font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+    font-weight:700;margin-top:14px;
+  }
+  .pros dt:first-child{margin-top:0}
+  .pros dd{margin:5px 0 0;font-size:.93rem}
+  .pros .si{color:#1E6B43}
+  .pros .no{color:#B3261E}
+  .pros .coste{color:var(--azul)}
+
+  /* ── Tabla de decisiones ─────────────────────────────────── */
+  .tabla-wrap{overflow-x:auto;margin-top:22px;border:1px solid var(--line);background:#fff}
+  table{border-collapse:collapse;width:100%;min-width:640px;font-size:.93rem}
+  th,td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{
+    font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--plata);font-weight:700;
+  }
+  tbody tr:last-child td{border-bottom:0}
+  td:first-child{font-weight:700;width:26%}
+
+  .cierre{
+    margin-top:60px;background:var(--azul);color:var(--luz);padding:34px 32px;
+  }
+  .cierre h2{margin:0 0 12px;color:#fff}
+  .cierre p{max-width:62ch;margin:0 0 12px}
+  .cierre .k{color:#EEF1F7;opacity:.8}
+  .cierre ol{max-width:62ch;padding-left:1.1em;margin:0}
+  .cierre li{margin-bottom:9px}
+  .cierre b{color:#fff}
+
+  @media (prefers-reduced-motion:no-preference){
+    .pal{transition:box-shadow .25s ease}
+    .pal:hover{box-shadow:0 18px 40px -22px rgba(17,21,32,.45)}
+  }
+</style>
+
+<div class="wrap">
+
+  <p class="k">Fase 0 · Proyecto paisaje canario</p>
+  <hr class="filete">
+  <h1>Tres formas de recorrer una isla.</h1>
+  <p class="lead">
+    El shader del paisaje no se puede escribir hasta que haya una paleta decidida, porque el color
+    va dentro del propio dibujo. Así que aquí están las tres candidatas, cada una con el recorrido
+    completo de seis paradas y con el texto real encima, para que se juzgue leyendo y no imaginando.
+  </p>
+  <p class="lead">
+    Las tres salen del <b>azul Atis</b> y de la <b>plata</b>. Lo que cambia entre ellas no es el
+    tono, es <b>la estrategia</b>: una se queda dentro de la familia de la marca, otra se va a los
+    materiales reales de Canarias, y la tercera cuenta el viaje con la luz en vez de con el material.
+  </p>
+  <p class="nota">
+    Los números que aparecen en cada banda son el <b>contraste medido</b> del texto contra ese fondo,
+    calculado con la fórmula del estándar, no estimado a ojo. El mínimo exigible es 4,5. Por eso
+    aparece un aviso rojo donde una banda no llega, que es un fallo real de una de las tres y no un
+    detalle que se pueda dejar para después.
+  </p>
+
+  <h2>Las tres candidatas</h2>
+  <hr class="filete">
+
+  <div class="tres">
+
+    <!-- ═══ A · MAREA ═══ -->
+    <article class="pal">
+      <header>
+        <h3>A · Marea</h3>
+        <p class="tesis">El paisaje no trae colores nuevos. Trae profundidad, distancia y tiempo, todo dentro de la familia azul y plata que ya tenemos.</p>
+      </header>
+      <div class="viaje">
+        <div class="banda" style="background:#334BA4;color:#F4F6FB">
+          <span class="est">0 · Mar abierto</span>
+          <p class="frase manuscrita">la p*ta primera cooperativa creativa</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#334BA4"></i>#334BA4</span> · contraste 7,2</p>
+        </div>
+        <div class="banda" style="background:#2B3F8A;color:#F4F6FB">
+          <span class="est">1 · El archipiélago</span>
+          <p class="frase">Somos de aquí, y somos ocho islas.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#2B3F8A"></i>#2B3F8A</span> · contraste 8,9 · <span class="chip"><i class="sw" style="background:#AEB5C2"></i>islas #AEB5C2</span></p>
+        </div>
+        <div class="banda" style="background:#C9CBD2;color:#111520">
+          <span class="est">2 · La orilla · el problema</span>
+          <p class="frase">Hay cosas de tu negocio que te están comiendo el día.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#C9CBD2"></i>arena #C9CBD2</span> · contraste 11,2 · <span class="chip"><i class="sw" style="background:#7E93C9"></i>agua #7E93C9</span> 6,0</p>
+        </div>
+        <div class="banda" style="background:#EEF1F7;color:#111520">
+          <span class="est">3 · El pueblo · la casa</span>
+          <p class="frase">Tu negocio ya vale. Vamos a que se note.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#EEF1F7"></i>cal #EEF1F7</span> · contraste 16,1</p>
+        </div>
+        <div class="banda" style="background:#5A6480;color:#F4F6FB">
+          <span class="est">4 · La subida · el método</span>
+          <p class="frase">Un proceso, sin humo.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#5A6480"></i>roca #5A6480</span> · contraste 5,4</p>
+        </div>
+        <div class="banda" style="background:#F7F9FC;color:#111520">
+          <span class="est">5 · La cumbre · el claim</span>
+          <p class="frase">No vendemos herramientas. Resolvemos problemas.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#F7F9FC"></i>#F7F9FC</span> · contraste 17,3 · <span class="chip"><i class="sw" style="background:#6F86E0"></i>cielo #6F86E0</span></p>
+        </div>
+      </div>
+      <dl class="pros">
+        <dt class="si">A favor</dt>
+        <dd>Riesgo cero de marca, y es la más sobria de las tres. Ninguna banda falla el contraste. Es la que menos discute con INV-09.</dd>
+        <dt class="no">En contra</dt>
+        <dd>Apenas se lee como Canarias. Un cliente puede recorrerla entera y quedarse con «la web azul», que es lo que ya tenemos hoy con más gradiente.</dd>
+        <dt class="coste">Qué cuesta en decisiones</dt>
+        <dd>Prácticamente nada. Un solo color nuevo de verdad, la arena #C9CBD2, y es un gris de la propia familia de la plata.</dd>
+      </dl>
+    </article>
+
+    <!-- ═══ B · PICÓN ═══ -->
+    <article class="pal">
+      <header>
+        <h3>B · Picón</h3>
+        <p class="tesis">La paleta real de un pueblo canario, la que ya cuenta el marco marinero: mar azul, arena negra, cal blanca. Sin suavizar.</p>
+      </header>
+      <div class="viaje">
+        <div class="banda" style="background:#334BA4;color:#F4F6FB">
+          <span class="est">0 · Mar abierto</span>
+          <p class="frase manuscrita">la p*ta primera cooperativa creativa</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#334BA4"></i>#334BA4</span> · contraste 7,2</p>
+        </div>
+        <div class="banda" style="background:#24357A;color:#F4F6FB">
+          <span class="est">1 · El archipiélago</span>
+          <p class="frase">Somos de aquí, y somos ocho islas.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#24357A"></i>#24357A</span> · contraste 10,4 · <span class="chip"><i class="sw" style="background:#EEF1F7"></i>islas #EEF1F7</span></p>
+        </div>
+        <div class="banda" style="background:#1E1E22;color:#F4F6FB">
+          <span class="est">2 · La orilla · el problema</span>
+          <p class="frase">Hay cosas de tu negocio que te están comiendo el día.</p>
+          <p class="meta">
+            <span class="chip"><i class="sw" style="background:#1E1E22"></i>picón #1E1E22</span> · contraste 15,4
+            <span class="aviso">el agua #5C79C6 falla · 4,3</span>
+          </p>
+        </div>
+        <div class="banda" style="background:#F7F9FC;color:#111520">
+          <span class="est">3 · El pueblo · la casa</span>
+          <p class="frase">Tu negocio ya vale. Vamos a que se note.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#F7F9FC"></i>cal #F7F9FC</span> · contraste 17,3 · <span class="chip"><i class="sw" style="background:#334BA4"></i>azul de barca</span></p>
+        </div>
+        <div class="banda" style="background:#3A2F2C;color:#F4F6FB">
+          <span class="est">4 · La subida · el método</span>
+          <p class="frase">Un proceso, sin humo.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#3A2F2C"></i>roca #3A2F2C</span> · contraste 12,0</p>
+        </div>
+        <div class="banda" style="background:#334BA4;color:#F4F6FB">
+          <span class="est">5 · La cumbre · el claim</span>
+          <p class="frase">No vendemos herramientas. Resolvemos problemas.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#334BA4"></i>cielo #334BA4</span> · contraste 7,2 · <span class="chip"><i class="sw" style="background:#FFFFFF"></i>nubes #FFFFFF</span></p>
+        </div>
+      </div>
+      <dl class="pros">
+        <dt class="si">A favor</dt>
+        <dd>Es inconfundiblemente canaria y engancha directamente con el marco marinero, que ya está construido y ya cuenta esa historia: la cal, el azul de las barcas. Es la de identidad más fuerte.</dd>
+        <dt class="no">En contra</dt>
+        <dd>Es la más dura de las tres, y la que más se aleja de «sobria». Además tiene un fallo real de contraste en el agua de la orilla, que habría que corregir oscureciendo ese azul antes de usarla.</dd>
+        <dt class="coste">Qué cuesta en decisiones</dt>
+        <dd><b>Rompe una regla del manual.</b> El picón y la roca son campos oscuros a sangre, y el manual dice que el negro nunca es fondo. Habría que aprobar la excepción explícitamente, como se hizo con el logo sobre negro.</dd>
+      </dl>
+    </article>
+
+    <!-- ═══ C · ALISIOS ═══ -->
+    <article class="pal">
+      <header>
+        <h3>C · Alisios</h3>
+        <p class="tesis">El viaje no lo cuenta el material, lo cuenta la luz: frío en el mar, sol bajo en la orilla, bruma en la subida, y arriba el azul profundo de la altura sobre el mar de nubes.</p>
+      </header>
+      <div class="viaje">
+        <div class="banda" style="background:#334BA4;color:#F4F6FB">
+          <span class="est">0 · Mar abierto</span>
+          <p class="frase manuscrita">la p*ta primera cooperativa creativa</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#334BA4"></i>#334BA4</span> · contraste 7,2</p>
+        </div>
+        <div class="banda" style="background:#3E56AE;color:#F4F6FB">
+          <span class="est">1 · El archipiélago</span>
+          <p class="frase">Somos de aquí, y somos ocho islas.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#3E56AE"></i>#3E56AE</span> · contraste 6,2</p>
+        </div>
+        <div class="banda" style="background:#D9C9B4;color:#111520">
+          <span class="est">2 · La orilla · el problema</span>
+          <p class="frase">Hay cosas de tu negocio que te están comiendo el día.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#D9C9B4"></i>luz baja #D9C9B4</span> · contraste 11,3 · <span class="chip"><i class="sw" style="background:#B8AA9B"></i>arena #B8AA9B</span> 8,0</p>
+        </div>
+        <div class="banda" style="background:#F7F9FC;color:#111520">
+          <span class="est">3 · El pueblo · la casa</span>
+          <p class="frase">Tu negocio ya vale. Vamos a que se note.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#F7F9FC"></i>cal #F7F9FC</span> · contraste 17,3</p>
+        </div>
+        <div class="banda" style="background:#9AA3B4;color:#111520">
+          <span class="est">4 · La subida · el método</span>
+          <p class="frase">Un proceso, sin humo.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#9AA3B4"></i>bruma #9AA3B4</span> · contraste 7,2 · <span class="chip"><i class="sw" style="background:#4A4F5E"></i>roca #4A4F5E</span> 7,6</p>
+        </div>
+        <div class="banda" style="background:#334BA4;color:#F4F6FB">
+          <span class="est">5 · La cumbre · el claim</span>
+          <p class="frase">No vendemos herramientas. Resolvemos problemas.</p>
+          <p class="meta"><span class="chip"><i class="sw" style="background:#334BA4"></i>cielo #334BA4</span> · contraste 7,2 · <span class="chip"><i class="sw" style="background:#F4F6FB"></i>mar de nubes #F4F6FB</span></p>
+        </div>
+      </div>
+      <dl class="pros">
+        <dt class="si">A favor</dt>
+        <dd>Es la que mejor cuenta un viaje, porque la luz cambia de verdad de principio a fin. La bruma de la subida son los alisios, que es lo más canario que hay y no lo usa nadie. Y cierra el círculo, porque empieza en el azul del mar y acaba en el azul del cielo. Ninguna banda falla.</dd>
+        <dt class="no">En contra</dt>
+        <dd>Es la más sutil, y lo sutil se puede quedar en tibio. Y los tonos cálidos son colores que la marca no ha tenido nunca, así que es la que más hay que vigilar para que no se despegue del azul.</dd>
+        <dt class="coste">Qué cuesta en decisiones</dt>
+        <dd>Tres colores cálidos nuevos en el Brandbook. Y un aviso: <b>la plata sólida no se lee sobre estos fondos</b> (2,9 sobre la arena, 2,6 sobre la bruma), así que en esos tramos los rótulos tendrían que ir en tinta, no en plata.</dd>
+      </dl>
+    </article>
+
+  </div>
+
+  <h2>Las decisiones que arrastra cada una</h2>
+  <hr class="filete">
+  <div class="tabla-wrap">
+    <table>
+      <thead>
+        <tr><th>&nbsp;</th><th>A · Marea</th><th>B · Picón</th><th>C · Alisios</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Colores nuevos de marca</td>
+          <td>Uno, y es un gris de la plata</td>
+          <td>Dos oscuros, picón y roca</td>
+          <td>Tres cálidos, arena, luz y bruma</td>
+        </tr>
+        <tr>
+          <td>¿Rompe el manual?</td>
+          <td>No</td>
+          <td><b>Sí.</b> Negro como campo de fondo</td>
+          <td>No, pero amplía la paleta a una familia que la marca no tenía</td>
+        </tr>
+        <tr>
+          <td>Contraste del texto</td>
+          <td>Las seis bandas pasan</td>
+          <td>Una falla, el agua de la orilla. Corregible</td>
+          <td>Las seis pasan, pero la plata sólida se cae en dos</td>
+        </tr>
+        <tr>
+          <td>¿Se lee como Canarias?</td>
+          <td>Poco</td>
+          <td>Sin ninguna duda</td>
+          <td>Sí, pero por la luz, no por el material</td>
+        </tr>
+        <tr>
+          <td>Frente a INV-09 (sobriedad)</td>
+          <td>La más segura</td>
+          <td>La más arriesgada</td>
+          <td>Intermedia, y controlable</td>
+        </tr>
+        <tr>
+          <td>Qué pasa sin WebGL</td>
+          <td colspan="3">En las tres, el sitio cae a los campos de color planos de hoy. La paleta no cambia eso.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cierre">
+    <p class="k">Lo que hace falta ahora</p>
+    <h2>Mi recomendación, y por qué.</h2>
+    <p>
+      <b>C · Alisios</b>, y sin mucha duda. Es la única que cuenta el recorrido con algo que cambia
+      de verdad de la primera pantalla a la última, que es la luz, y es la que mejor sostiene lo que
+      hemos escrito de sobriedad. A sale demasiado tibia para justificar el trabajo, y B es
+      preciosa pero pide romper una regla del manual y llega justa de contraste en la orilla.
+    </p>
+    <p>
+      Dicho eso, <b>B es la que más marca construye</b>. Si en algún momento quieres que la web se
+      reconozca a dos metros de distancia, esa es. Es una decisión tuya, no mía.
+    </p>
+    <p class="k" style="margin-top:26px">Tres cosas y arranco la Fase 1</p>
+    <ol>
+      <li><b>Cuál de las tres.</b> O una mezcla, si quieres el cálido de C con el picón de B en un solo tramo.</li>
+      <li><b>Si sale B, ¿se aprueba la excepción</b> de campo oscuro a sangre? Es el mismo tipo de excepción que ya se hizo con el logo sobre negro.</li>
+      <li><b>¿Te vale el copy de la cumbre</b> tal y como está escrito ahí arriba, o lo reescribes tú? Es tuyo, yo solo lo he propuesto.</li>
+    </ol>
+  </div>
+
+</div>
