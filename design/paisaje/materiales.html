@@ -1,0 +1,347 @@
+<title>Materiales del paisaje</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap">
+<style>
+  /*
+    Fondo fijo, sin tema claro/oscuro, y a propósito: esta página existe para
+    juzgar color y textura. Si el suelo cambiara con el tema del visitante,
+    cambiaría justo lo que se está mirando.
+  */
+  :root{
+    --suelo:#F7F9FC; --ink:#111520; --azul:#334BA4; --plata:#565E6C;
+    --line:#DCE3F2; --luz:#F4F6FB; --rojo:#B3261E; --verde:#1E6B43;
+    --sans:Arial,"Helvetica Neue",Helvetica,sans-serif;
+    --script:"Pinyon Script","Snell Roundhand",cursive;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--suelo);color:var(--ink);font-family:var(--sans);
+    line-height:1.6;hyphens:manual;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:56px 20px 96px}
+  .k{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--plata);margin:0 0 10px;font-weight:700}
+  .filete{height:1px;background:var(--line);border:0;margin:0 0 18px}
+  h1{font-size:clamp(2.1rem,3.6vw,3.1rem);line-height:1.1;margin:0 0 18px;text-wrap:balance;font-weight:700;max-width:20ch}
+  h2{font-size:1.5rem;margin:0 0 6px;font-weight:700;text-wrap:balance}
+  .sec{margin-top:66px}
+  .lead{max-width:62ch;font-size:1.06rem;margin:0 0 14px}
+  .lead b{color:var(--azul)}
+  p{text-wrap:pretty}
+
+  /* ── El aviso de la textura ─────────────────────────────── */
+  .alerta{
+    border:1px solid var(--line);border-left:4px solid var(--rojo);
+    background:#fff;padding:22px 24px;margin-top:26px;
+  }
+  .alerta h3{margin:0 0 10px;font-size:1.1rem}
+  .alerta p{max-width:70ch;margin:0 0 10px;font-size:.97rem}
+  .alerta p:last-child{margin-bottom:0}
+  .alerta .hist{
+    font-variant-numeric:tabular-nums;font-weight:700;color:var(--rojo);
+    letter-spacing:.02em;
+  }
+
+  /* ── Rejilla de materiales ──────────────────────────────── */
+  .mats{display:grid;gap:22px;margin-top:26px;grid-template-columns:repeat(auto-fill,minmax(258px,1fr))}
+  .mat{border:1px solid var(--line);background:#fff;display:flex;flex-direction:column}
+  .mat .lienzo{position:relative;height:148px;display:block}
+  /* Red de seguridad: si el JS no pinta, se ve el color plano, nunca un hueco. */
+  .mat canvas{width:100%;height:100%;display:block}
+  .mat .cuerpo{padding:15px 16px 18px;flex:1;display:flex;flex-direction:column;gap:7px}
+  .mat h3{margin:0;font-size:1.06rem;font-weight:700}
+  .mat .real{margin:0;font-size:.89rem;color:var(--plata)}
+  .mat .rec{margin:0;font-size:.85rem;color:var(--ink);opacity:.82}
+  .mat .rec b{color:var(--azul);font-weight:700}
+  .datos{
+    margin-top:auto;padding-top:11px;border-top:1px solid var(--line);
+    display:flex;flex-wrap:wrap;gap:7px;align-items:center;
+    font-size:.7rem;letter-spacing:.04em;font-variant-numeric:tabular-nums;
+  }
+  .hex{font-weight:700}
+  .tag{padding:2px 7px;font-weight:700;font-size:.66rem;letter-spacing:.05em}
+  .t-ok{background:#E4F0E9;color:var(--verde)}
+  .t-mal{background:var(--rojo);color:#fff}
+  .t-plata{background:#EDEFF4;color:var(--plata)}
+
+  /* ── El recorrido ───────────────────────────────────────── */
+  .viaje{margin-top:26px;border:1px solid var(--line)}
+  .banda{position:relative;min-height:168px;display:flex;align-items:center;overflow:hidden}
+  .banda canvas{position:absolute;inset:0;width:100%;height:100%}
+  .banda .txt{position:relative;padding:26px 30px;max-width:52ch}
+  .est{font-size:.66rem;letter-spacing:.15em;text-transform:uppercase;opacity:.75;font-weight:700;display:block;margin-bottom:7px}
+  .frase{font-size:1.22rem;line-height:1.35;margin:0 0 9px;max-width:30ch}
+  .frase.manuscrita{font-family:var(--script);font-size:2rem;line-height:1.2;padding:.08em .2em}
+  .mats-linea{font-size:.72rem;letter-spacing:.05em;opacity:.8;margin:0;font-variant-numeric:tabular-nums}
+
+  /* ── Tabla de consecuencias ─────────────────────────────── */
+  .tabla-wrap{overflow-x:auto;margin-top:22px;border:1px solid var(--line);background:#fff}
+  table{border-collapse:collapse;width:100%;min-width:660px;font-size:.93rem}
+  th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--plata);font-weight:700}
+  tbody tr:last-child td{border-bottom:0}
+  td:first-child{font-weight:700;width:30%}
+  td b.si{color:var(--verde)} td b.no{color:var(--rojo)}
+
+  .cierre{margin-top:66px;background:var(--azul);color:var(--luz);padding:34px 32px}
+  .cierre h2{margin:0 0 12px;color:#fff}
+  .cierre p{max-width:62ch;margin:0 0 12px}
+  .cierre .k{color:#EEF1F7;opacity:.85}
+  .cierre ol{max-width:62ch;padding-left:1.1em;margin:0}
+  .cierre li{margin-bottom:10px}
+  .cierre b{color:#fff}
+</style>
+
+<div class="wrap">
+
+  <p class="k">Fase 0 · Proyecto paisaje canario · segunda entrega</p>
+  <hr class="filete">
+  <h1>Los materiales, no los colores.</h1>
+  <p class="lead">
+    La entrega anterior ofrecía tres paletas y una de ellas contaba el viaje con la luz. Se descarta
+    esa vía: el paisaje se va a construir con <b>los materiales que hay aquí</b>, y con su textura,
+    no con tonos bonitos. Así que esto ya no es una elección entre tres, es <b>un catálogo de
+    materiales</b> para aprobar, quitar o añadir.
+  </p>
+  <p class="lead">
+    Las texturas que se ven abajo <b>no son imágenes</b>. Están generadas con la misma receta de
+    ruido que iría dentro del shader, así que lo que se apruebe aquí es literalmente lo que se
+    construirá. Si una textura no convence en esta página, tampoco convencería en la web.
+  </p>
+
+  <div class="alerta">
+    <h3>⚠️ Antes de mirar nada: la textura y el texto se pelean, y ya nos ha pasado cuatro veces</h3>
+    <p>
+      La capa de textura del sitio ha tenido que bajarse cuatro veces porque se leía como suciedad
+      sobre el azul: <span class="hist">0,55 → 0,28 → 0,13 → 0,07</span>. Cada vez se bajó el número
+      y cada vez volvió el problema, porque el número no era la causa.
+    </p>
+    <p>
+      La causa se encontró con el mar, y es <b>la escala</b>. Con las frecuencias que tenía, en toda
+      la altura de la pantalla cabía una onda y media, así que aquello solo podía leerse como
+      manchas. Al subirlas de 3-30 a 46-132 dejó de ser suciedad y pasó a ser agua, con la misma
+      opacidad. La regla que sale de ahí y que gobierna todo este proyecto es:
+      <b>la textura tiene que estar a la escala del material, no a la escala de la pantalla</b>. El
+      grano del picón se tiene que ver como granos. Si se ve como niebla, está mal hecho.
+    </p>
+    <p>
+      Y la segunda regla, que es la que protege la venta: <b>el texto largo no se lee nunca sobre
+      material texturado</b>. Se lee sobre cal, que es el único material liso de los de aquí. El
+      picón, el basalto y la tosca son suelo y pared, no papel.
+    </p>
+  </div>
+
+  <div class="sec">
+    <h2>El catálogo</h2>
+    <hr class="filete">
+    <p class="lead">
+      Doce materiales. Cada tarjeta lleva el color, la textura viva, qué es en la vida real, cómo se
+      dibuja, y el <b>contraste medido</b> del texto encima. La etiqueta gris avisa de cuándo la
+      plata sólida de la marca deja de leerse sobre ese material.
+    </p>
+    <div class="mats" id="mats"></div>
+  </div>
+
+  <div class="sec">
+    <h2>El recorrido, hecho de materiales</h2>
+    <hr class="filete">
+    <p class="lead">
+      Las seis paradas de siempre, pero cada una ya no es un color: es una superficie concreta con
+      su textura. El texto va encima, en el color que le toca según lo medido.
+    </p>
+    <div class="viaje" id="viaje"></div>
+  </div>
+
+  <div class="sec">
+    <h2>Lo que esto le cuesta a la marca</h2>
+    <hr class="filete">
+    <p class="lead">
+      Cuatro consecuencias reales, y ninguna es un detalle de CSS. Son decisiones de Brandbook que
+      hay que tomar antes de escribir el shader.
+    </p>
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr><th>La decisión</th><th>Qué pasa</th><th>Mi recomendación</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>La plata sólida se queda sin sitio</td>
+            <td>
+              <b class="no">Es lo más gordo de esta entrega.</b> La plata sólida <b>#565E6C</b> solo
+              se lee sobre dos de los doce materiales, la cal y el mar de nubes. Sobre el resto se
+              cae, y sobre el picón da 2,5 cuando el mínimo son 4,5. Hoy la plata es el color de
+              todos los rótulos del sitio.
+            </td>
+            <td>Que la plata deje de ser color de texto y pase a ser <b>material</b>, que es lo que ya es en las islas. Los rótulos van en tinta sobre lo claro y en cal sobre lo oscuro.</td>
+          </tr>
+          <tr>
+            <td>La cal es cálida, el blanco de hoy es frío</td>
+            <td>
+              La cal real tira a crema (<b>#F4F2ED</b>) y el claro del sitio tira a azul
+              (<b>#F7F9FC</b>). En claridad son idénticos, lo que cambia es <b>la temperatura</b>.
+              Pero si entra la cal, cambia el fondo de <b>las 21 páginas</b>, no solo el paisaje.
+            </td>
+            <td>Que entre. Un blanco frío al lado del barro y la tosca se ve como una pantalla, no como una pared. Es el cambio que más realismo da por menos trabajo.</td>
+          </tr>
+          <tr>
+            <td>El picón es un campo oscuro a sangre</td>
+            <td>El manual dice que el negro nunca es fondo. El picón (#1E1E22) y la arena negra (#38352F) lo son.</td>
+            <td>Aprobar la excepción por escrito, como se hizo con el logo sobre negro. Sin eso, no hay arena canaria de verdad.</td>
+          </tr>
+          <tr>
+            <td>¿Las ocho islas siguen siendo de plata?</td>
+            <td>Son el elemento gráfico vivo de la marca y están en plata. En un paisaje de materiales, lo coherente sería que fueran de basalto.</td>
+            <td><b class="si">Que sigan de plata.</b> Es lo único que las hace de Atis y no de cualquiera. La roca real aparece en la subida, que es donde toca.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="cierre">
+    <p class="k">Lo que hace falta ahora</p>
+    <h2>Tres respuestas y arranco la Fase 1.</h2>
+    <p>
+      El catálogo está pensado para sobrar, no para faltar. Es más fácil quitar un material que
+      inventarse uno a mitad de camino, así que dime cuáles fuera.
+    </p>
+    <ol>
+      <li><b>¿Qué materiales quitas?</b> Mi sospecha es que <b>arena rubia</b> sobra, porque la arena rubia de aquí es importada del Sáhara y no es nuestra. Y que <b>tosca y barro juntos</b> pueden ser demasiado cálido para una marca azul, aunque los dos son verdad.</li>
+      <li><b>¿Entra la cal cálida</b> en lugar del blanco frío, sabiendo que eso cambia el fondo de las 21 páginas y no solo el paisaje?</li>
+      <li><b>¿Se aprueba que la plata deje de ser color de rótulo</b> y pase a ser un material más? Es la consecuencia inevitable de esta paleta, y prefiero decirlo ahora que descubrirlo en la Fase 2 con el sitio ya montado.</li>
+    </ol>
+  </div>
+
+</div>
+
+<script>
+/*
+  Las texturas se dibujan aquí con la MISMA receta que iría en el shader:
+  ruido de valor + fBm, a la escala del material. No hay ni una imagen.
+  Si esto fallara, cada lienzo se queda con su color plano de respaldo, que es
+  la red de seguridad obligatoria del proyecto: nunca un hueco en blanco.
+*/
+const frac = n => n - Math.floor(n);
+const hash = (x, y) => frac(Math.sin(x * 127.1 + y * 311.7) * 43758.5453);
+function vnoise(x, y) {
+  const ix = Math.floor(x), iy = Math.floor(y);
+  const fx = x - ix, fy = y - iy;
+  const ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
+  const a = hash(ix, iy), b = hash(ix + 1, iy), c = hash(ix, iy + 1), d = hash(ix + 1, iy + 1);
+  return (a * (1 - ux) + b * ux) * (1 - uy) + (c * (1 - ux) + d * ux) * uy;
+}
+function fbm(x, y, oct, gain) {
+  let s = 0, a = 0.5, f = 1, norm = 0;
+  for (let i = 0; i < oct; i++) { s += a * vnoise(x * f, y * f); norm += a; f *= 2; a *= (gain || 0.5); }
+  return s / norm;
+}
+const ridged = (x, y) => 1 - Math.abs(2 * vnoise(x, y) - 1);
+
+/*
+  Cada material: color base, cuánto modula la textura la claridad (amp), la
+  función de superficie, y un tinte opcional para que la variación no sea solo
+  más claro y más oscuro (la piedra real cambia de tono, no solo de brillo).
+*/
+const MAT = {
+  "azul-barca": { hex:"#334BA4", amp:.10, f:(x,y)=> fbm(x*.02,y*.02,3) *.6 + (hash(Math.floor(x*.5),Math.floor(y*.5))>.985?.9:.35) },
+  "mar-hondo":  { hex:"#22376F", amp:.30, f:(x,y)=>{ const w=Math.sin(y*.30+fbm(x*.02,y*.02,3)*7)*.5+.5; const c=Math.pow(w,7); return w*.55+c*.85+fbm(x*.25,y*.25,2)*.18; } },
+  "mar-orilla": { hex:"#6E8AD0", amp:.34, f:(x,y)=>{ const w=Math.sin(y*.22+fbm(x*.03,y*.03,3)*8)*.5+.5; const espuma=Math.pow(fbm(x*.13,y*.19,4),3.2)*3; return w*.5+Math.min(espuma,1)*.9+fbm(x*.4,y*.4,2)*.2; } },
+  "picon":      { hex:"#1E1E22", amp:.95, f:(x,y)=>{ const gx=Math.floor(x/3.4), gy=Math.floor(y/3.4); const g=hash(gx,gy); const brillo=hash(gx+7.3,gy-2.1); const cara=g>.55?(.55+brillo*.75):g*.30; const clump=fbm(x*.022,y*.022,3); return cara*.82+clump*.42; }, tint:[16,11,6] },
+  "basalto":    { hex:"#3B3F45", amp:.50, f:(x,y)=>{ const fr=Math.pow(ridged(x*.013,y*.016),5.5); const bloque=fbm(x*.020,y*.024,3); const grano=fbm(x*.42,y*.42,2); return .60+bloque*.42-fr*.85+(grano-.5)*.30; }, tint:[8,6,12] },
+  "tosca":      { hex:"#C9A96B", amp:.34, f:(x,y)=>{ const mot=fbm(x*.035,y*.042,4); const poro=hash(Math.floor(x*.6),Math.floor(y*.6))>.972?0:.55; return mot*.9+poro*.5; }, tint:[16,10,0] },
+  "barro":      { hex:"#A05A3C", amp:.22, f:(x,y)=>{ const veta=Math.sin(y*.10+fbm(x*.02,y*.02,2)*4)*.5+.5; return fbm(x*.06,y*.07,3)*.75+veta*.3; }, tint:[14,4,0] },
+  "cal":        { hex:"#F4F2ED", amp:.085, f:(x,y)=>{ const brocha=fbm(x*.010,y*.055,3); return brocha*.85+fbm(x*.3,y*.3,1)*.2; }, tint:[3,2,0] },
+  "arena-negra":{ hex:"#38352F", amp:.55, f:(x,y)=>{ const g=hash(Math.floor(x*1.25),Math.floor(y*1.25)); return g*.8+fbm(x*.06,y*.06,3)*.4; }, tint:[10,7,2] },
+  "arena-rubia":{ hex:"#C8B394", amp:.32, f:(x,y)=>{ const g=hash(Math.floor(x*1.15),Math.floor(y*1.15)); const riz=Math.sin(y*.16+fbm(x*.03,y*.03,2)*5)*.5+.5; return g*.55+riz*.6; }, tint:[12,8,2] },
+  "panza":      { hex:"#C6C9CF", amp:.26, f:(x,y)=> fbm(x*.008,y*.011,5,.55) },
+  "nubes":      { hex:"#EEF1F7", amp:.20, f:(x,y)=> fbm(x*.007,y*.010,5,.55) },
+};
+
+function pinta(cv, clave) {
+  const m = MAT[clave]; if (!m) return;
+  const caja = cv.getBoundingClientRect();
+  const dpr = Math.min(devicePixelRatio || 1, 1.5);
+  const w = Math.max(1, Math.round(caja.width * dpr)), h = Math.max(1, Math.round(caja.height * dpr));
+  if (!w || !h) return;
+  cv.width = w; cv.height = h;
+  const ctx = cv.getContext("2d");
+  const img = ctx.createImageData(w, h);
+  const n = parseInt(m.hex.slice(1), 16);
+  const r0 = n >> 16 & 255, g0 = n >> 8 & 255, b0 = n & 255;
+  const t = m.tint || [0, 0, 0];
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      // Se dibuja en pixeles CSS: la textura mide lo mismo en toda pantalla.
+      const v = Math.max(0, Math.min(1, m.f(x / dpr, y / dpr)));
+      const d = (v - 0.5) * 2 * m.amp;
+      const i = (y * w + x) * 4;
+      img.data[i]     = Math.max(0, Math.min(255, r0 * (1 + d) + t[0] * d));
+      img.data[i + 1] = Math.max(0, Math.min(255, g0 * (1 + d) + t[1] * d));
+      img.data[i + 2] = Math.max(0, Math.min(255, b0 * (1 + d) + t[2] * d));
+      img.data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+const CATALOGO = [
+  { c:"azul-barca", n:"Azul de barca", real:"La pintura que sobraba de las barcas de pesca y acabó en las fachadas. Es el azul Atis, y no es casualidad.", rec:"Pintura casi lisa, con <b>desgaste</b> muy fino y algún roce.", txt:"luz", cr:"7,2", plata:false },
+  { c:"mar-hondo", n:"Mar hondo", real:"El agua lejos de la costa, donde ya no se ve el fondo.", rec:"Los <b>trenes de olas</b> que ya están construidos, con destello de cresta.", txt:"luz", cr:"10,5", plata:false },
+  { c:"mar-orilla", n:"Mar de orilla", real:"Donde rompe. Más claro porque el fondo devuelve la luz.", rec:"La misma ola más aplanada, más <b>espuma</b> y más detalle fino.", txt:"tinta", cr:"5,4", plata:false },
+  { c:"picon", n:"Picón", real:"El lapilli volcánico. Es la arena de verdad de estas islas, y es negra.", rec:"<b>Granos de 3 px</b>, cada uno con su propia cara al sol, agrupados en manchas.", txt:"luz", cr:"15,4", plata:false },
+  { c:"basalto", n:"Basalto", real:"La roca de los acantilados y los muros de piedra seca.", rec:"Bloques de piedra, con las <b>fracturas en sombra</b> encima y grano fino.", txt:"luz", cr:"9,8", plata:false },
+  { c:"tosca", n:"Tosca", real:"La piedra amarilla con la que están hechas las casas viejas y los aljibes.", rec:"Manchado <b>poroso</b> de media escala, con poros sueltos.", txt:"tinta", cr:"8,1", plata:false },
+  { c:"barro", n:"Barro y teja", real:"La loza canaria y las tejas árabes de los tejados.", rec:"Manchado fino y bajo, con la <b>veta del torno</b> insinuada.", txt:"luz", cr:"4,8", plata:false },
+  { c:"cal", n:"Cal", real:"El encalado de las fachadas. El único material liso de todo el catálogo.", rec:"Brochazos <b>anchos y horizontales</b>, contraste bajísimo.", txt:"tinta", cr:"16,3", plata:true },
+  { c:"arena-negra", n:"Arena negra", real:"La playa de aquí. Más fina que el picón y algo más parda al sol.", rec:"<b>Grano denso</b>, más fino que el del picón.", txt:"luz", cr:"11,3", plata:false },
+  { c:"arena-rubia", n:"Arena rubia", real:"La de Las Teresitas. Importante: es importada del Sáhara, no es de aquí.", rec:"Grano fino más <b>rizos de viento</b>.", txt:"tinta", cr:"9,0", plata:false },
+  { c:"panza", n:"Panza de burro", real:"La capa gris que tapa el norte medio año. Es el cielo más canario que existe.", rec:"Ruido <b>grande y muy suave</b>, sin ningún borde duro.", txt:"tinta", cr:"11,0", plata:false },
+  { c:"nubes", n:"Mar de nubes", real:"Lo que se ve desde arriba cuando has subido por encima de la panza de burro.", rec:"El mismo ruido grande, más claro y más plano.", txt:"tinta", cr:"16,1", plata:true },
+];
+
+const cont = document.getElementById("mats");
+for (const m of CATALOGO) {
+  const el = document.createElement("article");
+  el.className = "mat";
+  el.innerHTML =
+    '<div class="lienzo" style="background:' + MAT[m.c].hex + '"><canvas data-mat="' + m.c + '"></canvas></div>' +
+    '<div class="cuerpo">' +
+      '<h3>' + m.n + '</h3>' +
+      '<p class="real">' + m.real + '</p>' +
+      '<p class="rec">' + m.rec + '</p>' +
+      '<div class="datos">' +
+        '<span class="hex">' + MAT[m.c].hex + '</span>' +
+        '<span class="tag ' + (parseFloat(m.cr.replace(",", ".")) >= 4.5 ? "t-ok" : "t-mal") + '">texto en ' + m.txt + ' · ' + m.cr + '</span>' +
+        (m.plata ? '' : '<span class="tag t-plata">la plata no se lee aquí</span>') +
+      '</div>' +
+    '</div>';
+  cont.appendChild(el);
+}
+
+const PARADAS = [
+  { c:"mar-hondo", est:"0 · Mar abierto", txt:"#F4F6FB", man:true, frase:"la p*ta primera cooperativa creativa", mats:"mar hondo · azul de barca" },
+  { c:"mar-hondo", est:"1 · El archipiélago", txt:"#F4F6FB", frase:"Somos de aquí, y somos ocho islas.", mats:"mar hondo · las ocho islas siguen en plata" },
+  { c:"picon", est:"2 · La orilla · el problema", txt:"#F4F6FB", frase:"Hay cosas de tu negocio que te están comiendo el día.", mats:"picón · arena negra · mar de orilla" },
+  { c:"cal", est:"3 · El pueblo · la casa", txt:"#111520", frase:"Tu negocio ya vale. Vamos a que se note.", mats:"cal · tosca · barro y teja · azul de barca" },
+  { c:"basalto", est:"4 · La subida · el método", txt:"#F4F6FB", frase:"Un proceso, sin humo.", mats:"basalto · picón · panza de burro" },
+  { c:"nubes", est:"5 · La cumbre · el claim", txt:"#111520", frase:"No vendemos herramientas. Resolvemos problemas.", mats:"mar de nubes · azul de altura" },
+];
+
+const via = document.getElementById("viaje");
+for (const p of PARADAS) {
+  const el = document.createElement("div");
+  el.className = "banda";
+  el.style.background = MAT[p.c].hex;
+  el.innerHTML =
+    '<canvas data-mat="' + p.c + '"></canvas>' +
+    '<div class="txt" style="color:' + p.txt + '">' +
+      '<span class="est">' + p.est + '</span>' +
+      '<p class="frase' + (p.man ? " manuscrita" : "") + '">' + p.frase + '</p>' +
+      '<p class="mats-linea">' + p.mats + '</p>' +
+    '</div>';
+  via.appendChild(el);
+}
+
+const pintaTodo = () => document.querySelectorAll("canvas[data-mat]").forEach(cv => pinta(cv, cv.dataset.mat));
+pintaTodo();
+addEventListener("resize", () => { clearTimeout(window.__t); window.__t = setTimeout(pintaTodo, 250); });
+</script>
