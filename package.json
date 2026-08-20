@@ -7,10 +7,11 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/revisar-shader.mjs && astro build",
     "preview": "astro preview",
     "export": "node scripts/export-offline.mjs",
-    "astro": "astro"
+    "astro": "astro",
+    "shader": "node scripts/revisar-shader.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
