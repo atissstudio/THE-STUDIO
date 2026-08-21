@@ -287,18 +287,30 @@ html.mar-campos .closer > .closer-inner {
 }
 
 /*
-  Campo de plata líquida. El `background` es la plata plana de siempre y hace de
-  suelo; encima lo pinta como metal fundido el componente `CampoPlata.astro`,
-  que se monta DENTRO del campo y se ancla a él — de ahí el `position:
-  relative`, sin el cual el lienzo se anclaría al primer ancestro colocado y se
-  iría a cualquier parte.
+  ⚠️ MIENTRAS LA PLATA ESTÁ VIVA, LOS CAMPOS DE PLATA NO PINTAN NADA. El lienzo
+  va fijo por DEBAJO del contenido (z negativo), así que un campo con fondo
+  opaco lo taparía entero. Es la misma pareja de reglas que `html.mar-campos`
+  para los campos azules, y se cambia junto con la lista que lee el lienzo en
+  `CampoPlata.astro`: si una cambia y la otra no, o se ve la plata plana sobre
+  la colada, o se ve el fondo de la página con el texto encima.
 
-  Sin WebGL o con "menos movimiento" el lienzo no arranca y manda este color,
-  que es un estado válido. (El viejo comentario prometía un `.liquid-field` que
-  nunca llegó a existir.)
+  `html.plata-viva` la pone el propio lienzo al pintar su primer fotograma, y se
+  la quita si pierde el contexto WebGL. Sin WebGL nada de esto aplica y los
+  campos se ven con su plata plana de siempre.
+*/
+html.plata-viva .f-plata,
+html.plata-viva .f-claro,
+html.plata-viva .reel {
+  background: transparent;
+}
+
+/*
+  Campo de plata líquida. El `background` es la plata plana de siempre y hace de
+  suelo: es lo que se ve sin WebGL, con "menos movimiento" o si se pierde el
+  contexto, y es un estado válido. (El viejo comentario prometía un
+  `.liquid-field` que nunca llegó a existir.)
 */
 .f-plata {
-  position: relative;
   background: var(--plata-mid);
   color: var(--ink);
   /*

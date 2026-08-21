@@ -6,7 +6,6 @@
   lectura) -> azul (.04, servicios) -> blanco (.05, datos) -> azul (.06, CTA).
 */
 import GlassButton from "./GlassButton.astro";
-import CampoPlata from "./CampoPlata.astro";
 import CarrilClaim from "./CarrilClaim.astro";
 import Escena from "./Escena.astro";
 import MarPortada from "./MarPortada.astro";
@@ -86,14 +85,6 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
   */}
   <i class="reel-parada p1" aria-hidden="true"></i>
   <i class="reel-parada p2" aria-hidden="true"></i>
-  {/*
-    LA PLATA LÍQUIDA. Antes eran tres manchas redondas con desenfoque de 40 px
-    moviéndose en bucle, y una mancha difuminada no tiene ni veta ni superficie:
-    daba niebla, y el campo se leía como un gris sucio con un halo claro en
-    medio. Ahora lo pinta un lienzo como metal fundido derritiéndose
-    (`src/scripts/plata.ts`). Sin WebGL manda el `background` plata de siempre.
-  */}
-  <CampoPlata />
   <div class="reel-stage" id="reelStage">
     <div class="reel-kick">El punto de partida · .02</div>
     <div class="reel-phrase reel-p1">Tu negocio ya vale.</div>
@@ -729,6 +720,21 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
     height: 200vh;
     position: relative;
     background: var(--plata-mid);
+  }
+  /*
+    ⚠️ ESTA REGLA TIENE QUE VIVIR AQUÍ, NO EN tokens.css. Mientras la plata está
+    viva el campo no pinta nada, porque el lienzo va fijo por DEBAJO del
+    contenido y un fondo opaco lo taparía entero. Se intentó desde tokens.css y
+    no aplicaba: Astro le añade su atributo al selector del componente, así que
+    una regla de la hoja global no puede sobrescribir a `.reel` de aquí. Es la
+    trampa de especificidad que ya costó las reglas móviles de las escenas.
+
+    La lista de campos que el lienzo pinta vive en `CampoPlata.astro`. Si una
+    cambia y la otra no, o se ve la plata plana sobre la colada, o se ve el
+    fondo de la página con el texto encima.
+  */
+  :global(html.plata-viva) .reel {
+    background: transparent;
   }
   .reel-stage {
     position: sticky;

@@ -33,9 +33,36 @@
       así que el dibujo cae. Muy despacio: es un campo de fondo detrás de texto,
       no un salvapantallas.
 
+  ⚠️ UN SOLO LIENZO PARA TODOS LOS CAMPOS, NO UNO POR CAMPO. Hay siete campos
+  de plata clara en el sitio, y un lienzo por sección serían siete contextos
+  WebGL en una misma página: los navegadores limitan cuántos permiten y cada
+  uno cuesta batería. Así que este lienzo va fijo a la ventana y se le pregunta
+  en cada fotograma DÓNDE hay plata ahora mismo. Es el mismo modelo de zonas
+  que ya usa `mar.ts`, por el mismo motivo.
+
+  Cada zona lleva su TONO y su FUERZA, porque no todos los campos quieren lo
+  mismo: el campo de la casa es plata media y admite una colada marcada; los
+  campos claros llevan párrafos encima y la colada tiene que ser más suave, o
+  compite con el texto que hay que leer.
+
   Sin WebGL o con "menos movimiento" no arranca, y el campo se queda con su
   plata plana de CSS. Es mejora progresiva, no dependencia.
 */
+
+/** Un campo de plata, en píxeles CSS relativos al lienzo (0,0 arriba izquierda). */
+export type ZonaPlata = {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+  /**
+   * Cuánto se separa la colada de su plata base, de 0 a 1. El campo de la casa
+   * va fuerte; los campos de lectura, suaves.
+   */
+  fuerza: number;
+  /** La plata base de este campo, en 0-1. */
+  base: [number, number, number];
+};
 
 export type OpcionesPlata = {
   /**
@@ -45,10 +72,14 @@ export type OpcionesPlata = {
    * cambiar de tamaño, así que a partir del primer fotograma el elemento mide
    * lo que OGL le puso y no lo que dice su CSS. Se mide el hueco que ocupa.
    */
-  medida: () => { ancho: number; alto: number };
+  medida?: () => { ancho: number; alto: number };
+  /** Dónde hay plata AHORA MISMO. Se pregunta en cada fotograma. */
+  zonas: () => ZonaPlata[];
   /** Se llama una vez, tras el primer fotograma pintado de verdad. */
   alArrancar?: () => void;
 };
+
+const MAX_ZONAS = 8;
 
 const vertex = `
   attribute vec2 uv;
@@ -76,6 +107,10 @@ const fragment = `
   uniform vec3 uOscuro;
   uniform vec3 uMedio;
   uniform vec3 uClaro;
+  uniform vec4 uZonas[8];
+  uniform vec3 uBase[8];
+  uniform float uFuerza[8];
+  uniform int uNumZonas;
 
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -104,6 +139,29 @@ const fragment = `
   }
 
   void main() {
+    /*
+      ¿Cae este píxel dentro de algún campo de plata? Las zonas llegan en
+      coordenadas de uv (y de abajo arriba). Si no cae en ninguna, el píxel se
+      queda transparente y manda el CSS de debajo: el lienzo NO pinta la
+      página entera, solo los campos que le dicen.
+    */
+    vec3 base = vec3(0.0);
+    float fuerza = 0.0;
+    float dentro = 0.0;
+    for (int i = 0; i < 8; i++) {
+      if (i >= uNumZonas) break;
+      vec4 z = uZonas[i];
+      if (vUv.y <= z.x && vUv.y >= z.y && vUv.x >= z.z && vUv.x <= z.w) {
+        base = uBase[i];
+        fuerza = uFuerza[i];
+        dentro = 1.0;
+      }
+    }
+    if (dentro < 0.5) {
+      gl_FragColor = vec4(0.0);
+      return;
+    }
+
     vec2 q = vUv;
     // Sin aplastar: la celda tiene que ser igual de ancha que de alta.
     q.x *= uMedida.x / max(uMedida.y, 1.0);
@@ -135,7 +193,15 @@ const fragment = `
     float brillo = pow(clamp(length(b) - 0.52, 0.0, 1.0), 1.35);
     col += uClaro * brillo * 0.42;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    /*
+      Y AQUÍ MANDA LA FUERZA DE LA ZONA. La colada se mezcla con la plata base
+      del campo: a fuerza 1 se ve entera, a fuerza baja apenas se separa de su
+      color. Es lo que permite que el campo de la casa lleve vetas marcadas y
+      los campos de lectura solo un temblor, con un único shader.
+    */
+    col = mix(base, clamp(col, 0.0, 1.0), fuerza);
+
+    gl_FragColor = vec4(col, 1.0);
   }
 `;
 
@@ -155,7 +221,8 @@ export function crearPlata(lienzo: HTMLCanvasElement, opciones: OpcionesPlata) {
 
     const renderer = new Renderer({
       canvas: lienzo,
-      alpha: false,
+      // Transparente: fuera de las zonas de plata el lienzo no pinta nada.
+      alpha: true,
       // Para una colada suave, la mitad de píxeles se ve igual y cuesta la
       // cuarta parte.
       dpr: Math.min(devicePixelRatio, 1.5),
@@ -172,20 +239,52 @@ export function crearPlata(lienzo: HTMLCanvasElement, opciones: OpcionesPlata) {
         uOscuro: { value: new Vec3(0.478, 0.51, 0.561) },
         uMedio: { value: new Vec3(0.682, 0.71, 0.761) },
         uClaro: { value: new Vec3(0.957, 0.965, 0.98) },
+        uZonas: { value: new Array(MAX_ZONAS * 4).fill(0) },
+        uBase: { value: new Array(MAX_ZONAS * 3).fill(0) },
+        uFuerza: { value: new Array(MAX_ZONAS).fill(0) },
+        uNumZonas: { value: 0 },
       },
     });
 
     const malla = new Mesh(gl, { geometry: new Triangle(gl), program });
 
+    const medida = opciones.medida ?? (() => ({ ancho: innerWidth, alto: innerHeight }));
     let anchoPrevio = 0;
     let altoPrevio = 0;
     const medir = () => {
-      const { ancho, alto } = opciones.medida();
-      if (ancho === anchoPrevio && alto === altoPrevio) return;
+      const { ancho, alto } = medida();
+      if (ancho === anchoPrevio && alto === altoPrevio) return { ancho, alto };
       anchoPrevio = ancho;
       altoPrevio = alto;
       renderer.setSize(ancho, alto);
       program.uniforms.uMedida.value.set(ancho, alto);
+      return { ancho, alto };
+    };
+
+    const zonasBuffer = program.uniforms.uZonas.value as number[];
+    const baseBuffer = program.uniforms.uBase.value as number[];
+    const fuerzaBuffer = program.uniforms.uFuerza.value as number[];
+
+    const cargarZonas = (ancho: number, alto: number) => {
+      const zonas = opciones.zonas();
+      let n = 0;
+      for (const z of zonas) {
+        if (n >= MAX_ZONAS) break;
+        // Fuera de pantalla o sin altura: no gasta una plaza de las ocho.
+        if (z.bottom <= 0 || z.top >= alto || z.bottom <= z.top) continue;
+        if (z.fuerza <= 0.004) continue;
+        // Coordenadas del shader: y de abajo (0) a arriba (1), como uv.
+        zonasBuffer[n * 4] = 1 - z.top / alto;
+        zonasBuffer[n * 4 + 1] = 1 - z.bottom / alto;
+        zonasBuffer[n * 4 + 2] = z.left / ancho;
+        zonasBuffer[n * 4 + 3] = z.right / ancho;
+        baseBuffer[n * 3] = z.base[0];
+        baseBuffer[n * 3 + 1] = z.base[1];
+        baseBuffer[n * 3 + 2] = z.base[2];
+        fuerzaBuffer[n] = z.fuerza;
+        n++;
+      }
+      program.uniforms.uNumZonas.value = n;
     };
 
     let vivo = true;
@@ -218,7 +317,8 @@ export function crearPlata(lienzo: HTMLCanvasElement, opciones: OpcionesPlata) {
 
     function bucle(ahora: number) {
       if (!vivo) return;
-      medir();
+      const { ancho, alto } = medir();
+      cargarZonas(ancho, alto);
       program.uniforms.uTiempo.value = (ahora - t0) / 1000;
       renderer.render({ scene: malla });
       if (primero) {

@@ -2,33 +2,44 @@
 /*
   ══ CAMPO DE PLATA LÍQUIDA ═══════════════════════════════════════════════════
 
-  Se monta DENTRO de cualquier elemento que sea campo de plata y lo pinta como
-  metal fundido (ver `src/scripts/plata.ts` para el porqué del dibujo).
+  Pinta como metal fundido TODOS los campos de plata de la página (ver
+  `src/scripts/plata.ts` para el porqué del dibujo).
 
-  Cómo se usa: el contenedor lleva `position: relative` y este componente va
-  como primer hijo. El lienzo lo llena entero y se queda por detrás de todo lo
-  demás.
+  ⚠️ SE MONTA UNA SOLA VEZ POR PÁGINA, no una por campo. Hay siete campos de
+  plata clara en el sitio, y un lienzo por sección serían siete contextos WebGL
+  a la vez: los navegadores limitan cuántos permiten y cada uno cuesta batería.
+  El lienzo va fijo a la ventana, por detrás de todo, y en cada fotograma se le
+  dice qué campos hay en pantalla. Es el mismo modelo que usa el mar.
 
-  ⚠️ EL LIENZO NO SE MIDE A SÍ MISMO. OGL le escribe `style.width/height` al
-  cambiar de tamaño, así que desde el primer fotograma el elemento mide lo que
-  OGL le puso. Se mide el hueco que ocupa, que es su padre.
+  Qué cuenta como campo de plata, y con qué fuerza:
 
-  ⚠️ Y NO SE VE HASTA QUE HA PINTADO DE VERDAD (`html.plata-viva`). Si se
-  mostrara antes, habría un fotograma de lienzo en blanco sobre el campo. Sin
-  WebGL o con "menos movimiento" la clase no llega a ponerse nunca y manda la
-  plata plana del CSS de siempre.
+    · `.f-plata` y el campo de la casa — plata media, colada marcada. No llevan
+      párrafos encima, solo un rótulo y una frase corta.
+    · `.f-claro` — plata clara y colada SUAVE. Aquí sí se leen párrafos, y una
+      colada fuerte compite con el texto que hay que leer (decisión de
+      Alejandro, 2026-08-21).
+
+  ⚠️ Y NO SE VE HASTA QUE HA PINTADO DE VERDAD (`html.plata-viva`), o habría un
+  fotograma de lienzo vacío sobre los campos. Sin WebGL o con "menos
+  movimiento" la clase no llega a ponerse y manda la plata plana del CSS.
 */
 ---
 
 <canvas class="campo-plata" aria-hidden="true"></canvas>
 
 <style>
+  /*
+    Fijo a la ventana y por detrás del contenido. Va DENTRO de `#page` con z
+    negativo, que es el sitio que ya se demostró correcto con el mar: fuera de
+    `#page` quedaría por debajo del fondo de la página, que es opaco a
+    propósito para tapar el pie.
+  */
   .campo-plata {
-    position: absolute;
+    position: fixed;
     inset: 0;
     width: 100%;
     height: 100%;
-    z-index: 0;
+    z-index: -1;
     pointer-events: none;
     display: none;
   }
@@ -43,21 +54,59 @@
 </style>
 
 <script>
-  import { crearPlata } from "../scripts/plata";
+  import { crearPlata, type ZonaPlata } from "../scripts/plata";
 
-  /*
-    Cada lienzo se monta contra SU padre. Puede haber varios campos de plata en
-    la misma página, así que no vale con quedarse con el primero.
-  */
-  document.querySelectorAll<HTMLCanvasElement>("canvas.campo-plata").forEach((lienzo) => {
-    const hueco = lienzo.parentElement;
-    if (!hueco) return;
-    crearPlata(lienzo, {
-      medida: () => {
-        const r = hueco.getBoundingClientRect();
-        return { ancho: r.width, alto: r.height };
-      },
-      alArrancar: () => document.documentElement.classList.add("plata-viva"),
+  const lienzo = document.querySelector<HTMLCanvasElement>("canvas.campo-plata");
+
+  if (lienzo) {
+    /*
+      Las platas del sistema, en 0-1. Ninguna es nueva: son `--plata-mid` y
+      `--plata-clara` de tokens.css.
+    */
+    const PLATA_MEDIA: [number, number, number] = [174 / 255, 181 / 255, 194 / 255];
+    const PLATA_CLARA: [number, number, number] = [238 / 255, 241 / 255, 247 / 255];
+
+    /*
+      La fuerza de cada familia. La clara va mucho más suave a propósito: es
+      donde se leen los párrafos.
+    */
+    const FUERTE = 1;
+    const SUAVE = 0.16;
+
+    type Campo = { el: HTMLElement; base: [number, number, number]; fuerza: number };
+
+    const campos: Campo[] = [];
+    document.querySelectorAll<HTMLElement>(".reel, .f-plata").forEach((el) => {
+      campos.push({ el, base: PLATA_MEDIA, fuerza: FUERTE });
     });
-  });
+    document.querySelectorAll<HTMLElement>(".f-claro").forEach((el) => {
+      campos.push({ el, base: PLATA_CLARA, fuerza: SUAVE });
+    });
+
+    if (campos.length) {
+      const zonas = (): ZonaPlata[] => {
+        const alto = innerHeight;
+        const lista: ZonaPlata[] = [];
+        for (const c of campos) {
+          const r = c.el.getBoundingClientRect();
+          // Solo lo que se ve: así ocho plazas sobran para cualquier página.
+          if (r.bottom <= 0 || r.top >= alto) continue;
+          lista.push({
+            top: r.top,
+            bottom: r.bottom,
+            left: r.left,
+            right: r.right,
+            base: c.base,
+            fuerza: c.fuerza,
+          });
+        }
+        return lista;
+      };
+
+      crearPlata(lienzo, {
+        zonas,
+        alArrancar: () => document.documentElement.classList.add("plata-viva"),
+      });
+    }
+  }
 </script>

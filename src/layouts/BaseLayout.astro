@@ -5,6 +5,7 @@ import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
 import Loader from "../components/Loader.astro";
 import ShaderFondo from "../components/ShaderFondo.astro";
+import CampoPlata from "../components/CampoPlata.astro";
 import Paisaje from "../components/Paisaje.astro";
 import Pintadera from "../components/Pintadera.astro";
 
@@ -234,6 +235,13 @@ const breadcrumbLd =
         secciones, que es exactamente el sitio que le corresponde.
       */}
       <ShaderFondo />
+      {/*
+        LA PLATA LÍQUIDA, en el mismo sitio y por el mismo motivo que el mar:
+        dentro de `#page` con z negativo. Un solo lienzo pinta TODOS los campos
+        de plata de la página, y por eso se monta aquí y no dentro de cada
+        campo — siete secciones claras serían siete contextos WebGL a la vez.
+      */}
+      <CampoPlata />
       <slot />
     </main>
     <Footer />
