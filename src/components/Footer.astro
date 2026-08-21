@@ -93,7 +93,18 @@ const year = new Date().getFullYear();
     margin: 16px 0 0;
     padding: 0;
   }
+  /*
+    ⚠️ ZONA PULSABLE DE 44 px, aunque la letra mida 12 (2026-08-21). Medido en
+    móvil: los nueve enlaces del pie tenían menos de 44 px de alto, que es el
+    mínimo recomendado para tocar con el dedo, y este pie es la única salida a
+    lo legal para un público de 45-60 años. El texto no crece; crece el sitio
+    donde se puede tocar, con `inline-flex` y relleno vertical, así que el
+    dibujo del pie no cambia.
+  */
   footer nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     font-family: var(--sans);
     font-size: 0.74rem;
     font-weight: 700;
@@ -104,6 +115,16 @@ const year = new Date().getFullYear();
   }
   footer nav a:hover {
     color: var(--azul-lit);
+  }
+  footer > a,
+  footer .marca a,
+  footer a:has(svg.logo),
+  .socials a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
   }
   .socials {
     display: flex;
@@ -138,6 +159,9 @@ const year = new Date().getFullYear();
     margin-top: 18px;
   }
   .legal a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     font-family: var(--sans);
     font-size: 0.68rem;
     letter-spacing: 0.02em;

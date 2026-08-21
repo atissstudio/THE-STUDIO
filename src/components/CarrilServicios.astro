@@ -213,6 +213,18 @@ const {
       en flex y esto es su único hijo) funciona con las dos formas de medir.
     */
     align-self: stretch;
+    /*
+      ⚠️ `min-width: 0` NO ES DECORATIVO: SIN ÉL, ESTA SECCIÓN MIDE LO QUE MIDE
+      EL CARRIL ENTERO. Un elemento dentro de un flex no encoge por debajo del
+      tamaño de su contenido salvo que se le diga, y el contenido aquí son
+      siete fichas en fila: medido en la home a 390 px de ancho, la sección
+      media 2338. Eso es lo que dejaba arrastrar la página de lado y asomar la
+      franja blanca que Alejandro veía en el iPhone.
+    */
+    min-width: 0;
+  }
+  .carril-campo.desnudo > .row12 {
+    min-width: 0;
   }
   .desnudo .cab {
     margin-bottom: 26px;

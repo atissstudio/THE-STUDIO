@@ -1225,7 +1225,14 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
       top: 14vh;
     }
     .reel-p2 {
-      bottom: 10vh;
+      /*
+        ⚠️ POR ENCIMA DE LA PÍLDORA DEL MENÚ, que flota fija sobre los últimos
+        ~104 px: a 10vh (84 px) "Vamos a que se note" salía medio tapada en el
+        iPhone. El sitio de la píldora no se negocia, así que sube la frase.
+        (Y ojo: dentro de este archivo manda la última regla, así que ponerlo
+        más arriba no habría servido de nada. Ya pasó.)
+      */
+      bottom: 124px;
       text-align: center;
     }
     /*

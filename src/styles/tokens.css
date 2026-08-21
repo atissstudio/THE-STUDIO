@@ -110,6 +110,14 @@ body {
 #page {
   position: relative;
   z-index: 2;
+  /*
+    Red de seguridad contra el arrastre lateral: si algún día algo vuelve a
+    salirse por el costado, se recorta aquí en vez de dejar arrastrar la página
+    y enseñar el fondo. `clip` y nunca `hidden`: `hidden` convertiría la página
+    en contenedor de scroll y rompería los tres `sticky` del sitio (trampa ya
+    documentada).
+  */
+  overflow-x: clip;
   background: var(--blanco);
   margin-top: var(--menu-h);
   margin-bottom: var(--foot-h);
@@ -427,10 +435,38 @@ html.mar-campos .cta-screen > .cta-inner {
   margin: 0 0 20px;
   text-wrap: pretty;
   text-align: justify;
-  /* En el bloque alineado a la derecha, el justificado deja irregular el
-     borde izquierdo de la última línea; `justify` se mantiene y el resto lo
-     resuelve la regla de `.read.right` de abajo. */
   text-justify: inter-word;
+}
+/*
+  ⚠️ EN EL TELÉFONO, BANDERA. El justificado se pidió y está puesto, pero en
+  una columna estrecha y sin poder partir palabras el resultado es el que se
+  vio en el iPhone: "Lo          implementamos", con agujeros de medio renglón
+  entre palabras. No es un defecto del navegador ni algo que se pueda afinar,
+  es aritmética: el hueco que sobra se reparte entre las pocas palabras que
+  caben en la línea, y cuantas menos palabras, más grande el hueco. En pantalla
+  ancha caben el doble de palabras por línea y el justificado se sostiene.
+*/
+@media (max-width: 900px) {
+  .read p {
+    text-align: left;
+  }
+  .read.right p {
+    text-align: right;
+  }
+}
+/*
+  Y NUNCA UN BOTÓN NI UN ENLACE. Justificar una llamada a la acción de dos
+  líneas separa sus palabras de punta a punta ("VER    EL    MÉTODO"), que es
+  lo que se vio en la home. El justificado es para párrafos.
+*/
+.read p.read-cta,
+.read-cta,
+.head-link {
+  text-align: inherit;
+  text-align: start;
+}
+.read.right p.read-cta {
+  text-align: right;
 }
 .f-azul .read h2,
 .f-navy .read h2 {

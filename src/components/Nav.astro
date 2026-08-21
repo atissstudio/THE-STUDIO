@@ -123,8 +123,18 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
     color: var(--azul);
     background: none;
     border: 0;
-    padding: 0;
-    margin-left: 20px;
+    /*
+      ⚠️ 44 px DE ZONA PULSABLE (2026-08-21). Medido: "Menú" ocupaba 36,7 x 16,4
+      y el icono de cuenta 26 x 26, contra los 44 x 44 recomendados. Es la
+      navegación principal de un sitio pensado para gente de 45-60 años y en
+      móvil se toca con el pulgar. La letra sigue midiendo lo mismo: lo que
+      crece es el área, con relleno, así que la franja no cambia de aspecto.
+    */
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 12px;
+    margin-left: 8px;
     cursor: pointer;
   }
   #menubar .mark {
@@ -147,9 +157,10 @@ const isActive = (href: string) => path === href || path.startsWith(href + "/");
   #menubar .account {
     grid-column: 11/12;
     justify-self: end;
-    margin-right: 20px;
-    width: 26px;
-    height: 26px;
+    margin-right: 8px;
+    /* Mismo motivo que "Menú": el dibujo sigue en 22, la zona pulsable en 44. */
+    width: 44px;
+    height: 44px;
     display: grid;
     place-items: center;
   }
