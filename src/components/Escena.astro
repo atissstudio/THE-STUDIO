@@ -37,10 +37,26 @@ interface Props {
   pie?: boolean;
 }
 const { tipo, nombre, pie = false } = Astro.props;
+
+/*
+  ⚠️ CADA ESCENA TIENE SU ENCUADRE EN MODO PIE. El dibujo se hizo para un cuadro
+  cuadrado-ish (1200x520) y la franja de pie es mucho más ancha que alta, así
+  que al ajustarse se aplasta. La solución no es estirar menos, es MIRAR SOLO LA
+  PARTE QUE INTERESA: en el pueblo, la banda donde están las casas; en el risco,
+  desde las cumbres hacia abajo. Así lo que llena la franja es el motivo, no el
+  aire que tiene encima, y las casas vuelven a ser casas en vez de lonchas.
+*/
+const encuadre: Record<string, string> = {
+  risco: "0 110 1200 410",
+  pueblo: "0 296 1200 224",
+  mar: "0 0 1200 520",
+  playa: "0 0 1200 520",
+};
+const caja = pie ? encuadre[tipo] : "0 0 1200 520";
 ---
 
 <div class:list={["escena", `e-${tipo}`, { pie }]} data-escena aria-hidden="true">
-  <svg viewBox="0 0 1200 520" preserveAspectRatio={pie ? "xMidYMax slice" : "xMidYMid slice"} role="presentation">
+  <svg viewBox={caja} preserveAspectRatio={pie ? "none" : "xMidYMid slice"} role="presentation">
     {
       tipo === "risco" && (
         <>
@@ -48,17 +64,17 @@ const { tipo, nombre, pie = false } = Astro.props;
           {!pie && <rect x="0" y="0" width="1200" height="520" fill="var(--cielo)" />}
           {/* Fondo: la cordillera lejana, un solo tono lavado. */}
           <g data-plano="fondo">
-            <path d="M0 330 L210 196 L330 268 L520 132 L700 250 L880 168 L1060 262 L1200 214 L1200 520 L0 520 Z" fill="var(--roca-lejos)" />
+            <path d="M-200 344 L0 330 L210 196 L330 268 L520 132 L700 250 L880 168 L1060 262 L1200 214 L1400 236 L1400 520 L-200 520 Z" fill="var(--roca-lejos)" />
           </g>
           {/* Medio: el macizo que manda, con su cumbre. */}
           <g data-plano="medio">
-            <path d="M0 420 L180 300 L300 356 L470 190 L640 330 L760 286 L900 380 L1060 320 L1200 386 L1200 520 L0 520 Z" fill="var(--roca-medio)" />
+            <path d="M-200 438 L0 420 L180 300 L300 356 L470 190 L640 330 L760 286 L900 380 L1060 320 L1200 386 L1400 404 L1400 520 L-200 520 Z" fill="var(--roca-medio)" />
             {/* Dos coladas: el estrato como línea, no como textura. */}
-            <path d="M470 190 L640 330 L760 286 L900 380 L1060 320 L1200 386" fill="none" stroke="var(--cal)" stroke-opacity=".18" stroke-width="2" />
+            <path d="M470 190 L640 330 L760 286 L900 380 L1060 320 L1200 386 L1400 404" fill="none" stroke="var(--cal)" stroke-opacity=".18" stroke-width="2" />
           </g>
           {/* Frente: el pie del acantilado, casi negro. */}
           <g data-plano="frente">
-            <path d="M0 486 L150 430 L340 470 L560 412 L780 462 L1000 424 L1200 468 L1200 520 L0 520 Z" fill="var(--roca-cerca)" />
+            <path d="M-200 498 L0 486 L150 430 L340 470 L560 412 L780 462 L1000 424 L1200 468 L1400 480 L1400 520 L-200 520 Z" fill="var(--roca-cerca)" />
           </g>
         </>
       )
@@ -141,8 +157,8 @@ const { tipo, nombre, pie = false } = Astro.props;
             </g>
           </g>
           <g data-plano="frente">
-            <rect x="0" y="472" width="1200" height="48" fill="var(--picon)" />
-            <rect x="0" y="466" width="1200" height="6" fill="var(--azul)" opacity=".5" />
+            <rect x="-200" y="472" width="1600" height="48" fill="var(--picon)" />
+            <rect x="-200" y="466" width="1600" height="6" fill="var(--azul)" opacity=".5" />
           </g>
         </>
       )
@@ -173,8 +189,20 @@ const { tipo, nombre, pie = false } = Astro.props;
   */
   .escena.pie {
     background: transparent;
-    height: clamp(190px, 32svh, 340px);
+    /*
+      ⚠️ ALTO SUFICIENTE, O EL DIBUJO SE APLASTA. En modo pie el SVG se ajusta a
+      la caja sin recortar (si recortara, se comería las cumbres), así que la
+      caja tiene que guardar una proporción parecida a la del dibujo. Con 262 px
+      sobre 1280 de ancho la compresión era del doble y las casas salían como
+      lonchas. Con este alto la deformación es leve y las montañas y el caserío
+      se leen bien los dos.
+    */
+    height: clamp(260px, 46svh, 470px);
     margin-top: calc(var(--row) * -0.35);
+    /* Pegada a lo que venga debajo: si es agua, el pueblo queda a pie de
+       muelle. Un hueco aquí rompe el puerto. */
+    margin-bottom: 0;
+    display: block;
   }
   .escena svg {
     position: absolute;
@@ -197,6 +225,12 @@ const { tipo, nombre, pie = false } = Astro.props;
   .escena [data-plano="frente"] {
     transform: translate3d(calc(var(--pl, 0) * 7%), 0, 0);
   }
+  /*
+    ⚠️ Los dibujos se salen 200 unidades por cada lado del cuadro. Al
+    desplazarse con el paralaje, un dibujo que acabe justo en el borde deja ver
+    su canto y aparece una franja vacía en un lado. Sobrando por fuera, no hay
+    canto que pueda asomar.
+  */
   .escena-nombre {
     position: absolute;
     left: 50%;

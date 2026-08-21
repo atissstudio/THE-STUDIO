@@ -723,6 +723,10 @@ const destacados = todos.slice(0, 3);
     la franja fija, y sin descontarla el menú se comería la esquina de la
     tarjeta.
   */
+  /* El pueblo se apoya EN el agua: ni margen ni relleno entre los dos. */
+  .cta-wrap {
+    margin-top: 0;
+  }
   .cta-screen {
     min-height: 100svh;
     box-sizing: border-box;
@@ -736,7 +740,7 @@ const destacados = todos.slice(0, 3);
     /* Transparente, no un claro propio: ver la nota de tokens.css. Con un
        claro distinto al de la página se veía la costura del marco. */
     background: transparent;
-    padding: calc(var(--menu-h) + 20px) 20px 20px;
+    padding: calc(var(--menu-h) + 20px) 0 0;
   }
   .cta-inner {
     flex: 1;
@@ -749,8 +753,15 @@ const destacados = todos.slice(0, 3);
     padding: clamp(48px, 5.5vw, 78px) clamp(28px, 4vw, 64px);
     background: var(--azul);
     color: var(--plata-clara);
-    border-radius: 28px;
-    box-shadow: 0 26px 60px -30px rgba(17, 21, 32, 0.5), 0 3px 8px -3px rgba(17, 21, 32, 0.16);
+    /*
+      ⚠️ NI ESQUINAS NI SOMBRA: ESTO ES AGUA, NO UNA TARJETA (2026-08-21).
+      El cierre era una tarjeta azul flotando con su hueco de cal alrededor, y
+      justo encima queda el pueblo. Un pueblo con una tarjeta debajo no dice
+      nada; un pueblo con el agua pegada al muelle es un PUERTO, que es lo que
+      pidió Alejandro y lo que cuenta la escena.
+    */
+    border-radius: 0;
+    box-shadow: none;
     transform: translateY(var(--cta-y, 40px));
     opacity: var(--cta-o, 0);
     transition: transform 1s 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 1s 0.2s ease;

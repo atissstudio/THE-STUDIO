@@ -72,9 +72,21 @@ const { id, quieto = false } = Astro.props;
     grid-column: 1/13;
     overflow: hidden;
     --v: clamp(0, var(--intro, 0), 1);
-    background: color-mix(in srgb, var(--azul) calc(var(--v) * 100%), #ffffff);
-    border-top: 1px solid color-mix(in srgb, #ffffff calc(var(--v) * 100%), var(--azul));
-    border-bottom: 1px solid color-mix(in srgb, #ffffff calc(var(--v) * 100%), var(--azul));
+    /*
+      ⚠️ SIN FONDO PROPIO MIENTRAS ES LA BAJADA DEL LOGO. Con un fondo mezclado
+      todo el rato, durante la entrada la caja del claim se veía como un
+      RECTÁNGULO AZUL CLARO flotando sobre el mar, con cantos duros a los lados
+      justo donde la caja aún no llega al ancho de la pantalla. El blanco no
+      puede aparecer poco a poco: tiene que llegar cuando la cinta ya ocupa la
+      pantalla entera, que es cuando deja de ser subtítulo y pasa a ser carril.
+
+      `--w` es eso: cero durante casi toda la entrada, y sube a uno en el
+      último tercio. Hasta entonces el fondo es transparente y se ve el mar.
+    */
+    --w: clamp(0, calc((0.3 - var(--v)) * 3.34), 1);
+    background: rgba(255, 255, 255, var(--w));
+    border-top: 1px solid color-mix(in srgb, var(--azul) calc(var(--w) * 100%), rgba(255, 255, 255, 0.85));
+    border-bottom: 1px solid color-mix(in srgb, var(--azul) calc(var(--w) * 100%), rgba(255, 255, 255, 0.85));
   }
   .claim-cinta {
     display: flex;
@@ -112,7 +124,7 @@ const { id, quieto = false } = Astro.props;
     line-height: 1.5;
     padding: 10px 0;
     /* Plata sobre azul mientras es bajada; azul sobre blanco ya de carril. */
-    color: color-mix(in srgb, var(--plata-clara) calc(var(--v, 0) * 100%), var(--azul));
+    color: color-mix(in srgb, var(--azul) calc(var(--w, 1) * 100%), var(--plata-clara));
     white-space: nowrap;
   }
   /*

@@ -44,8 +44,13 @@ const entre = (p: typeof a, q: typeof a, t: number) => ({
   y: p.y + (q.y - p.y) * t,
 });
 // Tres familias de paralelas, una por lado. Cuatro filas = 16 triángulos.
-const lineas = [1, 2, 3].flatMap((k) => {
-  const t = k / 4;
+/*
+  ⚠️ TRES FILAS, NO CUATRO. A tamaño de cursor (20 px) dieciséis triángulos se
+  empastan y no se lee nada: hay que quitar dibujo, no añadirlo. Con nueve, la
+  pintadera se reconoce de un vistazo.
+*/
+const lineas = [1, 2].flatMap((k) => {
+  const t = k / 3;
   return [
     [entre(a, b, t), entre(a, c, t)], // paralelas a la base
     [entre(a, c, t), entre(b, c, t)], // paralelas al lado izquierdo
@@ -69,11 +74,11 @@ const lineas = [1, 2, 3].flatMap((k) => {
     <path
       d={`M${a.x} ${a.y} L${c.x} ${c.y} L${b.x} ${b.y} Z`}
       fill="none"
-      stroke="var(--azul)"
-      stroke-width="2.6"
+      stroke="var(--plata-oscura)"
+      stroke-width="2.4"
       stroke-linejoin="round"
     />
-    <g stroke="var(--azul)" stroke-width="2.6" stroke-linecap="round">
+    <g stroke="var(--plata-oscura)" stroke-width="2.4" stroke-linecap="round" opacity=".85">
       {lineas.map(([p, q]) => <line x1={p.x} y1={p.y} x2={q.x} y2={q.y} />)}
     </g>
   </svg>
@@ -84,8 +89,8 @@ const lineas = [1, 2, 3].flatMap((k) => {
     position: fixed;
     top: 0;
     left: 0;
-    width: 30px;
-    height: 26px;
+    width: 20px;
+    height: 18px;
     z-index: 9999;
     pointer-events: none;
     opacity: 0;
@@ -100,8 +105,8 @@ const lineas = [1, 2, 3].flatMap((k) => {
   /* Sobre algo en lo que se puede pulsar, el sello crece: es la única señal de
      que ahí hay algo, ahora que no está la manita del sistema. */
   :global(html.pintadera-viva.sobre-activo) #pintadera {
-    width: 44px;
-    height: 38px;
+    width: 30px;
+    height: 26px;
   }
   #pintadera svg {
     width: 100%;
