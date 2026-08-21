@@ -216,6 +216,19 @@ body {
   background: var(--navy);
   color: var(--plata-clara);
 }
+/*
+  Campo de ROCA (2026-08-21). Exactamente el mismo valor que la fila de
+  montaña más cercana de las escenas (`--roca-cerca`), para que la escena y la
+  sección que tiene debajo sean el mismo color y **no se vea el corte**: el
+  paisaje entra en la sección sin junta. Convive con `.f-azul`, que le da los
+  colores de texto; lo único que cambia es el fondo, y por eso la capa de mar
+  la excluye a mano (ver ShaderFondo).
+*/
+.f-roca {
+  background: var(--basalto);
+  color: var(--plata-clara);
+}
+
 /* campo de plata líquida con textura, ver .liquid-field más abajo */
 .f-plata {
   background: var(--plata-mid);
