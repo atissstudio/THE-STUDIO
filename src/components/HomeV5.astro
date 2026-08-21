@@ -6,6 +6,7 @@
   lectura) -> azul (.04, servicios) -> blanco (.05, datos) -> azul (.06, CTA).
 */
 import GlassButton from "./GlassButton.astro";
+import CampoPlata from "./CampoPlata.astro";
 import CarrilClaim from "./CarrilClaim.astro";
 import Escena from "./Escena.astro";
 import MarPortada from "./MarPortada.astro";
@@ -85,7 +86,14 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
   */}
   <i class="reel-parada p1" aria-hidden="true"></i>
   <i class="reel-parada p2" aria-hidden="true"></i>
-  <div class="reel-liquid"><i class="l1"></i><i class="l2"></i><i class="l3"></i></div>
+  {/*
+    LA PLATA LÍQUIDA. Antes eran tres manchas redondas con desenfoque de 40 px
+    moviéndose en bucle, y una mancha difuminada no tiene ni veta ni superficie:
+    daba niebla, y el campo se leía como un gris sucio con un halo claro en
+    medio. Ahora lo pinta un lienzo como metal fundido derritiéndose
+    (`src/scripts/plata.ts`). Sin WebGL manda el `background` plata de siempre.
+  */}
+  <CampoPlata />
   <div class="reel-stage" id="reelStage">
     <div class="reel-kick">El punto de partida · .02</div>
     <div class="reel-phrase reel-p1">Tu negocio ya vale.</div>
@@ -722,22 +730,6 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
     position: relative;
     background: var(--plata-mid);
   }
-  .reel-liquid {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-  }
-  .reel-liquid i {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(40px);
-  }
-  .reel-liquid .l1 { width: 55vw; height: 70vh; left: -10vw; top: 5vh; background: radial-gradient(circle, #f4f6fa, rgba(244, 246, 250, 0) 66%); animation: lv1 16s ease-in-out infinite; }
-  .reel-liquid .l2 { width: 48vw; height: 66vh; right: -8vw; top: 20vh; background: radial-gradient(circle, #7a828f, rgba(122, 130, 143, 0) 62%); animation: lv2 20s ease-in-out infinite; }
-  .reel-liquid .l3 { width: 45vw; height: 60vh; left: 30vw; bottom: 0; background: radial-gradient(circle, #eef1f7, rgba(238, 241, 247, 0) 62%); animation: lv3 24s ease-in-out infinite; }
-  @keyframes lv1 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(14vw, 4vh) scale(1.2); } }
-  @keyframes lv2 { 0%, 100% { transform: translate(0, 0) scale(1.1); } 50% { transform: translate(-12vw, -3vh) scale(0.9); } }
-  @keyframes lv3 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-16vw, 3vh) scale(1.2); } }
   .reel-stage {
     position: sticky;
     top: 0;
@@ -803,7 +795,20 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--azul);
+    /*
+      ⚠️ TINTA, NO AZUL, PORQUE EL CAMPO ES TEXTURADO (2026-08-21). Medido
+      leyendo los píxeles del propio lienzo: la colada baja a 0,23 de
+      luminancia en sus sombras, y ahí el azul de marca da **2,10** de
+      contraste contra los 4,5 exigibles — se pierde. Sobre la plata plana de
+      antes daba 5,65 y pasaba, así que el fallo lo trajo la textura.
+
+      La regla que ya estaba escrita es esta: el texto no se lee sobre material
+      texturado. Aquí el rótulo es corto y se salva cambiando de color en vez de
+      buscarle un suelo liso. En tinta pasa 4,90 hasta en el punto más oscuro
+      del campo, y la colada conserva todo su rango. El azul sigue mandando en
+      los campos lisos: quien elige el color es EL CAMPO, no quien escribe.
+    */
+    color: var(--ink);
     opacity: var(--p1, 1);
   }
 

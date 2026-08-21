@@ -1,0 +1,63 @@
+---
+/*
+  ══ CAMPO DE PLATA LÍQUIDA ═══════════════════════════════════════════════════
+
+  Se monta DENTRO de cualquier elemento que sea campo de plata y lo pinta como
+  metal fundido (ver `src/scripts/plata.ts` para el porqué del dibujo).
+
+  Cómo se usa: el contenedor lleva `position: relative` y este componente va
+  como primer hijo. El lienzo lo llena entero y se queda por detrás de todo lo
+  demás.
+
+  ⚠️ EL LIENZO NO SE MIDE A SÍ MISMO. OGL le escribe `style.width/height` al
+  cambiar de tamaño, así que desde el primer fotograma el elemento mide lo que
+  OGL le puso. Se mide el hueco que ocupa, que es su padre.
+
+  ⚠️ Y NO SE VE HASTA QUE HA PINTADO DE VERDAD (`html.plata-viva`). Si se
+  mostrara antes, habría un fotograma de lienzo en blanco sobre el campo. Sin
+  WebGL o con "menos movimiento" la clase no llega a ponerse nunca y manda la
+  plata plana del CSS de siempre.
+*/
+---
+
+<canvas class="campo-plata" aria-hidden="true"></canvas>
+
+<style>
+  .campo-plata {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    display: none;
+  }
+  :global(html.plata-viva) .campo-plata {
+    display: block;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .campo-plata {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { crearPlata } from "../scripts/plata";
+
+  /*
+    Cada lienzo se monta contra SU padre. Puede haber varios campos de plata en
+    la misma página, así que no vale con quedarse con el primero.
+  */
+  document.querySelectorAll<HTMLCanvasElement>("canvas.campo-plata").forEach((lienzo) => {
+    const hueco = lienzo.parentElement;
+    if (!hueco) return;
+    crearPlata(lienzo, {
+      medida: () => {
+        const r = hueco.getBoundingClientRect();
+        return { ancho: r.width, alto: r.height };
+      },
+      alArrancar: () => document.documentElement.classList.add("plata-viva"),
+    });
+  });
+</script>

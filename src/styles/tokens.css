@@ -286,10 +286,28 @@ html.mar-campos .closer > .closer-inner {
   background: transparent;
 }
 
-/* campo de plata líquida con textura, ver .liquid-field más abajo */
+/*
+  Campo de plata líquida. El `background` es la plata plana de siempre y hace de
+  suelo; encima lo pinta como metal fundido el componente `CampoPlata.astro`,
+  que se monta DENTRO del campo y se ancla a él — de ahí el `position:
+  relative`, sin el cual el lienzo se anclaría al primer ancestro colocado y se
+  iría a cualquier parte.
+
+  Sin WebGL o con "menos movimiento" el lienzo no arranca y manda este color,
+  que es un estado válido. (El viejo comentario prometía un `.liquid-field` que
+  nunca llegó a existir.)
+*/
 .f-plata {
+  position: relative;
   background: var(--plata-mid);
   color: var(--ink);
+  /*
+    ⚠️ Y EL RESALTADO TAMBIÉN VA EN TINTA AQUÍ. La colada tiene mucho más rango
+    que la plata plana: en sus sombras el azul de marca da 2,10 de contraste
+    (medido sobre los píxeles del lienzo) contra los 4,5 exigibles. Quien elige
+    el color del texto es el CAMPO, y este es texturado.
+  */
+  --em: var(--ink);
 }
 
 .field-pad {
