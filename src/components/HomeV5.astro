@@ -7,6 +7,7 @@
 */
 import GlassButton from "./GlassButton.astro";
 import CarrilClaim from "./CarrilClaim.astro";
+import Escena from "./Escena.astro";
 import MarPortada from "./MarPortada.astro";
 import { servicios as todos } from "../data/servicios";
 
@@ -101,7 +102,7 @@ const destacados = todos.slice(0, 3);
   <CarrilClaim />
 </div>
 
-<div class="respiradero alto" aria-hidden="true"><span class="tramo-nombre">El archipiélago</span></div>
+<Escena tipo="mar" nombre="El archipiélago" />
 
 <section class="f-claro field-pad row12 home-slide" data-reveal data-slides>
   <span class="field-tag" style="color:var(--azul)">.03</span>
@@ -151,7 +152,7 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
-<div class="respiradero alto" aria-hidden="true"><span class="tramo-nombre">La montaña de roca</span></div>
+<Escena tipo="risco" nombre="La montaña de roca" />
 
 <section class="f-azul row12 field-cards home-slide">
   <span class="field-tag">.05</span>
@@ -172,7 +173,7 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
-<div class="respiradero alto" aria-hidden="true"><span class="tramo-nombre">La playa de picón</span></div>
+<Escena tipo="playa" nombre="La playa de picón" />
 
 <section class="f-blanco row12 field-cards home-slide">
   <span class="field-tag" style="color:var(--azul)">.06</span>
@@ -196,7 +197,7 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
-<div class="respiradero" aria-hidden="true"><span class="tramo-nombre">El pueblo blanco</span></div>
+<Escena tipo="pueblo" nombre="El pueblo blanco" />
 
 <div class="cta-wrap">
   <div class="cta-screen f-azul home-slide" id="ctaScreen">
@@ -230,7 +231,7 @@ const destacados = todos.slice(0, 3);
   parada y la única que se ve desde arriba de las nubes: el recorrido empieza
   en el azul del mar y acaba en el azul de la altura.
 */}
-<div class="respiradero alto" aria-hidden="true"><span class="tramo-nombre">La cumbre</span></div>
+
 
 <style>
   /*
