@@ -254,6 +254,20 @@ const fragment = `
     mar += sin(y * 46.0 + w.x * 7.0 + t * 0.85 + ond1) * 0.50;
     mar += sin(y * 79.0 - w.x * 13.0 - t * 0.66 + ond2) * 0.30;
     mar += sin(y * 132.0 + w.x * 23.0 + t * 1.25) * 0.15;
+
+    /*
+      ⚠️ MAR CRUZADO (2026-08-21). Los tres trenes de arriba corren todos en el
+      mismo sentido, y eso, por bien afinado que esté, se lee como una PERSIANA:
+      rayas horizontales paralelas. Era lo que se veía mal en la portada.
+
+      El mar de verdad lleva siempre al menos dos sistemas de olas cruzados,
+      porque el viento de ahora no es el que levantó la mar de fondo. Basta con
+      uno más, girado unos 50 grados y más lento, para que el dibujo deje de
+      repetirse en bandas y empiece a picarse.
+    */
+    vec2 cr = vec2(w.x * 0.64 + y * 0.77, y * 0.64 - w.x * 0.77);
+    mar += sin(cr.y * 34.0 + cr.x * 8.0 - t * 0.44 + ond1 * 0.5) * 0.34;
+
     mar *= amp;
 
     // Detalle fino, viajando con la ola (si no, la superficie es plástico).
@@ -273,8 +287,8 @@ const fragment = `
       Cresta: el lomo de la ola brilla mucho más que el resto, y es ese
       destello lo que hace que se lea como agua y no como mancha.
     */
-    float cresta = pow(max(mar * 0.5 + 0.5, 0.0), 9.0);
-    n += cresta * (0.10 + 0.40 * calma);
+    float cresta = pow(max(mar * 0.5 + 0.5, 0.0), 11.0);
+    n += cresta * (0.12 + 0.48 * calma);
 
     // Contraste. El tope lo pone el texto que cae encima, no el gusto.
     n = clamp(0.5 + (n - 0.5) * 1.55, 0.0, 1.0);

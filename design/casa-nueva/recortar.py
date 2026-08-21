@@ -254,10 +254,17 @@ if __name__ == "__main__":
     # El umbral va por imagen: las de arcilla son gris sobre gris y con el
     # umbral general se les abrían agujeros en la pared de delante.
     pares = [
-        ("IMG_5795.JPG", "casa-noche.webp", 22.0),
-        ("IMG_5796.JPG", "casa-anochecer.webp", 24.0),
-        ("IMG_5797.JPG", "casa-amanecer.webp", 26.0),
-        ("7CE3DF3B-878A-4CBD-9946-DE0E9C21BE2B.PNG", "casa-dia.webp", 26.0),
+        # ⚠️ UMBRALES BAJOS, Y NO ES CAPRICHO. Con 22-26 el recorte MORDÍA la
+        # casa: en la de noche las paredes en sombra están cerca del azul
+        # oscuro del fondo, así que el corte entraba dentro de la pared y el
+        # lado derecho salía dentellado, con trozos sueltos. Comprobado a los
+        # tres valores sobre el plata real del sitio: 16 da la silueta entera
+        # y limpia, 20 la rompe. El original de Alejandro está perfecto; el
+        # dentado lo ponía el umbral.
+        ("IMG_5795.JPG", "casa-noche.webp", 16.0),
+        ("IMG_5796.JPG", "casa-anochecer.webp", 18.0),
+        ("IMG_5797.JPG", "casa-amanecer.webp", 20.0),
+        ("7CE3DF3B-878A-4CBD-9946-DE0E9C21BE2B.PNG", "casa-dia.webp", 22.0),
         ("32C7BA67-A658-413E-828A-B56F88D7D9BF.PNG", "casa-barro-oscuro.webp", 11.0),
         ("36A4F1E5-6F85-4815-AE18-246A50B64F7D.PNG", "casa-barro.webp", 11.0),
     ]
