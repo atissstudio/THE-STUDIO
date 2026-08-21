@@ -881,7 +881,7 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
     align-content: center;
   }
   .respaldo {
-    grid-column: 2/9;
+    grid-column: 2/12;
     padding: 0 20px;
   }
   /*
@@ -928,10 +928,21 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
     margin-top: 36px;
     max-width: 62ch;
   }
+  /*
+    Los compromisos son el REMATE del argumento, no una nota al pie, y sin
+    embargo iban a 14 px, más pequeños que el párrafo que los introduce. Con la
+    diapositiva repartida en dos, la columna derecha tiene que pesar lo que dice
+    que pesa. La pantalla se llena subiendo el cuerpo, no añadiendo texto.
+
+    Y el filete sube de 26% a 34%: sobre el campo azul, que va texturado por el
+    mar, una línea al 26% se pierde. Sobre un campo liso se veía.
+  */
   .respaldo-lista li {
-    border-top: 1px solid color-mix(in srgb, currentColor 26%, transparent);
-    padding: 14px 0;
+    border-top: 1px solid color-mix(in srgb, currentColor 34%, transparent);
+    padding: 20px 0;
     font-weight: 700;
+    font-size: clamp(1.02rem, 1.2vw, 1.2rem);
+    line-height: 1.35;
   }
   /*
     Justificado solo en pantalla ancha. En columna estrecha el hueco sobrante se
@@ -941,6 +952,37 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
   @media (min-width: 901px) {
     .respaldo-txt {
       text-align: justify;
+    }
+    /*
+      ⚠️ ESTA DIAPOSITIVA VA SOLA, ASÍ QUE NO PUEDE OCUPAR MEDIA PANTALLA. Se
+      montó copiando la columna de `.read` (2/9), que está pensada para bloques
+      que ALTERNAN izquierda y derecha en pareja: el hueco del lado libre lo
+      justifica el bloque siguiente, que se va al contrario. Aquí no hay
+      siguiente, así que el hueco no lo justificaba nadie y quedaban 427 px de
+      azul vacío a la derecha en una pantalla de 1280 — el mismo defecto de
+      pantalla medio vacía que acabábamos de quitar del móvil.
+
+      Ahora el bloque ocupa el ancho de la diapositiva y se reparte en dos: el
+      argumento a la izquierda y los tres compromisos ocupando el lado que
+      quedaba libre, centrados contra el texto. En el teléfono no aplica nada de
+      esto y siguen apilados, que es lo único que cabe.
+    */
+    .respaldo {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      column-gap: clamp(48px, 6vw, 112px);
+      align-items: start;
+    }
+    .respaldo .k,
+    .respaldo h2,
+    .respaldo-txt {
+      grid-column: 1;
+    }
+    .respaldo-lista {
+      grid-column: 2;
+      grid-row: 1 / span 3;
+      align-self: center;
+      margin-top: 0;
     }
   }
 
