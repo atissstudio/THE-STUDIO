@@ -7,7 +7,6 @@
 */
 import GlassButton from "./GlassButton.astro";
 import CarrilClaim from "./CarrilClaim.astro";
-import MarcoCanario from "./MarcoCanario.astro";
 import MarPortada from "./MarPortada.astro";
 import { servicios as todos } from "../data/servicios";
 
@@ -152,18 +151,7 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
-{/*
-  El marco ABRE aquí: el campo azul de servicios se acaba y da paso al claro
-  de los datos. Va en su propio tramo, con aire por arriba y por abajo, para
-  que la figura, que sobresale de la barra, no se acerque a ningún texto.
-  No lleva esquinas porque lo de arriba es un campo a sangre, no una tarjeta
-  con redondeo que completar.
-*/}
 <div class="respiradero alto" aria-hidden="true"><span class="tramo-nombre">La playa de picón</span></div>
-
-<div class="marco-tramo">
-  <MarcoCanario modo="abre" figura="rombo" />
-</div>
 
 <section class="f-blanco row12 field-cards home-slide">
   <span class="field-tag" style="color:var(--azul)">.06</span>
@@ -191,17 +179,6 @@ const destacados = todos.slice(0, 3);
 
 <div class="cta-wrap">
   <div class="cta-screen f-azul home-slide" id="ctaScreen">
-    {/*
-      El marco CIERRA aquí, SEPARADO de la tarjeta por un hueco de cal.
-
-      ⚠️ Se probó pegado, completándole la esquina, y quedaba fatal (visto en
-      producción): contra la tarjeta la barra es azul sobre azul, así que no
-      hay barra que romper, y la figura con su muesca se lee como un mordisco
-      blanco en la tarjeta. Encima, cuadrar la esquina le quita su silueta.
-      La figura solo funciona rompiendo una barra que SE VEA, con cal a los
-      dos lados, que es lo que hay en el dibujo.
-    */}
-    <MarcoCanario modo="cierra" figura="circulo" />
     <div class="cta-inner">
       <p class="k2">.07 · Tu plan gratis</p>
       <h2>Vamos a que se note.</h2>
@@ -728,31 +705,6 @@ const destacados = todos.slice(0, 3);
     background: transparent;
     padding: calc(var(--menu-h) + 20px) 20px 20px;
   }
-  /*
-    El tramo del marco que abre. Fondo claro propio y aire suficiente para que
-    la figura, que sobresale 29 px de la barra, no se acerque a ningún texto.
-    NO lleva clase de campo (.f-blanco y compañía) a propósito: en móvil esas
-    clases dan una pantalla entera de alto, y esto es una franja.
-  */
-  .marco-tramo {
-    background: var(--blanco);
-    padding: 46px 20px 50px;
-  }
-  @media (max-width: 900px) {
-    .marco-tramo {
-      padding: 34px 20px 36px;
-    }
-  }
-
-  /*
-    El hueco entre la barra y la tarjeta. Corto, pero tiene que existir: si se
-    tocan, la barra desaparece contra el azul de la tarjeta y la figura se lee
-    como un mordisco. Arriba, la propia sección le da sus 64 px de cal.
-  */
-  .cta-screen > :global(.marco-c) {
-    margin-bottom: 30px;
-  }
-
   .cta-inner {
     flex: 1;
     width: 100%;

@@ -1079,24 +1079,26 @@ a:has(.logo) {
 }
 
 /* ==========================================================================
-   EL PAISAJE (2026-08-21) — los campos de color pasan a ser TRAMOS del viaje
+   EL PAISAJE (2026-08-21, segunda versión) — la página se dibuja SOBRE él
    --------------------------------------------------------------------------
-   Todo lo de aquí abajo cuelga de `html.paisaje-vivo`, que solo se pone cuando
-   el lienzo del paisaje ha pintado un fotograma de verdad. Sin WebGL, o con
-   "menos movimiento", nada de esto aplica y el sitio se ve exactamente igual
-   que antes: campos planos y los mismos contrastes. Es la red de seguridad
-   obligatoria del proyecto, aplicada al cambio más grande desde v5.
+   ⚠️ QUÉ CAMBIÓ Y POR QUÉ. La primera versión ponía un velo translúcido sobre
+   cada campo de color para garantizar el contraste. El resultado, visto en
+   producción, era exactamente lo que Alejandro describió: "una opacidad rara
+   detrás de todo". El paisaje no se veía como un sitio, se veía como un telón
+   lavado, y la página flotaba encima sin apoyarse en nada.
 
-   ⚠️ POR QUÉ VELOS Y NO TRANSPARENCIA TOTAL. El paisaje se mueve, así que
-   debajo de un párrafo puede tocarle basalto o puede tocarle cal. Un texto no
-   puede depender de por dónde vaya el scroll. El velo garantiza el peor caso:
-   la opacidad de cada campo está elegida para que el texto siga pasando el
-   contraste aunque debajo esté el material más desfavorable. Si se bajan estos
-   números, hay que volver a medir las 21 páginas.
+   La regla nueva es más simple y más honesta: **el paisaje se ve entero, y el
+   texto se apoya en cal**. La cal es el único material liso del catálogo, y ya
+   estaba escrito que el texto largo no se lee sobre material texturado. Así
+   que los campos no tapan nada —son transparentes— y lo que lleva texto es una
+   superficie OPACA que se posa encima. Sin medias tintas: o material, o cal.
+
+   Todo cuelga de `html.paisaje-vivo`, que solo se pone cuando el lienzo ha
+   pintado de verdad. Sin WebGL el sitio se ve exactamente como antes.
    ========================================================================== */
 
 :root {
-  /* Materiales del catálogo aprobado (2026-08-21). Ver design/paisaje/materiales.html */
+  /* Materiales del catálogo aprobado. Ver design/paisaje/materiales.html */
   --mar-hondo: #22376f;
   --mar-orilla: #6e8ad0;
   --picon: #1e1e22;
@@ -1113,82 +1115,82 @@ html.paisaje-vivo body {
   background: var(--picon);
 }
 
-/* La página deja de tener fondo propio: el fondo es el paisaje. */
-html.paisaje-vivo #page {
+/* Los campos dejan de pintar: el color lo pone el paisaje que hay debajo. */
+html.paisaje-vivo #page,
+html.paisaje-vivo .f-azul,
+html.paisaje-vivo .f-claro,
+html.paisaje-vivo .f-blanco,
+html.paisaje-vivo .f-plata {
   background: transparent;
 }
-
-/*
-  Campos azules: 0,88 es el suelo medido. Por debajo de 0,85, con cal debajo,
-  el texto claro cae a 3,7 y deja de pasar. No bajar sin volver a medir.
-*/
-html.paisaje-vivo .f-azul {
-  background: color-mix(in srgb, var(--azul) 88%, transparent);
-}
-/* Lectura larga: el texto va en tinta, así que el velo tiene que ser claro. */
-html.paisaje-vivo .f-claro {
-  background: color-mix(in srgb, var(--cal) 82%, transparent);
-}
-html.paisaje-vivo .f-blanco {
-  background: color-mix(in srgb, var(--cal) 76%, transparent);
-}
-/* El pie se queda opaco: es el suelo del sitio, no un tramo del viaje. */
+/* El pie se queda opaco: es el suelo del sitio, no un tramo del paisaje. */
 html.paisaje-vivo .f-navy {
   background: var(--navy);
 }
-html.paisaje-vivo .f-plata {
-  background: color-mix(in srgb, var(--plata-mid) 72%, transparent);
+
+/*
+  LA CAL. Todo bloque de lectura larga se posa sobre una superficie opaca de
+  cal, que es donde el texto se lee. No es una tarjeta con estilo propio: es el
+  encalado, el mismo material del pueblo.
+*/
+html.paisaje-vivo .read {
+  background: var(--cal);
+  color: var(--ink);
+  padding: clamp(30px, 4vw, 56px);
+  box-shadow: 0 30px 60px -34px rgba(11, 18, 48, 0.55);
+}
+html.paisaje-vivo .f-azul .read h2,
+html.paisaje-vivo .f-azul .read p,
+html.paisaje-vivo .f-navy .read h2,
+html.paisaje-vivo .f-navy .read p {
+  color: var(--ink);
+}
+html.paisaje-vivo .read .k {
+  color: var(--plata-oscura);
 }
 
 /*
-  Las tarjetas azules (encabezados y cierres) van MÁS opacas que los campos:
-  son piezas pequeñas con texto corto y mucho contraste alrededor, y ahí el
-  paisaje colándose por debajo se lee como suciedad, no como material.
+  Las tarjetas y los encabezados llevan su propio material, siempre OPACO. Una
+  tarjeta semitransparente sobre roca es ruido detrás de un titular.
 */
+html.paisaje-vivo .cells .cell,
+html.paisaje-vivo .cells .head-cell,
+html.paisaje-vivo .datos .dato,
+html.paisaje-vivo .datos .head-cell {
+  background: var(--cal);
+  color: var(--ink);
+}
+html.paisaje-vivo .f-azul .cells .cell,
+html.paisaje-vivo .f-azul .cells .head-cell {
+  background: var(--azul);
+  color: var(--plata-clara);
+}
 html.paisaje-vivo .hero-field.f-azul > .hero-inner,
 html.paisaje-vivo .closer.f-azul > .closer-inner,
 html.paisaje-vivo .cta-screen > .cta-inner {
-  background: color-mix(in srgb, var(--azul) 92%, transparent);
+  background: var(--azul);
 }
 
 /*
-  RESPIRADEROS. Sin esto el paisaje no se ve nunca, porque todos los campos
-  llevan velo. Son las costuras entre secciones: una banda sin nada donde el
-  material se ve limpio y se entiende por dónde va el viaje.
+  RESPIRADEROS: los tramos en los que no hay nada encima y se ve el paisaje
+  limpio. Son las juntas del acordeón, lo que hace que bajar se sienta como
+  bajar y no como pasar de una sección a otra.
 */
 .respiradero {
   position: relative;
   height: 0;
   overflow: hidden;
-  transition: height 0.6s ease;
 }
 html.paisaje-vivo .respiradero {
-  height: clamp(180px, 30svh, 340px);
+  height: clamp(240px, 46svh, 460px);
 }
 html.paisaje-vivo .respiradero.alto {
-  height: clamp(280px, 52svh, 560px);
-}
-/* Una línea de cal a cada lado: es el filete del sistema, no un borde nuevo. */
-html.paisaje-vivo .respiradero::before,
-html.paisaje-vivo .respiradero::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: color-mix(in srgb, var(--cal) 55%, transparent);
-}
-html.paisaje-vivo .respiradero::before {
-  top: 0;
-}
-html.paisaje-vivo .respiradero::after {
-  bottom: 0;
+  height: clamp(360px, 72svh, 700px);
 }
 
 /*
-  El rótulo del tramo, dentro del respiradero: dice en qué parte del paisaje
-  estás. Va en cal porque el material de debajo puede ser cualquiera, y la cal
-  es el único color que se lee sobre los doce (medido).
+  El rótulo del tramo. Va en cal porque debajo puede haber cualquiera de los
+  doce materiales, y la cal es el único color que se lee sobre los doce.
 */
 .respiradero .tramo-nombre {
   position: absolute;
@@ -1200,11 +1202,11 @@ html.paisaje-vivo .respiradero::after {
   letter-spacing: 0.24em;
   text-transform: uppercase;
   font-weight: 700;
-  text-shadow: 0 1px 14px rgba(11, 18, 48, 0.75);
+  text-shadow: 0 1px 16px rgba(11, 18, 48, 0.8);
   opacity: 0;
   transition: opacity 0.8s ease;
   white-space: nowrap;
 }
 html.paisaje-vivo .respiradero .tramo-nombre {
-  opacity: 0.9;
+  opacity: 0.85;
 }
