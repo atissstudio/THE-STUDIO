@@ -71,7 +71,17 @@ const { tipo, nombre, pie = false, campo = "blanco" } = Astro.props;
 type Punto = [number, number];
 
 /** Los vértices de cada cordillera, de izquierda a derecha. */
-const CRESTAS: Record<"fondo" | "medio" | "frente", Punto[]> = {
+const CRESTAS: Record<string, Punto[]> = {
+  /*
+    Cinco escalones de distancia, no tres. Con tres filas hay poco que
+    escalonar y el ojo lee tres recortes pegados; con cinco lee un macizo que
+    se va hacia el fondo. La más lejana va casi lisa (la distancia aplana) y la
+    de delante es una loma baja que hace de primer término.
+  */
+  lejano: [
+    [-200, 306], [140, 248], [360, 292], [620, 220], [880, 276], [1120, 238],
+    [1400, 272],
+  ],
   fondo: [
     [-200, 344], [0, 330], [210, 196], [330, 268], [520, 132], [700, 250],
     [880, 168], [1060, 262], [1200, 214], [1400, 236],
@@ -84,7 +94,69 @@ const CRESTAS: Record<"fondo" | "medio" | "frente", Punto[]> = {
     [-200, 498], [0, 486], [150, 430], [340, 470], [560, 412], [780, 462],
     [1000, 424], [1200, 468], [1400, 480],
   ],
+  primer: [
+    [-200, 512], [180, 476], [430, 502], [700, 468], [980, 498], [1200, 480],
+    [1400, 492],
+  ],
 };
+
+/*
+  ══ PERSPECTIVA ATMOSFÉRICA ═══════════════════════════════════════════════
+
+  Lo que da profundidad a un paisaje no es el tamaño, es el AIRE que hay por
+  medio: cuanto más lejos está algo, más se acerca su color al del cielo, menos
+  saturado va y menos contraste tiene. Es la técnica de fondo del oficio, de
+  Leonardo a cualquier ilustración por capas de hoy, y es justo lo que aquí
+  faltaba: había tres tonos de roca planos, con el mismo contraste los tres, y
+  por eso se leían como tres recortes pegados en vez de como distancia.
+
+  El color de cada fila NO es un color nuevo: se mezcla el basalto del catálogo
+  con el cielo según lo lejos que esté. Así la paleta sigue siendo la aprobada
+  y la escala sale sola.
+
+  Y la misma cuenta gobierna la fuerza de todo lo demás —sombra, luz,
+  barrancos, niebla—, que es lo que hace que la fila lejana se lea como lejana
+  sin tener que ajustarla a mano.
+*/
+type Jiron = { c: string; x: number; y: number; rx: number; ry: number; o: number };
+type Fila = {
+  clave: string;
+  plano: string;
+  /** 0 = en el horizonte · 1 = pegada al espectador. */
+  dist: number;
+  /** La bruma que cruza por delante de ESTA fila, si le toca. */
+  jiron?: Jiron;
+};
+
+const FILAS: Fila[] = [
+  { clave: "lejano", plano: "lejano", dist: 0.12 },
+  {
+    clave: "fondo",
+    plano: "fondo",
+    dist: 0.32,
+    jiron: { c: "j1", x: 300, y: 318, rx: 380, ry: 30, o: 0.62 },
+  },
+  {
+    clave: "medio",
+    plano: "medio",
+    dist: 0.56,
+    jiron: { c: "j2", x: 820, y: 396, rx: 460, ry: 24, o: 0.5 },
+  },
+  {
+    clave: "frente",
+    plano: "frente",
+    dist: 0.82,
+    jiron: { c: "j3", x: 520, y: 460, rx: 320, ry: 17, o: 0.36 },
+  },
+  { clave: "primer", plano: "primer", dist: 1 },
+];
+
+/** El tono de la roca a esa distancia: del cielo (lejos) al basalto (cerca). */
+const tono = (d: number) =>
+  `color-mix(in srgb, var(--roca-cerca) ${Math.round(14 + d * 86)}%, var(--cielo))`;
+
+/** La cumbre más alta de una cordillera, para saber dónde empieza su niebla. */
+const cumbre = (p: Punto[]) => Math.min(...p.map(([, y]) => y));
 
 const cresta = (p: Punto[]) => p.map(([x, y]) => `${x} ${y}`).join(" L ");
 /** El relleno: la línea de cumbres y de ahí al suelo. */
@@ -107,6 +179,23 @@ const caras = (p: Punto[]) => {
 };
 
 /**
+ * La cara de luz: por cada tramo que SUBE, la ladera que da al sol. Sin ella
+ * el pico es un triángulo con una mancha oscura a un lado; con las dos caras
+ * tiene volumen, porque el ojo lee de dónde viene la luz. La luz entra por la
+ * izquierda, que es de donde viene en el resto de la escena.
+ */
+const luces = (p: Punto[]) => {
+  const out: string[] = [];
+  for (let i = 0; i < p.length - 1; i++) {
+    const [x1, y1] = p[i];
+    const [x2, y2] = p[i + 1];
+    if (y2 >= y1) continue;
+    out.push(`M${x1} ${y1} L${x2} ${y2} L${x2} 520 L${x1} 520 Z`);
+  }
+  return out;
+};
+
+/**
  * Los barrancos: dos por cumbre, bajando CON la pendiente y muriendo antes del
  * pie. En vertical parecerían grietas de un cristal, no barrancos.
  */
@@ -120,6 +209,8 @@ const barrancos = (p: Punto[]) => {
     const largo = Math.min(150, (520 - y) * 0.62);
     out.push(`M${x} ${y + 6} L${x - largo * 0.34} ${y + largo}`);
     out.push(`M${x + 8} ${y + 10} L${x + largo * 0.42} ${y + largo * 0.92}`);
+    // Un tercero, más corto y descolgado, o los dos a compás se leen como una V.
+    out.push(`M${x - 14} ${y + 22} L${x - largo * 0.52} ${y + largo * 0.66}`);
   }
   return out;
 };
@@ -139,6 +230,8 @@ const encuadre: Record<string, string> = {
   playa: "0 0 1200 520",
 };
 const caja = pie ? encuadre[tipo] : "0 0 1200 520";
+/* Los ids de <defs> son globales al documento: se marcan por escena. */
+const uid = `${tipo}${pie ? "-pie" : ""}`;
 ---
 
 <div class:list={["escena", `e-${tipo}`, `c-${campo}`, { pie }]} data-escena aria-hidden="true">
@@ -148,59 +241,133 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
         <>
           {/* Cielo: una sola banda, sin degradado. */}
           {!pie && <rect x="0" y="0" width="1200" height="520" fill="var(--cielo)" />}
-          {/*
-            Las tres cordilleras llevan lo mismo, y lo que cambia es la FUERZA:
-            la de lejos casi no tiene relieve —la distancia aplana, y por eso se
-            lee como lejos— y la de delante lo tiene todo.
-          */}
-          <g data-plano="fondo">
-            <path d={macizo(CRESTAS.fondo)} fill="var(--roca-lejos)" />
-            <g fill="#0b1230" fill-opacity=".07">
-              {caras(CRESTAS.fondo).map((d) => (
-                <path d={d} />
-              ))}
-            </g>
-          </g>
-          <g data-plano="medio">
-            <path d={macizo(CRESTAS.medio)} fill="var(--roca-medio)" />
-            <g fill="#0b1230" fill-opacity=".13">
-              {caras(CRESTAS.medio).map((d) => (
-                <path d={d} />
-              ))}
-            </g>
-            <g stroke="#0b1230" stroke-opacity=".16" stroke-width="2" fill="none" stroke-linecap="round">
-              {barrancos(CRESTAS.medio).map((d) => (
-                <path d={d} />
-              ))}
-            </g>
-            {/* El filo de luz sobre la línea de cumbres. */}
-            <path d={`M${cresta(CRESTAS.medio)}`} fill="none" stroke="var(--cal)" stroke-opacity=".2" stroke-width="2" />
-          </g>
-          <g data-plano="frente">
-            <path d={macizo(CRESTAS.frente)} fill="var(--roca-cerca)" />
-            <g fill="#0b1230" fill-opacity=".22">
-              {caras(CRESTAS.frente).map((d) => (
-                <path d={d} />
-              ))}
-            </g>
-            <g stroke="#0b1230" stroke-opacity=".28" stroke-width="2.4" fill="none" stroke-linecap="round">
-              {barrancos(CRESTAS.frente).map((d) => (
-                <path d={d} />
-              ))}
-            </g>
+          <defs>
             {/*
-              Los estratos, recortados por el propio macizo para que no se
-              salgan por el cielo. Muy tenues: son colada, no rayas.
+              LA NIEBLA QUE SEPARA UN PLANO DEL SIGUIENTE. El aire se acumula al
+              PIE de las montañas, no en las cumbres, así que va de nada arriba
+              a casi opaco abajo. Es lo que hace que la cordillera de delante
+              SALGA de la de atrás en vez de estar pegada a ella.
             */}
-            <clipPath id="risco-frente">
-              <path d={macizo(CRESTAS.frente)} />
-            </clipPath>
-            <g clip-path="url(#risco-frente)" stroke="var(--cal)" stroke-opacity=".09" stroke-width="6" fill="none">
-              {[450, 476, 502].map((y) => (
-                <path d={`M-200 ${y} L1400 ${y - 10}`} />
-              ))}
-            </g>
-          </g>
+            <linearGradient id={`niebla-${uid}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="var(--cielo)" stop-opacity="0" />
+              <stop offset="0.55" stop-color="var(--cielo)" stop-opacity="0.55" />
+              <stop offset="1" stop-color="var(--cielo)" stop-opacity="0.92" />
+            </linearGradient>
+            {/*
+              ⚠️ UN JIRÓN NO TIENE CONTORNO. Con relleno plano, la elipse se lee
+              como una lente pegada sobre la montaña, que es exactamente lo que
+              se vio: una forma geométrica, no bruma. Se difumina hacia el borde
+              y desaparece antes de llegar a él.
+            */}
+            <radialGradient id={`jiron-${uid}`}>
+              <stop offset="0" stop-color="var(--cielo)" stop-opacity="1" />
+              <stop offset="0.45" stop-color="var(--cielo)" stop-opacity="0.72" />
+              <stop offset="1" stop-color="var(--cielo)" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          {FILAS.map((f) => {
+            const p = CRESTAS[f.clave];
+            const d = f.dist;
+            return (
+              <g data-plano={f.plano}>
+                <path d={macizo(p)} fill={tono(d)} />
+                {/*
+                  Sombra y luz, las dos, y las dos crecen con la cercanía: la
+                  distancia aplana el relieve, y eso es lo que hace que la fila
+                  del fondo se lea como fondo sin tocarle nada a mano.
+                */}
+                <g fill="#0b1230" fill-opacity={(0.05 + d * 0.2).toFixed(3)}>
+                  {caras(p).map((v) => (
+                    <path d={v} />
+                  ))}
+                </g>
+                <g fill="var(--cal)" fill-opacity={(0.03 + d * 0.11).toFixed(3)}>
+                  {luces(p).map((v) => (
+                    <path d={v} />
+                  ))}
+                </g>
+                {d > 0.25 && (
+                  <g
+                    stroke="#0b1230"
+                    stroke-opacity={(d * 0.3).toFixed(3)}
+                    stroke-width={(1.2 + d * 1.4).toFixed(2)}
+                    fill="none"
+                    stroke-linecap="round"
+                  >
+                    {barrancos(p).map((v) => (
+                      <path d={v} />
+                    ))}
+                  </g>
+                )}
+                {/* El filo de luz sobre la línea de cumbres. */}
+                <path
+                  d={`M${cresta(p)}`}
+                  fill="none"
+                  stroke="var(--cal)"
+                  stroke-opacity={(0.1 + d * 0.18).toFixed(3)}
+                  stroke-width="2"
+                />
+                {/*
+                  Los estratos de colada, solo en las dos filas de delante: son
+                  las únicas lo bastante cerca para distinguir una franja de
+                  otra. Recortados por el propio macizo para que no se salgan
+                  por el cielo.
+                */}
+                {d >= 0.8 && (
+                  <>
+                    <clipPath id={`macizo-${uid}-${f.clave}`}>
+                      <path d={macizo(p)} />
+                    </clipPath>
+                    <g
+                      clip-path={`url(#macizo-${uid}-${f.clave})`}
+                      stroke="var(--cal)"
+                      stroke-opacity=".09"
+                      stroke-width="6"
+                      fill="none"
+                    >
+                      {[450, 476, 502].map((y) => (
+                        <path d={`M-200 ${y} L1400 ${y - 10}`} />
+                      ))}
+                    </g>
+                  </>
+                )}
+                {/*
+                  Y su niebla, que tapa el pie de ESTA fila y sobre la que se
+                  dibujará la siguiente. La última no lleva: no hay nada delante
+                  de ella de lo que separarse.
+                */}
+                {d < 1 && (
+                  <rect
+                    x="-200"
+                    y={cumbre(p)}
+                    width="1600"
+                    height={520 - cumbre(p)}
+                    fill={`url(#niebla-${uid})`}
+                    opacity={(0.72 - d * 0.5).toFixed(3)}
+                  />
+                )}
+                {/*
+                  ⚠️ Y EL JIRÓN VA DENTRO DE SU PLANO, no encima de todo. Suelto
+                  al final del dibujo pasaba por delante de la cordillera más
+                  cercana, que es justo lo contrario de lo que tiene que
+                  demostrar. Dentro del grupo queda tapado por las filas de
+                  delante —cruza por delante de una y por detrás de la
+                  siguiente— y además viaja con el paralaje de su fila.
+                */}
+                {f.jiron && (
+                  <ellipse
+                    class={`jiron ${f.jiron.c}`}
+                    cx={f.jiron.x}
+                    cy={f.jiron.y}
+                    rx={f.jiron.rx}
+                    ry={f.jiron.ry}
+                    fill={`url(#jiron-${uid})`}
+                    opacity={f.jiron.o}
+                  />
+                )}
+              </g>
+            );
+          })}
         </>
       )
     }
@@ -263,12 +430,54 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
             palmera. Son los mismos motivos del diorama de Alejandro, reducidos
             a lo mínimo que aún los identifica.
           */}
-          <g data-plano="fondo" fill="var(--roca-lejos)" opacity={pie ? 0.4 : 1}>
-            <rect x="60" y="300" width="150" height="90" />
-            <rect x="250" y="286" width="120" height="104" />
-            <rect x="470" y="308" width="180" height="82" />
-            <rect x="760" y="292" width="140" height="98" />
-            <rect x="980" y="312" width="160" height="78" />
+          <defs>
+            {/*
+              La misma niebla que separa las cordilleras del risco, aquí entre
+              el caserío del fondo y el de delante. El aire se acumula abajo.
+            */}
+            <linearGradient id={`niebla-${uid}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="var(--cielo)" stop-opacity="0" />
+              <stop offset="0.55" stop-color="var(--cielo)" stop-opacity="0.55" />
+              <stop offset="1" stop-color="var(--cielo)" stop-opacity="0.92" />
+            </linearGradient>
+            <radialGradient id={`jiron-${uid}`}>
+              <stop offset="0" stop-color="var(--cielo)" stop-opacity="1" />
+              <stop offset="0.45" stop-color="var(--cielo)" stop-opacity="0.72" />
+              <stop offset="1" stop-color="var(--cielo)" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          {/*
+            EL CASERÍO DEL FONDO, CON AIRE POR MEDIO. Iba en roca lisa y se leía
+            pegado al de delante. Ahora su color se mezcla con el cielo como las
+            cordilleras lejanas del risco (misma cuenta, `tono`), lleva su cara
+            de sombra a la derecha —la luz entra por la izquierda en toda la
+            escena— y por debajo una banda de niebla, que es lo que hace que el
+            caserío blanco SALGA de él en vez de estar encima.
+          */}
+          <g data-plano="fondo">
+            <g fill={tono(0.34)}>
+              <rect x="60" y="300" width="150" height="90" />
+              <rect x="250" y="286" width="120" height="104" />
+              <rect x="470" y="308" width="180" height="82" />
+              <rect x="760" y="292" width="140" height="98" />
+              <rect x="980" y="312" width="160" height="78" />
+            </g>
+            <g fill="#0b1230" fill-opacity=".08">
+              <rect x="188" y="300" width="22" height="90" />
+              <rect x="352" y="286" width="18" height="104" />
+              <rect x="626" y="308" width="24" height="82" />
+              <rect x="880" y="292" width="20" height="98" />
+              <rect x="1120" y="312" width="20" height="78" />
+            </g>
+            <rect x="-200" y="286" width="1600" height="234" fill={`url(#niebla-${uid})`} opacity=".5" />
+            {/*
+              La bruma va DENTRO del plano del fondo, así que el caserío blanco
+              la tapa: cruza por detrás de las casas de delante y por delante de
+              las del fondo, que es lo que enseña que hay sitio entre las dos
+              filas. Suelta al final pasaba por encima de todo.
+            */}
+            <ellipse class="jiron j2" cx="420" cy="372" rx="380" ry="20" fill={`url(#jiron-${uid})`} opacity=".46" />
+            <ellipse class="jiron j3" cx="900" cy="398" rx="300" ry="15" fill={`url(#jiron-${uid})`} opacity=".34" />
           </g>
           <g data-plano="medio">
             {/*
@@ -300,6 +509,26 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
               <rect x="546" y="366" width="230" height="106" />
               <rect x="820" y="342" width="170" height="130" />
               <rect x="1020" y="372" width="140" height="100" />
+            </g>
+            {/*
+              LA LUZ, QUE ES LO QUE HACE QUE UN CUBO SEA UN CUBO. La luz entra
+              por la izquierda: cada casa lleva su costado derecho en sombra y
+              una sombra proyectada sobre la tapia. Sin esto son rectángulos de
+              cal, todos igual de planos, y eso era lo que hacía que el pueblo
+              se leyera como un recorte.
+            */}
+            <g fill="#0b1230" fill-opacity=".12">
+              <rect x="282" y="352" width="28" height="120" />
+              <rect x="474" y="330" width="28" height="142" />
+              <rect x="748" y="366" width="28" height="106" />
+              <rect x="962" y="342" width="28" height="130" />
+              <rect x="1132" y="372" width="28" height="100" />
+            </g>
+            <g fill="#0b1230" fill-opacity=".07">
+              <path d="M310 472 L352 472 L352 440 L310 440 Z" />
+              <path d="M502 472 L546 472 L546 428 L502 428 Z" />
+              <path d="M776 472 L820 472 L820 448 L776 448 Z" />
+              <path d="M990 472 L1020 472 L1020 442 L990 442 Z" />
             </g>
             {/* Chimeneas: dos, no cinco. Lo que se repite deja de leerse. */}
             <g fill="var(--cal)">
@@ -396,14 +625,29 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
     no aparece ningún rectángulo de otro color. Es lo que pidió Alejandro al
     ver el gris del cielo cortando contra el claro de la sección.
   */
+  /*
+    ⚠️ Y EL AIRE ES EL CAMPO, NO UN GRIS FIJO. `--cielo` no es solo el color del
+    rectángulo de cielo: es el color con el que se mezclan las filas lejanas
+    (perspectiva atmosférica) y del que se hace la niebla que separa los
+    planos. Con la escena en pie no hay rectángulo de cielo —el campo de arriba
+    sigue de largo—, así que si `--cielo` se queda en su gris, la niebla pinta
+    una veladura gris sobre un campo que no es gris. Se vio al colgar el pueblo
+    del campo azul: una bruma clara flotando alrededor de las casas.
+
+    Por eso el color va AQUÍ, pegado al fondo: un solo sitio decide de qué
+    color es el aire de la escena, y fondo y niebla no pueden discrepar.
+  */
   .escena.pie {
     background: var(--blanco);
+    --cielo: var(--blanco);
   }
   .escena.pie.c-claro {
     background: var(--plata-clara);
+    --cielo: var(--plata-clara);
   }
   .escena.pie.c-azul {
     background: var(--azul);
+    --cielo: var(--azul);
   }
   .escena.pie {
     /*
@@ -468,6 +712,15 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
     otra vez al primero— lee tres cosas distintas a tres distancias distintas,
     que es lo que se busca. Es el mismo principio que el mar cruzado.
   */
+  /*
+    ⚠️ CADA FILA VIAJA HACIA UN LADO. Con todas yendo en el mismo sentido y solo
+    a distinta velocidad, el ojo lee UN bloque que se desliza. Cruzándolas lee
+    cinco cosas a cinco distancias. Y la velocidad crece hacia delante, que es
+    como se mueve el mundo cuando uno pasa por delante de él.
+  */
+  .escena [data-plano="lejano"] {
+    transform: translate3d(calc(var(--pl, 0) * -1%), 0, 0);
+  }
   .escena [data-plano="fondo"] {
     transform: translate3d(calc(var(--pl, 0) * 2%), 0, 0);
   }
@@ -476,6 +729,52 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
   }
   .escena [data-plano="frente"] {
     transform: translate3d(calc(var(--pl, 0) * 8.5%), 0, 0);
+  }
+  .escena [data-plano="primer"] {
+    transform: translate3d(calc(var(--pl, 0) * -14%), 0, 0);
+  }
+
+  /*
+    ══ LOS JIRONES DE BRUMA ═════════════════════════════════════════════════
+
+    Movimiento con función, no adorno: una banda de bruma que cruza por delante
+    de una cordillera y por detrás de la siguiente demuestra que hay espacio
+    entre las dos. Por eso van dentro del grupo del risco y no sobre todo.
+
+    Muy lentos (minuto y medio la vuelta) y muy tenues, para que se noten sin
+    llamar la atención mientras se lee lo que hay al lado.
+  */
+  .jiron {
+    animation: jiron-cruza linear infinite;
+    will-change: transform;
+  }
+  .j1 {
+    animation-duration: 94s;
+  }
+  .j2 {
+    animation-duration: 128s;
+    animation-direction: reverse;
+  }
+  .j3 {
+    animation-duration: 76s;
+    animation-delay: -30s;
+  }
+  @keyframes jiron-cruza {
+    from {
+      transform: translateX(-1700px);
+    }
+    to {
+      transform: translateX(1700px);
+    }
+  }
+  /*
+    Con "menos movimiento" no se paran a medio camino: se quedan colocados como
+    una composición completa, igual que hacen los planos del paralaje.
+  */
+  @media (prefers-reduced-motion: reduce) {
+    .jiron {
+      animation: none;
+    }
   }
   /*
     ⚠️ Los dibujos se salen 200 unidades por cada lado del cuadro. Al
