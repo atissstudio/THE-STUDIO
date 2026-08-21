@@ -89,50 +89,75 @@ const breadcrumbLd =
       /*
         Inline y en la cabecera a propósito: si esperara al módulo, la barra
         parpadearía de un color a otro al cargar.
+
+        ⚠️ NO SE PREGUNTA "QUÉ HAY PINTADO EN EL CENTRO" (corregido el
+        2026-08-21, primer intento fallido). `elementFromPoint` devolvía el
+        lienzo del mar, que va fijo y cubre la ventana entera, y como ese
+        lienzo no es ningún campo el color no cambiaba nunca: la barra se
+        quedaba azul siempre, que es justo el marco del que se quejaba
+        Alejandro. Ahora se mide la GEOMETRÍA de los campos, que no depende de
+        lo que haya pintado encima ni de si algo deja pasar el puntero.
       */
       (function () {
         var meta = document.querySelector('meta[name="theme-color"]');
         if (!meta) return;
         var colores = {
-          "f-azul": "#334ba4",
-          "f-roca": "#3b3f45",
           "f-navy": "#0b1230",
+          "f-roca": "#3b3f45",
+          "f-azul": "#334ba4",
           "f-claro": "#eef1f7",
           "f-blanco": "#f7f9fc",
           "f-plata": "#c9ccd2",
         };
+        var campos = [];
         var actual = meta.getAttribute("content");
-        function pintar() {
-          // El campo que ocupa el centro de la pantalla es el que manda.
-          var e = document.elementFromPoint(innerWidth / 2, innerHeight / 2);
-          var color = null;
-          while (e && !color) {
-            for (var c in colores) if (e.classList && e.classList.contains(c)) color = colores[c];
-            e = e.parentElement;
-          }
-          /* ⚠️ Si no hay campo bajo el punto (la pantalla de carga tapa, o un
-             diálogo), se deja el color que había: caer al claro por defecto
-             pintaba la barra de blanco sobre la portada azul. */
-          if (!color) return;
-          if (color !== actual) {
-            actual = color;
-            meta.setAttribute("content", color);
+
+        function juntar() {
+          campos = [];
+          for (var c in colores) {
+            var lista = document.getElementsByClassName(c);
+            for (var i = 0; i < lista.length; i++) campos.push({ el: lista[i], color: colores[c] });
           }
         }
+
+        function pintar() {
+          if (!campos.length) juntar();
+          var medio = innerHeight / 2;
+          var mejor = null;
+          for (var i = 0; i < campos.length; i++) {
+            var r = campos[i].el.getBoundingClientRect();
+            if (r.height && r.top <= medio && r.bottom >= medio) {
+              /* El más pequeño de los que cruzan el centro es el más interior,
+                 y ese es el que se está viendo (una tarjeta azul dentro de una
+                 sección clara manda sobre la sección). */
+              if (!mejor || r.height < mejor.h) mejor = { h: r.height, color: campos[i].color };
+            }
+          }
+          if (!mejor || mejor.color === actual) return;
+          actual = mejor.color;
+          meta.setAttribute("content", actual);
+          /*
+            Y el fondo del documento con él. Es el otro sitio de donde puede
+            salir una franja de otro color: lo que el navegador pinta fuera del
+            contenido (el rebote al arrastrar, o el hueco de las barras cuando
+            se pliegan) es el fondo del documento, no el de ninguna sección.
+          */
+          document.documentElement.style.background = actual;
+        }
+
         var pendiente = false;
-        addEventListener(
-          "scroll",
-          function () {
-            if (pendiente) return;
-            pendiente = true;
-            requestAnimationFrame(function () {
-              pintar();
-              pendiente = false;
-            });
-          },
-          { passive: true }
-        );
-        addEventListener("load", pintar);
+        function alScroll() {
+          if (pendiente) return;
+          pendiente = true;
+          requestAnimationFrame(function () {
+            pintar();
+            pendiente = false;
+          });
+        }
+        addEventListener("scroll", alScroll, { passive: true });
+        addEventListener("resize", function () { juntar(); pintar(); });
+        addEventListener("load", function () { juntar(); pintar(); });
+        document.addEventListener("DOMContentLoaded", function () { juntar(); pintar(); });
       })();
     </script>
   </head>
