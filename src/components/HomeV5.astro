@@ -7,6 +7,7 @@
 */
 import GlassButton from "./GlassButton.astro";
 import CarrilClaim from "./CarrilClaim.astro";
+import MarPortada from "./MarPortada.astro";
 import { servicios as todos } from "../data/servicios";
 
 // En la home solo entran los tres primeros. El resto vive en /servicios.
@@ -28,13 +29,14 @@ const destacados = todos.slice(0, 3);
 <div class="portada" id="portada">
   <div class="portada-pin">
     {/*
-      ⚠️ AQUÍ YA NO SE MONTA NINGÚN LIENZO PROPIO (2026-08-21). Estaba
-      `MarPortada`, que pintaba el azul de la portada con su mar dentro, y
-      detrás corría el paisaje: DOS pintores para la misma superficie, cada uno
-      con su dibujo, y en el borde de abajo del bloque anclado se veía la junta
-      entre los dos mares. Eso es lo que se rompía. Ahora pinta el paisaje y
-      solo el paisaje; el azul de esta pantalla es su cielo alto.
+      El azul de la portada lo pinta este lienzo, con el mar dentro.
+
+      ⚠️ Convivió unas horas con el paisaje procedimental y ahí sí sobraba: dos
+      pintores para una misma superficie SIEMPRE dejan junta, y esa costura era
+      lo que se veía romperse. Con el paisaje apagado vuelve a ser el único
+      pintor de esta pantalla, que es para lo que se hizo.
     */}
+    <MarPortada />
     <section class="f-azul hero row12">
       <h1 class="logo-h1">
         <span class="scr">the</span><span class="hvy">STUDIO</span><span class="scr">by</span><span class="hvy">ATIS</span>
@@ -278,9 +280,8 @@ const destacados = todos.slice(0, 3);
     arriba y el velo que se desvanece— se apagan. Sin WebGL siguen mandando
     ellos, intactos, y la portada se ve como siempre.
   */
-  :global(html.paisaje-vivo) .hero,
-  :global(html.paisaje-vivo) .portada-pin::before,
-  :global(html.paisaje-vivo) .portada-pin::after {
+  :global(html.mar-vivo) .portada-pin::before,
+  :global(html.mar-vivo) .portada-pin::after {
     background: transparent;
   }
 

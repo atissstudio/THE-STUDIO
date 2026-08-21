@@ -74,6 +74,45 @@ def modelo_de_fondo(rgb: np.ndarray) -> np.ndarray:
     return fondo
 
 
+def _dilatar(m: np.ndarray) -> np.ndarray:
+    """Crece un píxel en las cuatro direcciones."""
+    d = m.copy()
+    d[1:, :] |= m[:-1, :]
+    d[:-1, :] |= m[1:, :]
+    d[:, 1:] |= m[:, :-1]
+    d[:, :-1] |= m[:, 1:]
+    return d
+
+
+def quitar_lenguas(mask: np.ndarray, radio: int = 5, tope: int = 900) -> np.ndarray:
+    """
+    Quita las lenguas finas de sombra SIN comerse lo fino de la casa.
+
+    ⚠️ AQUÍ ESTUVO EL RECORTE MORDIDO QUE VIO ALEJANDRO. Antes esto era una
+    apertura a secas —encoger y volver a crecer—, y una apertura no distingue
+    entre una lengua de sombra y el murete del jardín: los dos son finos, así
+    que se llevaba por delante media tapia y dejaba el borde izquierdo
+    dentellado.
+
+    Lo correcto es una apertura POR RECONSTRUCCIÓN, que es justo la
+    herramienta para esto. El encogido no decide la forma final, solo decide
+    QUIÉN SOBREVIVE: lo que queda son semillas. Después esas semillas se dejan
+    crecer otra vez, pero solo dentro de la silueta original, hasta que no
+    puedan más. Lo que está pegado al cuerpo —el murete, la palmera, los
+    escalones— se recupera entero, porque le llega el crecimiento desde la
+    semilla. Lo que era una lengua suelta no tiene semilla y no vuelve.
+    """
+    semilla = mask.copy()
+    for _ in range(radio):  # encoger = dilatar el hueco
+        semilla = ~_dilatar(~semilla) & mask
+    for _ in range(tope):
+        crecida = _dilatar(semilla) & mask
+        if np.array_equal(crecida, semilla):
+            break
+        semilla = crecida
+    return semilla
+
+
 def mancha_mayor(mask: np.ndarray) -> np.ndarray:
     """Se queda con la región conectada más grande. Sin scipy: barrido propio."""
     alto, ancho = mask.shape
@@ -151,12 +190,8 @@ def recortar(entrada: Path, salida: Path, umbral: float = 26.0, abrir: bool = Tr
     solido = alfa > 0.55
     # Apertura: se encoge y se vuelve a crecer. Las lenguas de sombra pegadas al
     # borde son finas y no sobreviven al encogido; el cuerpo de la casa sí.
-    # ⚠️ Solo en las de color. En las de arcilla la máscara ya es justa (gris
-    # sobre gris) y el encogido se come la casa: quedaba agujereada entera.
     if abrir:
-        lienzo = Image.fromarray((solido * 255).astype(np.uint8), "L")
-        lienzo = lienzo.filter(ImageFilter.MinFilter(9)).filter(ImageFilter.MaxFilter(9))
-        solido = np.asarray(lienzo) > 127
+        solido = quitar_lenguas(solido)
     solido = mancha_mayor(solido)
     solido = rellenar_huecos(solido)
     """

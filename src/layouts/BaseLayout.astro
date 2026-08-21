@@ -4,6 +4,7 @@ import SEO from "../components/SEO.astro";
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
 import Loader from "../components/Loader.astro";
+import ShaderFondo from "../components/ShaderFondo.astro";
 import Paisaje from "../components/Paisaje.astro";
 
 interface Props {
@@ -89,12 +90,23 @@ const breadcrumbLd =
       `ShaderFondo.astro` se queda en el repositorio pero ya no se monta.
     */}
     {/*
-      ⚠️ EL PAISAJE ESTÁ APAGADO (2026-08-21). No es un fallo: es una decisión.
-      El paisaje procedimental escrito a mano daba un resultado de aficionado
-      —el pueblo eran rectángulos planos, sin profundidad ni volumen— y estaba
-      dejando el sitio publicado peor de lo que estaba. Se apaga hasta tener
-      una solución a la altura, y mientras tanto la web vuelve a su estado
-      bueno. Para volver a encenderlo, descomentar.
+      La capa de mar de siempre: pinta olas SOLO dentro de los campos azules,
+      en fusión soft-light. Es lo que da textura al sitio y estaba afinada.
+
+      ⚠️ ESTUVO DESMONTADA UNAS HORAS Y FUE UN ERROR MÍO. Al montar el paisaje
+      la quité por redundante, y al apagar el paisaje el sitio se quedó sin
+      ninguna textura: campos de color planos. Alejandro lo vio enseguida
+      ("ahora no veo ninguna textura ni ningún diseño"). Regla que sale de
+      aquí: cuando algo nuevo sustituye a algo que funciona, lo viejo no se
+      desmonta hasta que lo nuevo esté aprobado.
+    */}
+    <ShaderFondo />
+    {/*
+      ⚠️ EL PAISAJE PROCEDIMENTAL ESTÁ APAGADO (2026-08-21). No es un fallo: es
+      una decisión. Daba resultado de aficionado —el pueblo eran rectángulos
+      planos, sin profundidad— y dejaba la web peor de lo que estaba. Se
+      sustituye por dioramas por capas, en el estilo de la casa. Para volver a
+      encenderlo, descomentar.
       <Paisaje />
     */}
     <Nav />
