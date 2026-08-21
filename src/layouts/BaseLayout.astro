@@ -74,7 +74,15 @@ const breadcrumbLd =
       es la práctica corriente en sitios de campos de color: así las barras
       acompañan al campo y la pantalla se lee entera.
     */}
-    <meta name="theme-color" content="#334ba4" />
+    {/*
+      ⚠️ ARRANCA EN CLARO, NO EN AZUL. Si el navegador no relee los cambios del
+      guion (algunos no lo hacen), este es el color con el que se queda para
+      siempre. Claro es el que menos canta: el 90% del sitio es claro, y una
+      barra clara sobre la portada azul se lee como el borde de la pantalla,
+      mientras que una barra azul sobre un tramo blanco se lee como un marco,
+      que es justo la queja.
+    */}
+    <meta name="theme-color" content="#f7f9fc" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <SEO title={title} description={description} path={path} image={image} noindex={noindex} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
