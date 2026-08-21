@@ -62,10 +62,17 @@ const destacados = todos.slice(0, 3);
     <div class="reel-kick">El punto de partida · .02</div>
     <div class="reel-phrase reel-p1">Tu negocio ya vale.</div>
     <div class="reel-house" id="reelHouse">
-      <img class="r0" src="/negocio/casa-00-dark.webp" alt="Tu negocio, todavía apagado" />
-      <img class="r1" src="/negocio/casa-30.webp" alt="" />
-      <img class="r2" src="/negocio/casa-70.webp" alt="" />
-      <img class="r3" src="/negocio/casa-100-vivid.webp" alt="Tu negocio con su marca activada" />
+      {/*
+        La casa NUEVA (2026-08-21), en cuatro estados de luz reales del mismo
+        render: de noche cerrada a pleno día. Sustituye a la anterior, que era
+        un dibujo plano. Vienen recortadas contra transparencia
+        (design/casa-nueva/recortar.py), así que se posan sobre el campo en vez
+        de traer su propio fondo pegado.
+      */}
+      <img class="r0" src="/negocio/v2/casa-noche.webp" alt="Tu negocio, todavía apagado" />
+      <img class="r1" src="/negocio/v2/casa-anochecer.webp" alt="" />
+      <img class="r2" src="/negocio/v2/casa-amanecer.webp" alt="" />
+      <img class="r3" src="/negocio/v2/casa-dia.webp" alt="Tu negocio con su marca activada" />
     </div>
     <div class="reel-phrase reel-p2">Vamos a que se note.</div>
   </div>
