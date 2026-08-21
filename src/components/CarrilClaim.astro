@@ -54,11 +54,27 @@ const { id, quieto = false } = Astro.props;
     que viene debajo, para que se lea como una franja propia y no como un pie
     del logo.
   */
+  /*
+    ⚠️ EL CARRIL SE DA LA VUELTA AL COMPLETAR LA PANTALLA (2026-08-21).
+
+    Mientras es la bajada del logo —caja estrecha, sobre el azul de la
+    portada— va en plata sobre azul, que es como se lee ahí. Cuando termina de
+    abrirse a lo ancho y ya es CARRIL, se invierte: fondo blanco y letra azul.
+    No es un adorno, es lo que marca que ha dejado de ser el subtítulo de una
+    marca y ha pasado a ser una cinta que corre.
+
+    El giro lo lleva `--intro` (1 mientras la portada está desplegada, 0 cuando
+    ha terminado), la misma variable que gobierna toda la entrada: un solo
+    dueño. Fuera de la home no existe `--intro`, así que vale 0 y el carril ya
+    nace blanco, que es su forma definitiva.
+  */
   .claim-banner {
     grid-column: 1/13;
     overflow: hidden;
-    border-top: 1px solid rgba(255, 255, 255, 0.85);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.85);
+    --v: clamp(0, var(--intro, 0), 1);
+    background: color-mix(in srgb, var(--azul) calc(var(--v) * 100%), #ffffff);
+    border-top: 1px solid color-mix(in srgb, #ffffff calc(var(--v) * 100%), var(--azul));
+    border-bottom: 1px solid color-mix(in srgb, #ffffff calc(var(--v) * 100%), var(--azul));
   }
   .claim-cinta {
     display: flex;
@@ -95,7 +111,8 @@ const { id, quieto = false } = Astro.props;
     font-size: calc(clamp(1.5rem, 3.4vw, 2.6rem) * var(--claim-esc, 1));
     line-height: 1.5;
     padding: 10px 0;
-    color: var(--plata-clara);
+    /* Plata sobre azul mientras es bajada; azul sobre blanco ya de carril. */
+    color: color-mix(in srgb, var(--plata-clara) calc(var(--v, 0) * 100%), var(--azul));
     white-space: nowrap;
   }
   /*

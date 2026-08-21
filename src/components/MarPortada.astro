@@ -97,14 +97,21 @@
 
       // El parche: azul sólido, nunca se desvanece.
       lista.push({ top: 0, bottom: intro * introDy + heroH, left: 0, right: rPin.width });
-      // El velo: todo el bloque, con la opacidad que le toque ahora mismo.
-      lista.push({
-        top: 0,
-        bottom: rPin.height,
-        left: 0,
-        right: rPin.width,
-        alfa: Math.max(0, Math.min(1, (intro - 0.4) * 2.5)),
-      });
+      /*
+        ⚠️ EL VELO NO SE PINTA AQUÍ, Y ES LA CORRECCIÓN DE FONDO (2026-08-21).
+
+        El velo cubre toda la pantalla para tapar la casa mientras el logo baja,
+        y después se desvanece. Pintado en este lienzo salía CON TEXTURA, así
+        que a media opacidad se veían las olas cruzando por encima de la casa.
+        Es el mismo fallo que ya se persiguió el 19 de agosto, con otra cara: no
+        importa que el azul y su mar se desvanezcan juntos, porque a mitad de
+        camino la textura sigue estando encima de lo que hay debajo.
+
+        La regla que sale de aquí: **lo que se desvanece va en color plano; la
+        textura solo vive en campos que se quedan**. Así que el velo lo pinta el
+        CSS (`.portada-pin::before`, azul liso) y aquí solo se pintan el campo
+        del logo y el parche de arriba, que no se desvanecen nunca.
+      */
       return lista;
     };
 

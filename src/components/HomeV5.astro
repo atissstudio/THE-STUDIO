@@ -102,8 +102,6 @@ const destacados = todos.slice(0, 3);
   <CarrilClaim />
 </div>
 
-<Escena tipo="mar" nombre="El archipiélago" />
-
 <section class="f-claro field-pad row12 home-slide" data-reveal data-slides>
   <span class="field-tag" style="color:var(--azul)">.03</span>
   <div class="read">
@@ -152,7 +150,7 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
-<Escena tipo="risco" nombre="La montaña de roca" />
+<Escena tipo="risco" pie />
 
 <section class="f-azul row12 field-cards home-slide">
   <span class="field-tag">.05</span>
@@ -172,8 +170,6 @@ const destacados = todos.slice(0, 3);
     ))}
   </div>
 </section>
-
-<Escena tipo="playa" nombre="La playa de picón" />
 
 <section class="f-blanco row12 field-cards home-slide">
   <span class="field-tag" style="color:var(--azul)">.06</span>
@@ -197,7 +193,7 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
-<Escena tipo="pueblo" nombre="El pueblo blanco" />
+<Escena tipo="pueblo" pie />
 
 <div class="cta-wrap">
   <div class="cta-screen f-azul home-slide" id="ctaScreen">
@@ -292,7 +288,12 @@ const destacados = todos.slice(0, 3);
     arriba y el velo que se desvanece— se apagan. Sin WebGL siguen mandando
     ellos, intactos, y la portada se ve como siempre.
   */
-  :global(html.mar-vivo) .portada-pin::before,
+  /*
+    ⚠️ SOLO EL PARCHE SE APAGA. El velo (`::before`) sigue pintando su azul
+    LISO, porque es quien tapa la casa mientras baja el logo y se desvanece
+    después: con textura, a media opacidad se veían las olas por encima de la
+    casa. Lo que se desvanece va en color plano.
+  */
   :global(html.mar-vivo) .portada-pin::after {
     background: transparent;
   }

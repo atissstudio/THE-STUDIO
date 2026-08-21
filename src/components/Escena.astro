@@ -28,17 +28,24 @@ interface Props {
   tipo: "risco" | "mar" | "playa" | "pueblo";
   /** Rótulo del tramo. Si no se pasa, no se pinta. */
   nombre?: string;
+  /**
+   * Modo PIE: la escena no trae fondo propio y se apoya en el borde de abajo
+   * de la sección anterior, como su remate. Sin esto, el cielo de la escena es
+   * un rectángulo de color distinto al del campo que tiene encima y se ve la
+   * costura, que es justo lo que había que quitar.
+   */
+  pie?: boolean;
 }
-const { tipo, nombre } = Astro.props;
+const { tipo, nombre, pie = false } = Astro.props;
 ---
 
-<div class:list={["escena", `e-${tipo}`]} data-escena aria-hidden="true">
-  <svg viewBox="0 0 1200 520" preserveAspectRatio="xMidYMid slice" role="presentation">
+<div class:list={["escena", `e-${tipo}`, { pie }]} data-escena aria-hidden="true">
+  <svg viewBox="0 0 1200 520" preserveAspectRatio={pie ? "xMidYMax slice" : "xMidYMid slice"} role="presentation">
     {
       tipo === "risco" && (
         <>
           {/* Cielo: una sola banda, sin degradado. */}
-          <rect x="0" y="0" width="1200" height="520" fill="var(--cielo)" />
+          {!pie && <rect x="0" y="0" width="1200" height="520" fill="var(--cielo)" />}
           {/* Fondo: la cordillera lejana, un solo tono lavado. */}
           <g data-plano="fondo">
             <path d="M0 330 L210 196 L330 268 L520 132 L700 250 L880 168 L1060 262 L1200 214 L1200 520 L0 520 Z" fill="var(--roca-lejos)" />
@@ -107,10 +114,10 @@ const { tipo, nombre } = Astro.props;
     {
       tipo === "pueblo" && (
         <>
-          <rect x="0" y="0" width="1200" height="520" fill="var(--cielo)" />
+          {!pie && <rect x="0" y="0" width="1200" height="520" fill="var(--cielo)" />}
           {/* El pueblo, reducido a lo que lo hace reconocible: cubos blancos
               de tejado plano, escalonados, y una sola puerta azul. */}
-          <g data-plano="fondo" fill="var(--roca-lejos)">
+          <g data-plano="fondo" fill="var(--roca-lejos)" opacity={pie ? 0.4 : 1}>
             <rect x="60" y="300" width="150" height="90" />
             <rect x="250" y="286" width="120" height="104" />
             <rect x="470" y="308" width="180" height="82" />
@@ -157,6 +164,17 @@ const { tipo, nombre } = Astro.props;
     --agua-honda: #22376f;
     --agua-orilla: #6e8ad0;
     --arena: #38352f;
+  }
+  /*
+    ⚠️ EN MODO PIE NO HAY FONDO NINGUNO. La escena se apoya en lo que tenga
+    encima, así que el campo de la sección sigue de largo hasta las cumbres y
+    no aparece ningún rectángulo de otro color. Es lo que pidió Alejandro al
+    ver el gris del cielo cortando contra el claro de la sección.
+  */
+  .escena.pie {
+    background: transparent;
+    height: clamp(190px, 32svh, 340px);
+    margin-top: calc(var(--row) * -0.35);
   }
   .escena svg {
     position: absolute;
