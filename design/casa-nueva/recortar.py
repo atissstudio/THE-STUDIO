@@ -141,21 +141,37 @@ def mancha_mayor(mask: np.ndarray) -> np.ndarray:
     return etiqueta == mejor
 
 
-def rellenar_huecos(mask: np.ndarray) -> np.ndarray:
-    """Todo lo que no se alcance desde el borde por fuera, es interior."""
+def rellenar_huecos(mask: np.ndarray, limite: int = 600) -> np.ndarray:
+    """
+    Rellena SOLO los agujeros pequeños.
+
+    ⚠️ AQUÍ ESTABA EL MANCHÓN PÁLIDO que se veía a la izquierda de la casa,
+    entre la palmera y el muro. Eso es fondo de verdad —se ve el cielo por el
+    hueco que dejan la palmera, la tapia y la fachada—, pero como queda
+    rodeado de casa por los cuatro lados, un relleno de huecos a secas lo toma
+    por interior y lo tapa. Resultado: un trozo del fondo viejo incrustado
+    dentro de la silueta, que sobre otro color canta.
+
+    Un agujero que hay que rellenar es una MOTA, cosa de unos cientos de
+    píxeles, que viene del ruido del umbral. Un hueco grande es un sitio por
+    donde se ve el fondo, y ese tiene que quedar transparente. Así que se
+    miden y solo se tapan los pequeños.
+    """
     alto, ancho = mask.shape
     fuera = np.zeros((alto, ancho), bool)
     pila = []
+
+    def sembrar(y, x):
+        if not mask[y, x] and not fuera[y, x]:
+            fuera[y, x] = True
+            pila.append((y, x))
+
     for x in range(ancho):
-        for y in (0, alto - 1):
-            if not mask[y, x] and not fuera[y, x]:
-                fuera[y, x] = True
-                pila.append((y, x))
+        sembrar(0, x)
+        sembrar(alto - 1, x)
     for y in range(alto):
-        for x in (0, ancho - 1):
-            if not mask[y, x] and not fuera[y, x]:
-                fuera[y, x] = True
-                pila.append((y, x))
+        sembrar(y, 0)
+        sembrar(y, ancho - 1)
     while pila:
         y, x = pila.pop()
         for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
@@ -163,7 +179,29 @@ def rellenar_huecos(mask: np.ndarray) -> np.ndarray:
             if 0 <= ny < alto and 0 <= nx < ancho and not mask[ny, nx] and not fuera[ny, nx]:
                 fuera[ny, nx] = True
                 pila.append((ny, nx))
-    return ~fuera
+
+    encerrado = ~mask & ~fuera
+    salida = mask.copy()
+    visto = np.zeros((alto, ancho), bool)
+    ys, xs = np.nonzero(encerrado)
+    for y0, x0 in zip(ys, xs):
+        if visto[y0, x0]:
+            continue
+        grupo = [(y0, x0)]
+        visto[y0, x0] = True
+        pila = [(y0, x0)]
+        while pila:
+            y, x = pila.pop()
+            for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                ny, nx = y + dy, x + dx
+                if 0 <= ny < alto and 0 <= nx < ancho and encerrado[ny, nx] and not visto[ny, nx]:
+                    visto[ny, nx] = True
+                    grupo.append((ny, nx))
+                    pila.append((ny, nx))
+        if len(grupo) <= limite:
+            for y, x in grupo:
+                salida[y, x] = True
+    return salida
 
 
 def recortar(entrada: Path, salida: Path, umbral: float = 26.0, abrir: bool = True, ancho_max: int = 1400):
