@@ -99,10 +99,10 @@ const fragment = `
     el risco, dónde muere el risco en el agua.
   */
   const float MUNDO   = 6.0;
-  const float RISCO   = 1.15; /* donde asoma el borde del acantilado */
-  const float ORILLA  = 2.75; /* donde el risco se hunde en el mar    */
-  const float ARENA   = 4.05; /* donde el mar rompe en la arena       */
-  const float PUEBLO  = 5.10; /* donde la arena da paso al pueblo     */
+  const float RISCO   = 1.95; /* donde asoma el borde del acantilado */
+  const float COSTA   = 3.05; /* donde el risco se hunde en el mar    */
+  const float ARENA   = 4.20; /* donde el mar rompe en la arena       */
+  const float PUEBLO  = 5.15; /* donde la arena da paso al pueblo     */
 
   float azar(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -150,147 +150,182 @@ const fragment = `
     return s / max(norma, 0.0001);
   }
 
+  /*
+    ── LAS FORMAS ────────────────────────────────────────────────────────
+    ⚠️ ESTA ES LA CORRECCIÓN DE FONDO (2026-08-21, tercera versión). Las dos
+    versiones anteriores dividían el mundo en BANDAS HORIZONTALES: todo era
+    función de la altura, así que por bien hechas que estuvieran las texturas,
+    lo que se veía era piedra apilada sobre agua apilada sobre arena. Sin
+    silueta no hay paisaje. Palabras de Alejandro: "cae sin un orden y no hay
+    formas, solo texturas".
+
+    Ahora cada frontera es una CURVA con dibujo propio, y de ellas sale la
+    composición: el risco tiene cumbre y baja en diagonal hasta hundirse en el
+    agua, y el agua encuentra la arena en una línea de costa, no en un corte.
+  */
+
+  /* El perfil del risco: una cumbre que manda, otra menor detrás, y el filo
+     picado encima. Restar sube la roca, porque wy crece hacia abajo. */
+  float perfilRisco(float x, float rel) {
+    float cumbre = exp(-pow((x - 0.36 * rel) / 0.62, 2.0));
+    float segunda = exp(-pow((x - 0.86 * rel) / 0.45, 2.0));
+    float filo = cresta(vec2(x * 1.9, 5.3), 4) - 0.5;
+    return RISCO - 1.35 * cumbre - 0.62 * segunda + 0.30 * filo;
+  }
+
+  /* La costa: una diagonal con una bahía. Es lo que ata el risco al mar. */
+  float lineaCosta(float x, float rel) {
+    return COSTA + 0.62 * (x / rel - 0.5) + 0.26 * sin(x * 1.7 + 1.2)
+         + 0.10 * (fbm(vec2(x * 1.4, 8.1), 3) - 0.5);
+  }
+
+  /* La orilla: el arco de la playa, cóncavo al revés que la costa para que
+     entre las dos quede una lengua de agua que se estrecha. */
+  float lineaArena(float x, float rel) {
+    return ARENA - 0.34 * (x / rel - 0.5) + 0.30 * sin(x * 1.3 + 0.4)
+         + 0.08 * (fbm(vec2(x * 2.2, 3.4), 3) - 0.5);
+  }
+
+  float lineaPueblo(float x) {
+    return PUEBLO + 0.20 * sin(x * 2.1 + 2.0);
+  }
+
   void main() {
     vec2 uv = vUv;
     float rel = uMedida.x / uMedida.y;
     float t = uTiempo;
 
-    /*
-      LA VENTANA. wy es la altura EN EL MUNDO del píxel que se está pintando:
-      0 arriba del todo (cielo alto), MUNDO abajo del todo (el pueblo). Como
-      todas las texturas se muestrean con wy, el paisaje está quieto y lo que
-      se mueve es la mirada.
-    */
+    /* La ventana: wy es la altura EN EL MUNDO del píxel. El paisaje está
+       quieto; lo que se mueve es la mirada. */
     float wy = uViaje * (MUNDO - 1.0) + (1.0 - uv.y);
     float wx = uv.x * rel;
     vec2 w = vec2(wx, wy) + uDeriva * 0.25;
 
+    /* Grosor del borde en unidades de mundo, para que las siluetas tengan el
+       filo justo: ni escalonadas ni difuminadas. */
+    float filoPx = 1.6 / uMedida.y;
+
     /* ══ EL CIELO ══════════════════════════════════════════════════════ */
-    vec3 alto = C_AZUL * 0.72;              /* el azul profundo de la altura */
-    vec3 bajo = mix(C_PANZA, C_NUBES, 0.5); /* la calima cerca del horizonte */
-    vec3 cielo = mix(alto, bajo, clamp(wy / RISCO, 0.0, 1.0));
+    vec3 alto = C_AZUL * 0.70;
+    vec3 bajo = mix(C_PANZA, C_NUBES, 0.55);
+    vec3 cielo = mix(alto, bajo, clamp(wy / (RISCO + 0.6), 0.0, 1.0));
 
-    /* El sol, alto y a la derecha. No se dibuja el disco: se dibuja lo que hace. */
-    float solX = 0.68 * rel;
-    float solY = 0.30;
-    float halo = exp(-pow(distance(vec2(wx, wy), vec2(solX, solY)) * 1.15, 1.5));
-    cielo = mix(cielo, vec3(1.0, 0.985, 0.94), halo * 0.62);
+    float solX = 0.74 * rel;
+    float solY = 0.34;
+    float halo = exp(-pow(distance(vec2(wx, wy), vec2(solX, solY)) * 1.10, 1.5));
+    cielo = mix(cielo, vec3(1.0, 0.985, 0.94), halo * 0.60);
 
-    /* Nubes: grandes, lentas, sin ningún borde duro. Solo viven en el cielo. */
-    float nube = fbm(vec2(wx * 1.6 + t * 0.008, wy * 1.9), 5);
-    float dondeNube = smoothstep(0.95, 0.35, wy) * smoothstep(0.02, 0.30, wy);
-    cielo = mix(cielo, C_NUBES, smoothstep(0.50, 0.84, nube) * dondeNube * 0.85);
+    float nube = fbm(vec2(wx * 1.5 + t * 0.008, wy * 1.7), 5);
+    float dondeNube = smoothstep(1.30, 0.55, wy) * smoothstep(0.05, 0.42, wy);
+    cielo = mix(cielo, C_NUBES, smoothstep(0.50, 0.84, nube) * dondeNube * 0.9);
 
     vec3 color = cielo;
 
-    /* ══ LOS RISCOS ════════════════════════════════════════════════════
-       Un acantilado visto de frente, que empieza arriba con su borde contra
-       el cielo y baja hasta hundirse en el agua. Los riscos canarios se
-       reconocen por sus ESTRATOS horizontales de colada, así que eso es lo
-       que se dibuja: capas, no una mancha de ruido. */
-    float borde = RISCO + 0.30 * (cresta(vec2(wx * 0.85, 3.1), 4) - 0.5);
-    float enRisco = smoothstep(borde - 0.012, borde + 0.012, wy);
+    /* ══ EL RISCO ══════════════════════════════════════════════════════ */
+    float perfil = perfilRisco(wx, rel);
+    float costa = lineaCosta(wx, rel);
+    float arenaY = lineaArena(wx, rel);
+    float puebloY = lineaPueblo(wx);
 
-    /*
-      ⚠️ ESTRATOS FINOS Y DESIGUALES, MÁS JUNTA VERTICAL. Con capas gruesas y
-      de grosor constante el acantilado se leía como tela ondulada, no como
-      piedra. Un risco canario es una pila de COLADAS finas, cada una de un
-      grosor distinto, y encima el basalto se parte en columnas verticales. Las
-      dos cosas juntas son lo que lo hace reconocible.
-    */
+    float enRisco = smoothstep(perfil - filoPx, perfil + filoPx, wy);
+
+    /* Coladas finas y desiguales, junta de columna, y vetas de tosca. */
     float estrato = fbm(vec2(wx * 0.9, wy * 7.5), 3);
-    /* El grosor de cada colada varía: la fase se deforma con ruido lento. */
     float pila = wy * 62.0 + fbm(vec2(wx * 0.7, wy * 1.1), 3) * 26.0;
-    float capas = sin(pila) * 0.5 + 0.5;
-    capas = pow(capas, 0.7);
-    /* Junta de columna: grietas verticales, finas y oscuras. */
+    float capas = pow(sin(pila) * 0.5 + 0.5, 0.7);
     float columna = pow(cresta(vec2(wx * 16.0, wy * 0.35), 3), 7.0);
-    float grietaV = pow(cresta(vec2(wx * 5.5, wy * 1.6), 4), 4.0);
     float granoR = ruido(vec2(wx, wy) * 150.0, vec2(500.0));
 
-    float caraRoca = 0.50 + estrato * 0.34 + capas * 0.34 - grietaV * 0.70
-                   - columna * 0.60 + (granoR - 0.5) * 0.26;
+    float caraRoca = 0.50 + estrato * 0.34 + capas * 0.34 - columna * 0.60
+                   + (granoR - 0.5) * 0.26;
     vec3 roca = mix(C_BASALTO, C_PICON, smoothstep(0.25, 0.80, capas));
     roca *= 0.52 + caraRoca * 1.05;
-    /* Vetas de tosca: la piedra amarilla asoma entre coladas, a bandas. */
-    float veta = smoothstep(0.62, 0.92, estrato) * smoothstep(0.35, 0.75, capas);
-    roca = mix(roca, C_TOSCA * 0.78, veta * 0.55);
-    /* El canto de cada colada recoge la luz: es lo que da el relieve de pila. */
+    roca = mix(roca, C_TOSCA * 0.78,
+      smoothstep(0.62, 0.92, estrato) * smoothstep(0.35, 0.75, capas) * 0.55);
     roca *= 1.0 + smoothstep(0.86, 1.0, capas) * 0.30;
-    /* La luz cae desde el sol: la parte alta del risco y las aristas se abren. */
-    float vecino = fbm(vec2(wx * 0.9 + 0.03, wy * 7.5 - 0.02), 3);
-    roca *= 1.0 + clamp((vecino - estrato) * 5.0, -0.26, 0.32);
-    roca *= 1.0 + 0.30 * smoothstep(borde + 0.35, borde, wy);
-    /* Bruma en el pie del acantilado, donde se junta con el agua. */
-    roca = mix(roca, bajo, smoothstep(ORILLA - 0.75, ORILLA, wy) * 0.45);
+
+    /*
+      LA LUZ VIENE DEL SOL, y la cumbre la recibe primero. La franja pegada al
+      perfil se abre y el fondo del risco se hunde: eso es lo que da volumen a
+      una silueta en vez de dejarla como un recorte de papel.
+    */
+    roca *= 1.0 + 0.42 * smoothstep(perfil + 0.55, perfil, wy);
+    roca *= 1.0 - 0.30 * smoothstep(costa - 1.2, costa, wy);
+    /* La ladera que mira al sol, más clara que la contraria. */
+    roca *= 1.0 + clamp((wx - 0.36 * rel) * sign(solX - 0.36 * rel) * 0.10, -0.16, 0.20);
+    /* Bruma al pie, donde el risco se mete en el agua. */
+    roca = mix(roca, bajo, smoothstep(costa - 0.85, costa, wy) * 0.42);
 
     color = mix(color, roca, enRisco);
 
     /* ══ EL MAR ════════════════════════════════════════════════════════
-       Visto desde arriba del risco: bandas de oleaje que se abren según se
-       alejan del pie del acantilado y llegan a la orilla. */
-    float enMar = smoothstep(ORILLA - 0.05, ORILLA + 0.05, wy);
+       Ocupa de la costa a la orilla. Las olas corren PARALELAS a la playa,
+       no a la pantalla: por eso la fase se mide contra la línea de arena. */
+    float enMar = smoothstep(costa - filoPx, costa + filoPx, wy);
 
+    float haciaPlaya = clamp((wy - costa) / max(arenaY - costa, 0.001), 0.0, 1.0);
+    float faseOla = (wy - arenaY) * mix(58.0, 24.0, haciaPlaya);
     float ond = ruido(w * 2.6 + vec2(t * 0.06, 0.0), vec2(24.0)) * 2.2;
-    float abre = smoothstep(ORILLA, ARENA, wy); /* cerca de la orilla la ola crece */
     float ola = 0.0;
-    ola += sin(wy * mix(60.0, 26.0, abre) + wx * 5.0 + t * 0.85 + ond) * 0.50;
-    ola += sin(wy * mix(97.0, 44.0, abre) - wx * 11.0 - t * 0.66 + ond * 0.6) * 0.30;
-    ola += sin(wy * mix(150.0, 78.0, abre) + wx * 19.0 + t * 1.25) * 0.15;
-    ola *= mix(0.55, 1.25, abre);
+    ola += sin(faseOla + wx * 4.0 + t * 0.85 + ond) * 0.50;
+    ola += sin(faseOla * 1.62 - wx * 9.0 - t * 0.66 + ond * 0.6) * 0.30;
+    ola += sin(faseOla * 2.55 + wx * 16.0 + t * 1.25) * 0.15;
+    ola *= mix(0.55, 1.30, haciaPlaya);
 
     float calma = smoothstep(0.35, 0.85, ruido(w * 1.2 + vec2(t * 0.03, 0.0), vec2(13.0)));
-    float destello = pow(max(ola * 0.5 + 0.5, 0.0), 9.0);
-    float nAgua = clamp(0.5 + ola * 0.20 + destello * (0.10 + 0.40 * calma), 0.0, 1.0);
+    float nAgua = clamp(0.5 + ola * 0.20
+      + pow(max(ola * 0.5 + 0.5, 0.0), 9.0) * (0.10 + 0.40 * calma), 0.0, 1.0);
 
-    vec3 agua = mix(C_MAR_HONDO, C_MAR_ORILL, smoothstep(ORILLA, ARENA, wy) * 0.85);
+    vec3 agua = mix(C_MAR_HONDO, C_MAR_ORILL, haciaPlaya * 0.9);
     agua *= 0.72 + nAgua * 0.62;
-    /* El camino del sol, que es lo que convierte un azul rayado en agua. */
-    /*
-      ⚠️ EL DESTELLO SE APAGA HACIA LA ORILLA. Cerca de la playa la ola es
-      grande y lenta, así que un exponente alto sobre una ola ancha no daba
-      chispas: daba PASTILLAS blancas gordas, que se leen como un defecto de
-      lente. Además es lo correcto: el camino del sol se ve mirando hacia el
-      sol, a lo lejos, no a los pies. Se estrecha y se apaga al bajar.
-    */
-    float lejosDelSol = smoothstep(ARENA, ORILLA, wy);
-    float camino = exp(-pow(abs(wx - solX) / (0.07 + (wy - ORILLA) * 0.16), 2.0));
-    agua += vec3(1.0, 0.97, 0.90) * camino * pow(max(ola * 0.5 + 0.5, 0.0), 26.0)
-          * 1.5 * lejosDelSol;
-    /* Espuma contra el pie del risco. */
-    float rompiente = smoothstep(ORILLA + 0.16, ORILLA, wy) * smoothstep(ORILLA - 0.10, ORILLA + 0.02, wy);
-    agua = mix(agua, C_CAL, rompiente * smoothstep(0.45, 0.80, fbm(vec2(wx * 20.0, wy * 40.0 + t * 0.5), 3)) * 0.9);
+    /* Sombra del risco sobre el agua que tiene al lado. */
+    agua *= 1.0 - 0.34 * smoothstep(costa + 0.55, costa, wy);
+    /* El camino del sol, apagándose hacia la playa: ese brillo se ve mirando
+       a lo lejos, no a los pies. */
+    float camino = exp(-pow(abs(wx - solX) / (0.07 + (wy - costa) * 0.16), 2.0));
+    agua += vec3(1.0, 0.97, 0.90) * camino
+          * pow(max(ola * 0.5 + 0.5, 0.0), 26.0) * 1.5 * (1.0 - haciaPlaya);
+    /* Rompiente contra el pie del risco. */
+    float choque = smoothstep(costa + 0.13, costa, wy) * smoothstep(costa - 0.05, costa + 0.02, wy);
+    agua = mix(agua, C_CAL, choque
+      * smoothstep(0.45, 0.80, fbm(vec2(wx * 20.0, wy * 40.0 + t * 0.5), 3)) * 0.85);
 
     color = mix(color, agua, enMar);
 
     /* ══ LA ARENA ══════════════════════════════════════════════════════
-       Picón y arena negra, con el grano A LA ESCALA DEL GRANO. Es la regla
-       que salió de bajar cuatro veces la opacidad sin arreglar nada. */
-    float enArena = smoothstep(ARENA - 0.10, ARENA + 0.06, wy);
+       Empieza donde muere el agua, y las dos se tocan en una rompiente que
+       sigue la MISMA curva: es lo que las conecta en vez de apilarlas. */
+    float enArena = smoothstep(arenaY - filoPx, arenaY + filoPx, wy);
 
     float grano = ruido(vec2(wx, wy) * 260.0, vec2(700.0));
     float manchas = fbm(vec2(wx * 4.0, wy * 5.0), 3);
     vec3 arena = mix(C_PICON, C_ARENA_N, smoothstep(0.25, 0.85, manchas));
     arena *= 0.80 + grano * 0.70;
-    /* Rizos de viento y restos de marea, paralelos a la orilla. */
-    arena *= 1.0 + sin(wy * 90.0 + fbm(vec2(wx * 3.0, wy), 2) * 6.0) * 0.05;
-    /* La lengua de agua que sube por la arena, y su espuma. */
-    float lengua = smoothstep(ARENA + 0.30, ARENA, wy);
-    arena = mix(arena, arena * 0.55, lengua * 0.7);
-    arena = mix(arena, C_CAL, smoothstep(0.55, 0.85, fbm(vec2(wx * 26.0, wy * 46.0 - t * 0.4), 3)) * lengua * 0.55);
+    arena *= 1.0 + sin((wy - arenaY) * 70.0 + fbm(vec2(wx * 3.0, wy), 2) * 6.0) * 0.05;
+    /* Arena mojada pegada a la orilla: más oscura y con brillo. */
+    float mojada = smoothstep(0.34, 0.0, wy - arenaY);
+    arena = mix(arena, arena * 0.52, mojada * 0.75);
 
     color = mix(color, arena, enArena);
 
-    /* ══ EL PUEBLO ═════════════════════════════════════════════════════
-       Tierra apisonada, y contra ella la fila de casas: cal y tosca con
-       tejado de barro y zócalo de azul de barca. */
-    float enPueblo = smoothstep(PUEBLO - 0.03, PUEBLO + 0.03, wy);
+    /* La lengua de espuma vive JUSTO en la línea, mitad en el agua y mitad en
+       la arena. Se pinta después de las dos, encima de la costura. */
+    float lengua = 1.0 - clamp(abs(wy - arenaY) * 7.0, 0.0, 1.0);
+    float encaje = smoothstep(0.35, 0.80,
+      fbm(vec2(wx * 9.0, (wy - arenaY) * 30.0 - t * 0.35), 3));
+    color = mix(color, C_CAL, lengua * encaje * 0.85);
+
+    /* ══ EL PUEBLO ═════════════════════════════════════════════════════ */
+    float enPueblo = smoothstep(puebloY - filoPx, puebloY + filoPx, wy);
     vec3 tierra = mix(C_BARRO * 0.66, C_TOSCA * 0.74, fbm(vec2(wx * 5.0, wy * 6.0), 3));
     tierra *= 0.84 + grano * 0.34;
 
-    float col = floor(wx * 14.0);
-    float altoCasa = 0.22 + azar(vec2(col, 4.2)) * 0.26;
-    float techoY = PUEBLO + 0.16;
+    /* Las casas se apoyan EN la línea del pueblo, así que suben y bajan con
+       ella: un pueblo sigue el terreno, no una regla. */
+    float col = floor(wx * 13.0);
+    float altoCasa = 0.20 + azar(vec2(col, 4.2)) * 0.24;
+    float suelo = lineaPueblo((col + 0.5) / 13.0);
+    float techoY = suelo + 0.10;
     float baseY = techoY + altoCasa;
     float enCasa = step(techoY, wy) * step(wy, baseY);
     float cual = azar(vec2(col, 9.1));
@@ -302,15 +337,8 @@ const fragment = `
 
     color = mix(color, tierra, enPueblo);
 
-    /*
-      ⚠️ NADA DE LAVAR EL CUADRO ENTERO. La primera versión aplastaba todo
-      contra su gris medio para "proteger el texto", y eso es justo lo que se
-      veía como una opacidad rara detrás de la página. El texto se protege
-      donde vive el texto —con la cal, que es el único material liso—, no
-      apagando el paisaje.
-    */
     vec2 c = (uv - 0.5) * vec2(1.06, 1.0);
-    color *= 1.0 - dot(c, c) * 0.22;
+    color *= 1.0 - dot(c, c) * 0.20;
 
     gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
   }

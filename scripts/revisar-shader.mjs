@@ -31,17 +31,35 @@ for (const archivo of readdirSync(CARPETA).filter((f) => f.endsWith(".ts"))) {
   const ruta = join(CARPETA, archivo);
   const texto = readFileSync(ruta, "utf8");
 
-  for (const nombre of ["vertex", "fragment"]) {
-    const bloque = texto.match(new RegExp("const " + nombre + " = `([\\s\\S]*?)`;"));
+  for (const nombre_ of ["vertex", "fragment"]) {
+    const bloque = texto.match(new RegExp("const " + nombre_ + " = `([\\s\\S]*?)`;"));
     if (!bloque) continue;
     const glsl = bloque[1];
 
     if (glsl.includes("`")) {
-      console.error(`✗ ${ruta} · ${nombre}: comilla invertida dentro del GLSL. Corta la plantilla.`);
+      console.error(`✗ ${ruta} · ${nombre_}: comilla invertida dentro del GLSL. Corta la plantilla.`);
       fallos++;
     }
 
     const limpio = sinComentarios(glsl);
+
+    /*
+      3 · CONSTANTE EN MAYÚSCULAS SIN DECLARAR. Al renombrar una frontera del
+      mundo (ORILLA pasó a COSTA) quedaron usos del nombre viejo, el shader no
+      compiló y el paisaje simplemente no salió, sin ningún aviso. Es el mismo
+      final que los otros dos fallos: falla en silencio.
+    */
+    const declaradas = new Set(
+      [...limpio.matchAll(new RegExp(`const\\s+(?:${TIPOS})\\s+([A-Z][A-Z0-9_]*)`, "g"))].map((m) => m[1])
+    );
+    const usadas = new Set([...limpio.matchAll(/\b([A-Z][A-Z0-9_]{2,})\b/g)].map((m) => m[1]));
+    const RESERVADAS = new Set(["GL_ES", "GL_FRAGMENT_PRECISION_HIGH"]);
+    for (const nombre of usadas) {
+      if (!declaradas.has(nombre) && !RESERVADAS.has(nombre)) {
+        console.error(`✗ ${ruta} · ${nombre_}: "${nombre}" se usa y no está declarada como constante.`);
+        fallos++;
+      }
+    }
     const main = limpio.slice(limpio.indexOf("void main()"));
     const lineas = main.split("\n");
     const declarada = new Map();
@@ -61,7 +79,7 @@ for (const archivo of readdirSync(CARPETA).filter((f) => f.endsWith(".ts"))) {
         */
         if (new RegExp(`(?<![.\\w])${variable}(?![\\w])`).test(lineas[i])) {
           console.error(
-            `✗ ${ruta} · ${nombre}: "${variable}" se usa en la línea ${i + 1} y se declara en la ${enLinea + 1}.`
+            `✗ ${ruta} · ${nombre_}: "${variable}" se usa en la línea ${i + 1} y se declara en la ${enLinea + 1}.`
           );
           fallos++;
           break;
