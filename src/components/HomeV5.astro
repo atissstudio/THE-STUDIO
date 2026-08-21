@@ -9,10 +9,7 @@ import GlassButton from "./GlassButton.astro";
 import CarrilClaim from "./CarrilClaim.astro";
 import Escena from "./Escena.astro";
 import MarPortada from "./MarPortada.astro";
-import { servicios as todos } from "../data/servicios";
-
-// En la home solo entran los tres primeros. El resto vive en /servicios.
-const destacados = todos.slice(0, 3);
+import CarrilServicios from "./CarrilServicios.astro";
 ---
 
 {/*
@@ -161,23 +158,27 @@ const destacados = todos.slice(0, 3);
 
 <Escena tipo="risco" pie campo="claro" />
 
-<section class="f-azul f-roca row12 field-cards home-slide sobre-escena">
+{/*
+  .05 · LOS SERVICIOS, EN CARRUSEL (2026-08-21, pedido de Alejandro).
+
+  Antes eran tres tarjetas a sangre y un enlace a "ver los siete". Ahora son
+  los SIETE, en el mismo carril de fichas que ya se hizo para /servicios el
+  2026-08-11: en horizontal caben en una pantalla y el borde derecho, siempre
+  cortado, es lo que dice "hay más" sin escribirlo.
+
+  Se reutiliza el componente en vez de copiarlo, así que el día que cambie la
+  ficha cambia en los dos sitios. `desnudo` quita su campo claro: aquí el campo
+  lo pone esta sección, que es de roca porque la montaña de arriba entra en
+  ella sin junta.
+*/}
+<section class="f-azul f-roca field-cards home-slide sobre-escena slide-servicios">
   <span class="field-tag">.05</span>
-  <div class="cells">
-    <div class="head-cell">
-      <p class="k">Qué hacemos</p>
-      <h2>Servicios.</h2>
-      <a class="head-link" href="/servicios">Ver los siete</a>
-    </div>
-    {destacados.map((s, i) => (
-      <a class="cell" href={`/servicios/${s.slug}`}>
-        <span class="n">{String(i + 1).padStart(2, "0")}</span>
-        <span class="ct">{s.title}</span>
-        <span class="cp">{s.card}</span>
-        <img class="isla-in" src={s.isla} alt="" loading="lazy" />
-      </a>
-    ))}
-  </div>
+  <CarrilServicios
+    desnudo
+    kicker="Qué hacemos"
+    titulo="Solucionamos cualquier tipo de problema."
+    enlace={{ href: "/servicios", texto: "Ver el catálogo completo" }}
+  />
 </section>
 
 <section class="f-blanco row12 field-cards home-slide">
@@ -756,6 +757,20 @@ const destacados = todos.slice(0, 3);
   .sobre-escena {
     position: relative;
     z-index: 1;
+  }
+  /*
+    ⚠️ EL CARRIL SE CENTRA EN LA PANTALLA, Y PARA ESO HACE FALTA FLEX. La
+    sección se dimensiona con `height` en escritorio pero con `min-height` en
+    móvil, y un hijo con `height: 100%` no resuelve contra un `min-height`: en
+    el teléfono el carril se quedaba pegado arriba con 262 px de roca vacía
+    debajo (medido a 390x844). Con la sección en flex, el carril estira sea
+    cual sea la forma de medir de cada tamaño.
+  */
+  .slide-servicios {
+    display: flex;
+  }
+  .slide-servicios > :global(.carril-campo) {
+    flex: 1 1 auto;
   }
   .cta-screen {
     min-height: 100svh;

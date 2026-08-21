@@ -190,6 +190,60 @@ const {
     display: none;
   }
 
+  /*
+    ══ MODO DESNUDO: el carril dentro de una diapositiva ajena ══════════════
+
+    En la home el carril vive en `.05`, que es campo de ROCA y mide una
+    pantalla exacta. Así que aquí no pone campo ni aire propio: el aire lo pone
+    la pantalla, y los colores los hereda del campo que lo acoge. El titular
+    iba en tinta casi negra —bien sobre claro, invisible sobre roca—, de modo
+    que en modo desnudo hereda el color del campo, que sobre roca es plata
+    clara (9,4 de contraste, medido el 2026-08-21).
+  */
+  .carril-campo.desnudo {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /*
+      ⚠️ NADA DE `height: 100%` AQUÍ. La sección que lo acoge se dimensiona con
+      `min-height` en móvil, y un porcentaje no resuelve contra un `min-height`:
+      se queda en "auto", o sea el alto del contenido, y el carril se pegaba
+      arriba con 262 px de roca vacía debajo. Estirando por flex (la sección va
+      en flex y esto es su único hijo) funciona con las dos formas de medir.
+    */
+    align-self: stretch;
+  }
+  .desnudo .cab {
+    margin-bottom: 26px;
+  }
+  .desnudo .cab h2 {
+    color: inherit;
+  }
+  .desnudo .fl {
+    color: currentColor;
+  }
+  .desnudo .fl:focus-visible {
+    outline-color: currentColor;
+  }
+  /* El enlace del enunciado, el mismo de las tarjetas de campo de la home. */
+  .head-link {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: inherit;
+    opacity: 0.72;
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 3px;
+  }
+  .head-link:hover {
+    opacity: 1;
+  }
+
   @media (max-width: 900px) {
     /*
       En móvil el campo mide una pantalla entera por la regla general de
