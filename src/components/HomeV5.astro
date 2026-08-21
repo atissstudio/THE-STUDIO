@@ -246,11 +246,14 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
   donde ponerla es esta diapositiva. Aquí NO se inventa ninguna: se afirma el
   compromiso, sin número.
 
-  Campo azul porque es texto corto, que es lo que manda el sistema (la lectura
-  larga va en claro). Y es esta sección la que le hace sitio a la escena del
-  pueblo (`deja-remate`), que antes colgaba de .06.
+  Campo blanco, por decisión de Alejandro (2026-08-21). ⚠️ El aire de la escena
+  del pueblo VA CON ÉL: la escena cuelga de esta sección y no pinta cielo
+  propio, así que si la sección es blanca su cielo tiene que ser blanco, o
+  aparece un cielo azul bajo un campo que no lo es. Es la misma regla que se
+  cerró hoy con la niebla. Y es esta sección la que le hace sitio a la escena
+  (`deja-remate`), que antes colgaba de .06.
 */}
-<section class="f-azul row12 field-cards home-slide slide-respaldo deja-remate" data-reveal>
+<section class="f-blanco row12 field-cards home-slide slide-respaldo deja-remate" data-reveal>
   <span class="field-tag">.07</span>
   <div class="respaldo">
     <p class="k">El respaldo</p>
@@ -268,7 +271,7 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
   </div>
 </section>
 
-<Escena tipo="pueblo" pie campo="azul" />
+<Escena tipo="pueblo" pie campo="blanco" />
 
 <div class="cta-wrap">
   <div class="cta-screen f-azul home-slide" id="ctaScreen">
