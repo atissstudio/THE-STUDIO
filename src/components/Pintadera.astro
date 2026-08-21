@@ -89,8 +89,8 @@ const lineas = [1, 2].flatMap((k) => {
     position: fixed;
     top: 0;
     left: 0;
-    width: 20px;
-    height: 18px;
+    width: 16px;
+    height: 14px;
     z-index: 9999;
     pointer-events: none;
     opacity: 0;
@@ -105,8 +105,8 @@ const lineas = [1, 2].flatMap((k) => {
   /* Sobre algo en lo que se puede pulsar, el sello crece: es la única señal de
      que ahí hay algo, ahora que no está la manita del sistema. */
   :global(html.pintadera-viva.sobre-activo) #pintadera {
-    width: 30px;
-    height: 26px;
+    width: 24px;
+    height: 21px;
   }
   #pintadera svg {
     width: 100%;
@@ -116,7 +116,7 @@ const lineas = [1, 2].flatMap((k) => {
   }
   /* Quieto un rato: el sello se coloca girando sobre sí mismo. */
   :global(html.pintadera-girando) #pintadera svg {
-    animation: girar 7s linear infinite;
+    animation: girar 4.5s linear infinite;
   }
   @keyframes girar {
     to {
@@ -197,8 +197,14 @@ const lineas = [1, 2].flatMap((k) => {
     const bucle = () => {
       // Persigue con retardo: un sello que va clavado al puntero se lee como
       // parte del sistema, no como un objeto.
-      actual.x += (destino.x - actual.x) * 0.22;
-      actual.y += (destino.y - actual.y) * 0.22;
+      /*
+        0,45: persigue casi clavada. Con 0,22 el sello iba visiblemente por
+        detrás del puntero y eso, en un cursor, no se lee como peso, se lee
+        como retraso: cuesta apuntar. El poco retardo que queda es el que le
+        da cuerpo de objeto.
+      */
+      actual.x += (destino.x - actual.x) * 0.45;
+      actual.y += (destino.y - actual.y) * 0.45;
       sello.style.transform = `translate3d(${actual.x}px, ${actual.y}px, 0) translate(-50%, -50%)`;
       requestAnimationFrame(bucle);
     };

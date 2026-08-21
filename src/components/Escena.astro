@@ -35,8 +35,19 @@ interface Props {
    * costura, que es justo lo que había que quitar.
    */
   pie?: boolean;
+  /**
+   * De qué campo cuelga la escena, para que el aire de encima de las cumbres
+   * sea EXACTAMENTE ese color y no se vea ninguna franja.
+   *
+   * ⚠️ Sin esto, en modo pie la escena deja ver el fondo de la página
+   * (`--blanco`, #F7F9FC) mientras la sección de la que cuelga es `--claro`
+   * (#EEF1F7): dos claros parecidos pegados, y entre ellos una franja que se
+   * ve. El dibujo tiene que comportarse como un PNG recortado SOBRE su campo,
+   * no sobre el papel de la página.
+   */
+  campo?: "claro" | "blanco" | "azul";
 }
-const { tipo, nombre, pie = false } = Astro.props;
+const { tipo, nombre, pie = false, campo = "blanco" } = Astro.props;
 
 /*
   ⚠️ CADA ESCENA TIENE SU ENCUADRE EN MODO PIE. El dibujo se hizo para un cuadro
@@ -55,7 +66,7 @@ const encuadre: Record<string, string> = {
 const caja = pie ? encuadre[tipo] : "0 0 1200 520";
 ---
 
-<div class:list={["escena", `e-${tipo}`, { pie }]} data-escena aria-hidden="true">
+<div class:list={["escena", `e-${tipo}`, `c-${campo}`, { pie }]} data-escena aria-hidden="true">
   <svg viewBox={caja} preserveAspectRatio={pie ? "none" : "xMidYMid slice"} role="presentation">
     {
       tipo === "risco" && (
@@ -188,7 +199,15 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
     ver el gris del cielo cortando contra el claro de la sección.
   */
   .escena.pie {
-    background: transparent;
+    background: var(--blanco);
+  }
+  .escena.pie.c-claro {
+    background: var(--plata-clara);
+  }
+  .escena.pie.c-azul {
+    background: var(--azul);
+  }
+  .escena.pie {
     /*
       ⚠️ ALTO SUFICIENTE, O EL DIBUJO SE APLASTA. En modo pie el SVG se ajusta a
       la caja sin recortar (si recortara, se comería las cumbres), así que la
@@ -204,6 +223,29 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
     margin-bottom: 0;
     display: block;
   }
+
+  /*
+    ⚠️ EL RISCO SE HUNDE EN LO QUE VIENE DEBAJO (2026-08-21). El mar le monta
+    encima al pie de la montaña y ella asoma por detrás. Es profundidad de
+    verdad —un objeto delante de otro—, no un degradado que la insinúe, y es lo
+    que separa un recorte pegado de un paisaje con fondo.
+
+    Se hace con margen negativo, no bajando la montaña: así el campo de abajo
+    no cambia de tamaño ni empuja nada, solo se solapa.
+  */
+  .escena.e-risco.pie {
+    margin-bottom: calc(clamp(56px, 10svh, 118px) * -1);
+  }
+  /* Y el pueblo se mete en el agua: el mar sale de debajo del muelle. */
+  .escena.e-pueblo.pie {
+    margin-bottom: calc(clamp(34px, 6svh, 76px) * -1);
+  }
+  /*
+    ⚠️ QUIEN TIENE QUE PINTAR ENCIMA SE MARCA A MANO, no con un selector de
+    hermano: Astro mete un <script> justo detrás del componente, así que el
+    "siguiente hermano" no es la sección, es esa etiqueta invisible, y el orden
+    se le aplicaba a ella. La sección que monta encima lleva `sobre-escena`.
+  */
   .escena svg {
     position: absolute;
     inset: 0;

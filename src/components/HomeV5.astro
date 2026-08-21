@@ -150,9 +150,9 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
-<Escena tipo="risco" pie />
+<Escena tipo="risco" pie campo="claro" />
 
-<section class="f-azul row12 field-cards home-slide">
+<section class="f-azul row12 field-cards home-slide sobre-escena">
   <span class="field-tag">.05</span>
   <div class="cells">
     <div class="head-cell">
@@ -193,7 +193,7 @@ const destacados = todos.slice(0, 3);
   </div>
 </section>
 
-<Escena tipo="pueblo" pie />
+<Escena tipo="pueblo" pie campo="blanco" />
 
 <div class="cta-wrap">
   <div class="cta-screen f-azul home-slide" id="ctaScreen">
@@ -724,8 +724,14 @@ const destacados = todos.slice(0, 3);
     tarjeta.
   */
   /* El pueblo se apoya EN el agua: ni margen ni relleno entre los dos. */
-  .cta-wrap {
-    margin-top: 0;
+  /*
+    Monta por encima del pie de las montañas, que se hunden bajo ella: la
+    montaña asoma POR DETRÁS del agua y eso da la profundidad. Sin este orden
+    el dibujo de la escena pintaría encima y el solape no se vería.
+  */
+  .sobre-escena {
+    position: relative;
+    z-index: 1;
   }
   .cta-screen {
     min-height: 100svh;
@@ -740,7 +746,18 @@ const destacados = todos.slice(0, 3);
     /* Transparente, no un claro propio: ver la nota de tokens.css. Con un
        claro distinto al de la página se veía la costura del marco. */
     background: transparent;
-    padding: calc(var(--menu-h) + 20px) 0 0;
+    /*
+      ⚠️ SIN RELLENO ARRIBA. Ese relleno dejaba ver la página entre el muelle y
+      el agua: la franja blanca que sobraba. El aire lo pone `.cta-inner` por
+      dentro, así que el azul puede empezar justo en el borde y el mar sale de
+      debajo del pueblo.
+    */
+    padding: 0;
+  }
+  /* El agua monta sobre el pie del pueblo: sale de DEBAJO, no a continuación. */
+  .cta-wrap {
+    position: relative;
+    z-index: 1;
   }
   .cta-inner {
     flex: 1;
