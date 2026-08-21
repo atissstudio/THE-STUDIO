@@ -204,7 +204,8 @@ def rellenar_huecos(mask: np.ndarray, limite: int = 600) -> np.ndarray:
     return salida
 
 
-def recortar(entrada: Path, salida: Path, umbral: float = 26.0, abrir: bool = True, ancho_max: int = 1400):
+def recortar(entrada: Path, salida: Path, umbral: float = 26.0, abrir: bool = True,
+             hueco: int = 600, ancho_max: int = 1400):
     im = Image.open(entrada).convert("RGB")
     if im.width > ancho_max:
         im = im.resize((ancho_max, round(im.height * ancho_max / im.width)), Image.LANCZOS)
@@ -231,7 +232,7 @@ def recortar(entrada: Path, salida: Path, umbral: float = 26.0, abrir: bool = Tr
     if abrir:
         solido = quitar_lenguas(solido)
     solido = mancha_mayor(solido)
-    solido = rellenar_huecos(solido)
+    solido = rellenar_huecos(solido, hueco)
     """
     ⚠️ LA TRANSPARENCIA ES BINARIA, y el borde lo suaviza el desenfoque. Antes
     se conservaba fuera de la mancha hasta un 0,35 de alfa "para el antialias",
@@ -269,5 +270,12 @@ if __name__ == "__main__":
         ("36A4F1E5-6F85-4815-AE18-246A50B64F7D.PNG", "casa-barro.webp", 11.0),
     ]
     for origen, destino, umbral in pares:
+        arcilla = "barro" in destino
+        # ⚠️ En las de arcilla el hueco va abierto de par en par. Son gris sobre
+        # gris: los rincones en sombra (el hueco de una ventana, el interior de
+        # un porche) quedan del color del fondo y el umbral los toma por fuera.
+        # Como ahí NO hay nada que se vea de verdad al otro lado, se rellenan
+        # todos. En las de color el límite se queda corto a propósito, que es lo
+        # que deja pasar el cielo entre la palmera y la tapia.
         recortar(BASE / "originales" / origen, BASE / "recortadas" / destino,
-                 umbral, abrir="barro" not in destino)
+                 umbral, abrir=not arcilla, hueco=400000 if arcilla else 600)
