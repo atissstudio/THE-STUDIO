@@ -161,7 +161,7 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
   </div>
 </section>
 
-<section class="f-claro row12 home-slide pega-arriba" data-reveal data-slides>
+<section class="f-claro row12 home-slide pega-arriba deja-remate" data-reveal data-slides>
   <span class="field-tag" style="color:var(--azul)">.04</span>
   <div class="read right">
     <p class="k">Cómo lo hacemos</p>
@@ -216,7 +216,7 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
   el compás de la mecida) para que cambiar la composición sea mover un número
   aquí, sin tocar el CSS.
 */}
-<section class="f-blanco row12 field-cards home-slide slide-datos">
+<section class="f-blanco row12 field-cards home-slide slide-datos deja-remate">
   <span class="field-tag" style="color:var(--azul)">.06</span>
   <div class="datos datos-flotan">
     <div class="head-cell"><p class="k">Los datos</p><h2>No hablamos por hablar.</h2></div>
@@ -718,7 +718,14 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
   }
   .reel-house .r1 { opacity: var(--o30, 0); }
   .reel-house .r2 { opacity: var(--o70, 0); }
-  .reel-house .r3 { opacity: var(--o100, 0); }
+  /*
+    ⚠️ EL VALOR DE RESERVA DE LA ÚLTIMA CAPA ES 1, NO 0. Es la red de seguridad
+    de la casa: si el guion no llegara a correr, `--o100` no existe y con
+    reserva 0 la casa se quedaría INVISIBLE para siempre. Con 1 se ve acabada,
+    que es un estado válido. El guion escribe el valor de verdad en su primer
+    fotograma, así que no hay parpadeo con JS vivo.
+  */
+  .reel-house .r3 { opacity: var(--o100, 1); }
   .reel-phrase {
     position: absolute;
     top: 50%;
@@ -897,6 +904,18 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
     reserva ese sitio en vez de repartirse hasta el borde.
   */
   @media (max-width: 900px) {
+    /*
+      ⚠️ LA PORTADA SE COMPONE, NO SE PEGA ARRIBA (2026-08-21). Medido a
+      390x844: el logo y su carril terminaban en el píxel 284 y quedaban 560 px
+      de campo azul vacío debajo, más de media pantalla. Eso es lo que Alejandro
+      señaló como "mar donde no va": no sobra el mar, sobra el campo. Centrando
+      el conjunto, el aire se reparte arriba y abajo y la pantalla se lee como
+      una portada en vez de como un encabezado con un hueco.
+    */
+    .hero {
+      align-content: center;
+    }
+
     /*
       ⚠️ EN MÓVIL LOS DATOS VAN DE LADO, NO APILADOS (2026-08-21). Con cinco,
       apilados medían 1037 px contra una pantalla de 844: la parada dejaba de
@@ -1333,39 +1352,19 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
       personalizada no transiciona sin declararla con @property, y esto tiene
       que poder encadenarse con retardos.
     */
-    .reel-house .r1,
-    .reel-house .r2,
-    .reel-house .r3 {
-      opacity: 0;
-      transition: opacity 0.75s ease;
-    }
-    .reel.play .r1 {
-      opacity: 1;
-      transition-delay: 0.5s;
-    }
-    .reel.play .r2 {
-      opacity: 1;
-      transition-delay: 1.2s;
-    }
-    .reel.play .r3 {
-      opacity: 1;
-      transition-delay: 1.9s;
-    }
-    .reel-phrase {
-      opacity: 0;
-      transition: opacity 0.6s ease, transform 0.6s ease;
-    }
-    .reel-p1 {
-      opacity: 1;
-    }
-    .reel.play .reel-p2 {
-      opacity: 1;
-      transition-delay: 1.6s;
-    }
-    .reel.play .reel-p1 {
-      opacity: 0.25;
-      transition-delay: 1.6s;
-    }
+    /*
+      ⚠️ LA CASA LA PINTA EL SCROLL, TAMBIÉN EN EL TELÉFONO (2026-08-21,
+      corrección pedida por Alejandro: "la casa se anima sola, sin el scroll,
+      como si fuese un vídeo").
+
+      Esta mañana se le puso un disparo por tiempo al entrar en pantalla,
+      porque con una sola parada la secuencia se cortaba. Pero una animación
+      que va sola no es la casa dibujándose mientras bajas: es un vídeo. Con
+      sus dos paradas el recorrido existe, así que aquí no hace falta nada
+      especial: mandan las mismas variables que en escritorio (`--o30`,
+      `--o70`, `--o100`, `--p1`, `--p2`), que escribe el scroll fotograma a
+      fotograma. Una sola manera de encender la casa en toda la web.
+    */
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1657,51 +1656,13 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
     }
 
     /*
-      MÓVIL: la casa se enciende al entrar en pantalla, no con el scroll.
-
-      ⚠️ LA RED DE SEGURIDAD NO PUEDE SER UN RELOJ A CIEGAS (corregido el
-      2026-08-21). Había un `setTimeout` de 6 s que encendía la casa pasara lo
-      que pasara, y en un teléfono se tarda MÁS de 6 s en pasar la portada: la
-      secuencia se gastaba con la casa todavía fuera de pantalla y, al llegar,
-      lo que se veía era una casa encendida y quieta. Eso es lo que Alejandro
-      describía como "la casa no se apaga y enciende". No estaba rota: se había
-      encendido sin nadie delante.
-
-      La red sigue siendo obligatoria (las tres capas arrancan en opacidad
-      cero), pero ahora mira DÓNDE ESTÁ la casa en vez de mirar el reloj: un
-      vigía por scroll, que es un mecanismo distinto del observador y por tanto
-      sirve de respaldo si aquel fallara, y que por definición nunca se
-      adelanta. Al imprimir se enciende igual.
+      ⚠️ Ya no hay encendido aparte para móvil (2026-08-21). Lo pinta el scroll
+      en los dos tamaños, con el mismo cálculo, así que tampoco hace falta red
+      de seguridad propia: las capas de la casa no arrancan escondidas por CSS,
+      su opacidad la escribe el guion desde el primer fotograma y, si el guion
+      no llegara a correr, el navegador usa el valor de reserva de cada
+      variable (`--o100` sin definir deja la casa acabada, no en blanco).
     */
-    const reelEl = document.getElementById("reel");
-    if (reelEl && matchMedia("(max-width: 900px)").matches) {
-      let encendida = false;
-      const encender = () => {
-        if (encendida) return;
-        encendida = true;
-        reelEl.classList.add("play");
-        removeEventListener("scroll", vigia);
-      };
-      // Se enciende cuando la casa ya está entrando de verdad en la pantalla.
-      const vigia = () => {
-        const c = reelEl.getBoundingClientRect();
-        if (c.top < innerHeight * 0.6 && c.bottom > innerHeight * 0.2) encender();
-      };
-      new IntersectionObserver(
-        (es, o) => {
-          es.forEach((e) => {
-            if (e.isIntersecting) {
-              encender();
-              o.disconnect();
-            }
-          });
-        },
-        { threshold: 0.4 }
-      ).observe(reelEl);
-      addEventListener("scroll", vigia, { passive: true });
-      addEventListener("beforeprint", encender);
-      vigia();
-    }
 
     const cta = document.getElementById("ctaScreen");
     if (cta) {

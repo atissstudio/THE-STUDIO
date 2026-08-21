@@ -60,6 +60,21 @@ const breadcrumbLd =
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/*
+      ⚠️ EL COLOR DE LAS BARRAS DEL NAVEGADOR (2026-08-21, "la pantalla no está
+      completa, tiene marco de color sólido arriba y abajo").
+
+      No era un fallo de la web: en el iPhone, Safari pinta su barra de estado
+      y su barra inferior con el color que declara `theme-color`, y sin
+      declararlo se inventa uno a partir de los extremos del documento. Como
+      arriba del documento hay campo azul, la barra se quedaba azul aunque
+      estuvieras leyendo sobre claro, y eso es el marco que se veía.
+
+      Se declara, y además se actualiza con la sección que estés mirando, que
+      es la práctica corriente en sitios de campos de color: así las barras
+      acompañan al campo y la pantalla se lee entera.
+    */}
+    <meta name="theme-color" content="#334ba4" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <SEO title={title} description={description} path={path} image={image} noindex={noindex} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -70,6 +85,56 @@ const breadcrumbLd =
     />
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     {breadcrumbLd && <script type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} />}
+    <script is:inline>
+      /*
+        Inline y en la cabecera a propósito: si esperara al módulo, la barra
+        parpadearía de un color a otro al cargar.
+      */
+      (function () {
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (!meta) return;
+        var colores = {
+          "f-azul": "#334ba4",
+          "f-roca": "#3b3f45",
+          "f-navy": "#0b1230",
+          "f-claro": "#eef1f7",
+          "f-blanco": "#f7f9fc",
+          "f-plata": "#c9ccd2",
+        };
+        var actual = meta.getAttribute("content");
+        function pintar() {
+          // El campo que ocupa el centro de la pantalla es el que manda.
+          var e = document.elementFromPoint(innerWidth / 2, innerHeight / 2);
+          var color = null;
+          while (e && !color) {
+            for (var c in colores) if (e.classList && e.classList.contains(c)) color = colores[c];
+            e = e.parentElement;
+          }
+          /* ⚠️ Si no hay campo bajo el punto (la pantalla de carga tapa, o un
+             diálogo), se deja el color que había: caer al claro por defecto
+             pintaba la barra de blanco sobre la portada azul. */
+          if (!color) return;
+          if (color !== actual) {
+            actual = color;
+            meta.setAttribute("content", color);
+          }
+        }
+        var pendiente = false;
+        addEventListener(
+          "scroll",
+          function () {
+            if (pendiente) return;
+            pendiente = true;
+            requestAnimationFrame(function () {
+              pintar();
+              pendiente = false;
+            });
+          },
+          { passive: true }
+        );
+        addEventListener("load", pintar);
+      })();
+    </script>
   </head>
   <body>
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">

@@ -6,6 +6,12 @@
 :root {
   /* Color */
   --azul: #334ba4;
+  /*
+    Alto de la banda de paisaje que remata un tramo en móvil. Lo usan las dos
+    partes del trato: la escena, que se sube ese tanto, y el tramo de arriba,
+    que se lo reserva (`.deja-remate`). Un solo número, o se descuadran.
+  */
+  --remate: 172px;
   --azul-deep: #25376f;
   --azul-lit: #6f86e0;
   --navy: #0b1230; /* v5: solo el pie, no el lienzo entero */
@@ -376,17 +382,21 @@ body {
   color: var(--ink);
 }
 /*
-  Cuerpo en bandera, NUNCA justificado ni partido (2026-08-06, decisión de
-  Alejandro: "que las palabras se corten está prohibido en toda la web").
+  EL CUERPO VUELVE A IR JUSTIFICADO (2026-08-21, pedido de Alejandro: "los
+  textos no están justificados, los quiero justificados").
 
-  Las dos cosas van juntas y por eso caen juntas. El justificado del 2026-08-05
-  solo se sostenía porque `hyphens: auto` partía las palabras largas; sin
-  partir, justificar en español abre ríos de espacio en blanco entre palabras y
-  queda peor que el problema que venía a resolver. Así que bandera: el texto se
-  alinea contra el lado de su bloque (izquierda por defecto, derecha en
-  `.read.right`) y el borde contrario queda irregular, que es lo correcto.
+  ⚠️ REVIERTE la decisión del 2026-08-06, que quitó el justificado junto con la
+  partición de palabras. El motivo de entonces sigue siendo cierto y conviene
+  tenerlo escrito: **justificar en español sin partir palabras abre ríos de
+  espacio en blanco** entre palabras, sobre todo en columnas estrechas, porque
+  el idioma tiene palabras largas y el navegador solo puede estirar los huecos.
+  La partición sigue PROHIBIDA (`hyphens: manual`, regla cerrada), así que el
+  precio se paga en espacios.
 
-  `text-wrap: pretty` es lo que evita la línea final de una sola palabra.
+  Lo que sí se puede hacer para que ese precio sea el mínimo, y se hace aquí:
+  `text-wrap: pretty` reparte mejor las últimas líneas, y la medida se mantiene
+  acotada (62ch) porque cuanto más ancha la columna, menos se notan los ríos.
+  El borde de la última línea de cada párrafo queda suelto, como debe.
 */
 .read p {
   font-family: var(--sans);
@@ -395,6 +405,11 @@ body {
   color: var(--ink);
   margin: 0 0 20px;
   text-wrap: pretty;
+  text-align: justify;
+  /* En el bloque alineado a la derecha, el justificado deja irregular el
+     borde izquierdo de la última línea; `justify` se mantiene y el resto lo
+     resuelve la regla de `.read.right` de abajo. */
+  text-justify: inter-word;
 }
 .f-azul .read h2,
 .f-navy .read h2 {
@@ -1355,6 +1370,29 @@ html.paisaje-vivo .respiradero .tramo-nombre {
     puede sobrescribirla. Las reglas móviles de la escena viven en el componente
     y ahí se cambian.
   */
+
+  /*
+    ⚠️ QUIEN TIENE ALGO ENCIMA, LE HACE SITIO. Las escenas del paisaje rematan
+    el tramo de arriba subiéndose sobre él (ver Escena.astro). Para que no le
+    tapen texto, ese tramo se queda con `--remate` menos de alto útil: sigue
+    midiendo una pantalla y siendo una parada, pero su contenido se centra en
+    lo que queda. Sin esto, la banda se comía el final del texto.
+  */
+  .deja-remate {
+    box-sizing: border-box;
+    padding-bottom: var(--remate);
+  }
+  /*
+    ⚠️ SI EL TRAMO SE TROCEA EN PANELES, EL HUECO VA EN EL ÚLTIMO PANEL. Cada
+    panel mide una pantalla por su cuenta, así que un relleno en la sección no
+    le quita alto a ninguno: medido, el texto seguía llegando hasta 18 px de la
+    montaña y solo se salvaba por el aire que ya tenía. Con un texto un poco
+    más largo volvía a taparse, o sea que no estaba arreglado, estaba de suerte.
+  */
+  .deja-remate .rv-panel:last-child {
+    box-sizing: border-box;
+    padding-bottom: var(--remate);
+  }
 
   /*
     El carril de cierre es una franja de 58 px entre dos paradas. No es parada

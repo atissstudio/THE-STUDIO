@@ -269,6 +269,12 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
     */
     --palma: #4f6b3c;
     --tronco: #7c5a3f;
+    /*
+      El alto de la banda en móvil. Vive aquí y lo lee también el tramo que
+      tiene que reservarle el hueco (`.deja-remate` en tokens.css): un solo
+      número para las dos mitades del trato, o vuelven a descuadrarse.
+    */
+    --remate: 172px;
   }
   /*
     ⚠️ EN MODO PIE NO HAY FONDO NINGUNO. La escena se apoya en lo que tenga
@@ -383,81 +389,53 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
     Medían 456 px sobre 844: parar ahí era quedarse a media página.
   */
   /*
-    ══ MÓVIL: LA ESCENA TIENE SU PROPIA PANTALLA, Y EL DIBUJO ES UNA BANDA ═══
+    ══ MÓVIL: LA ESCENA REMATA EL TRAMO DE ARRIBA, CON SITIO RESERVADO ═══════
 
-    ⚠️ CORREGIDO EL 2026-08-21 (la banda tapaba texto). Estaba puesta como un
-    remate que se SUBÍA encima del tramo de arriba con un margen negativo. Pero
-    ese tramo es una pantalla entera con su texto centrado, así que la banda le
-    comía el tercio de abajo. Medido en la home a 390x844: la montaña arrancaba
-    en 9271 y el enlace "Ver el método completo" vivía en 9303-9371, o sea
-    entero debajo del risco; el pueblo tapaba el dato del 30% enterito.
+    Tercera versión del mismo asunto, y las dos anteriores fallaron por lo
+    mismo pero al revés:
 
-    La causa no era el tamaño de la banda: era que ocupaba sitio ajeno. Bajarla
-    a 20 o a 25 habría dejado el mismo fallo esperando a un texto un poco más
-    largo. Así que la escena vuelve a tener SU pantalla, como cualquier otro
-    tramo, y el dibujo es una banda pegada al borde de abajo que conserva sus
-    proporciones recortando por los lados (`slice`). El resto de la pantalla lo
-    pinta el color del campo del que cuelga, que hace de cielo. Ni se solapa
-    con nadie ni se estira, que eran los dos fallos de las dos versiones
-    anteriores.
+      · Remate con margen negativo (mañana): se subía sobre el tramo anterior
+        SIN que ese tramo le hiciera sitio, y le tapaba el texto.
+      · Pantalla propia (mediodía): no tapaba nada, pero se llevaba una
+        pantalla entera con el dibujo abajo y dos tercios de aire.
+
+    Lo que faltaba en la primera no era quitarle el solape, era **reservar el
+    hueco**: el tramo de arriba se queda con `--remate` menos de alto útil y la
+    escena se sube exactamente eso. Así remata el tramo, como pidió Alejandro,
+    sin robarle una línea de texto y sin gastar una pantalla.
+
+    ⚠️ Quien reserva es la sección de arriba, y se marca A MANO con la clase
+    `deja-remate` (no vale un selector de hermano: Astro mete un <script> justo
+    detrás del componente).
   */
   @media (max-width: 900px) {
     .escena.pie,
     .escena.e-risco.pie,
     .escena.e-pueblo.pie {
-      height: 100svh;
-      margin-top: 0;
+      height: var(--remate);
+      margin-top: calc(var(--remate) * -1);
       margin-bottom: 0;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
-    }
-    @supports (height: 100dvh) {
-      .escena.pie,
-      .escena.e-risco.pie,
-      .escena.e-pueblo.pie {
-        height: 100dvh;
-      }
+      position: relative;
+      z-index: 2;
+      pointer-events: none;
+      /* Sin fondo propio: se apoya en el campo del tramo que remata. */
+      background: transparent;
     }
     /*
-      ⚠️ EL DIBUJO NO SE PEGA AL BORDE DE ABAJO EN MÓVIL: LA PÍLDORA DEL MENÚ
-      VIVE AHÍ. Flota fija sobre los últimos ~90 px de cualquier pantalla, así
-      que con el dibujo pegado abajo el muelle del pueblo y el pie de las
-      montañas quedaban debajo del menú (visto en pantalla, no medido).
-
-      Así que la pantalla de la escena se compone entera: cielo arriba (el
-      color del campo del que cuelga), el dibujo, y debajo una franja del color
-      del campo que VIENE, que es justo lo que la escena presenta. Esa franja
-      hace dos cosas a la vez: deja al menú flotando sobre color plano y
-      empalma con la sección siguiente sin junta, que es lo que ya hacía el
-      solape en escritorio.
+      El dibujo, entero de lado a lado y apoyado abajo. `meet` y no `slice`:
+      con `slice` un dibujo panorámico en un teléfono enseña menos de la mitad
+      del ancho y se lee como dos casas gigantes.
     */
-    .escena.pie::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 112px;
-      background: var(--suelo, transparent);
-    }
     .escena.pie svg {
       position: absolute;
       left: 0;
       right: 0;
-      /* ⚠️ `top: auto` es obligatorio: la regla base pone `inset: 0`, y con
-         arriba y abajo fijados a la vez el alto no manda y la banda se queda
-         pegada ARRIBA (visto midiendo: el dibujo salía en el cielo). */
       top: auto;
-      bottom: 112px;
-      height: 26svh;
-    }
-    @supports (height: 100dvh) {
-      .escena.pie svg {
-        height: 26dvh;
-      }
+      bottom: 0;
+      height: 100%;
     }
     .escena.pie .escena-nombre {
-      bottom: 26px;
+      display: none;
     }
   }
 
