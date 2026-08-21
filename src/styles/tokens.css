@@ -1210,3 +1210,84 @@ html.paisaje-vivo .respiradero.alto {
 html.paisaje-vivo .respiradero .tramo-nombre {
   opacity: 0.85;
 }
+
+/* ==========================================================================
+   MÓVIL: UN GESTO, UNA PANTALLA ENTERA (2026-08-21)
+   --------------------------------------------------------------------------
+   Pedido de Alejandro: *"un scroll te lleve a una animación completa, a un
+   contenido, que sea cerrado, nada que quedarte a media página"*.
+
+   ⚠️ ESTO REVIERTE LA DECISIÓN DEL 2026-08-05, y conviene saberlo. Entonces se
+   quitó `scroll-snap-stop: always` porque la página peleaba contra el dedo: con
+   `always` no puedes pasarte dos pantallas de un impulso. Se vuelve a poner a
+   petición suya, y con el ajuste `mandatory`, que es lo que garantiza que nunca
+   te quedas entre dos. El precio asumido es ese: para bajar cinco pantallas hay
+   que hacer cinco gestos.
+
+   Para que esto funcione, TODA unidad de primer nivel tiene que medir una
+   pantalla exacta. Lo que medía media —las escenas del paisaje, 456 px de 844—
+   dejaba el gesto a medio camino, que es justo lo que se quería evitar.
+   ========================================================================== */
+@media (max-width: 900px) {
+  html:has(.rv-panel),
+  html:has([data-slides] .rv-panel) {
+    scroll-snap-type: y mandatory;
+  }
+
+  /* Las paradas de texto: cada párrafo, su pantalla, y no se puede saltar. */
+  [data-reveal] .rv-panel,
+  [data-slides] .rv-panel {
+    scroll-snap-stop: always;
+  }
+
+  /*
+    Las unidades de primer nivel de la home. Cada una mide una pantalla y es
+    una parada obligatoria.
+  */
+  .portada,
+  .reel,
+  .f-azul.field-cards,
+  .f-blanco.field-cards,
+  .cta-wrap,
+  .escena.pie {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /*
+    ⚠️ LAS ESCENAS PASAN A PANTALLA COMPLETA. Medían 456 px sobre 844, así que
+    al parar en ellas se veía media escena y media sección: exactamente
+    "quedarte a media página". Con la pantalla entera, el risco y el pueblo son
+    contenido cerrado, como cualquier otro tramo.
+  */
+  .escena.pie {
+    height: 100svh;
+    /* Y sin hundirse: en móvil el solape se comía casi un tercio del tramo. */
+    margin-bottom: 0;
+  }
+  .escena.e-risco.pie,
+  .escena.e-pueblo.pie {
+    margin-bottom: 0;
+  }
+  .escena.pie .escena-nombre {
+    bottom: 26px;
+  }
+
+  /*
+    El carril de cierre es una franja de 58 px entre dos paradas. No es parada
+    —no tiene contenido que leer— pero tampoco puede quedarse suelto: se pega al
+    tramo que viene después para que nunca sea el sitio donde se para el dedo.
+  */
+  .f-azul.carril-cierre {
+    scroll-snap-align: none;
+  }
+
+  /*
+    Sin hueco reservado para el pie: en móvil ya no va detrás, va al final. Si
+    se dejara el margen, quedarían 300 px de vacío entre la última parada y el
+    pie, y con ajuste obligatorio ese vacío es además inalcanzable.
+  */
+  #page {
+    margin-bottom: 0;
+  }
+}

@@ -293,6 +293,21 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
     text-shadow: 0 1px 14px rgba(11, 18, 48, 0.7);
     white-space: nowrap;
   }
+  /*
+    ⚠️ MÓVIL: PANTALLA ENTERA. La regla vive AQUÍ y no en tokens.css porque los
+    estilos con ámbito de Astro añaden un atributo al selector, así que una
+    regla suelta de la hoja compartida pierde por especificidad y no aplicaba.
+    Medían 456 px sobre 844: parar ahí era quedarse a media página.
+  */
+  @media (max-width: 900px) {
+    .escena.pie,
+    .escena.e-risco.pie,
+    .escena.e-pueblo.pie {
+      height: 100svh;
+      margin-bottom: 0;
+    }
+  }
+
   /* Con menos movimiento los planos se quedan quietos. La escena sigue siendo
      una composición completa: no depende del paralaje para tener sentido. */
   @media (prefers-reduced-motion: reduce) {

@@ -156,4 +156,27 @@ const year = new Date().getFullYear();
     font-size: 0.76rem;
     margin-top: 16px;
   }
+
+  /*
+    ⚠️ EN MÓVIL EL PIE ES LA ÚLTIMA DIAPOSITIVA, NO UNA REVELACIÓN (2026-08-21).
+
+    El pie va fijo por detrás y se descubre en los últimos 300 px que `#page`
+    reserva con su margen. Eso funciona con scroll libre, pero al pasar el móvil
+    a ajuste OBLIGATORIO esos 300 px dejan de ser alcanzables: no son ninguna
+    parada, así que el navegador devuelve el scroll a la última y **el pie no se
+    puede ver**. Medido: el scroll se quedaba en 12.028 de 12.328, con los
+    enlaces legales y la navegación fuera de alcance.
+
+    Así que en móvil deja de ir fijo: se coloca al final del documento como un
+    bloque más y es la última parada. El pie es contenido, no un truco.
+  */
+  @media (max-width: 900px) {
+    footer {
+      position: static;
+      height: auto;
+      padding-bottom: 28px;
+      scroll-snap-align: end;
+      scroll-snap-stop: always;
+    }
+  }
 </style>
