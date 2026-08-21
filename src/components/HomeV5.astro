@@ -563,6 +563,28 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
     La portada y la casa quedan FUERA a propósito: las dos tienen animación
     atada al scroll continuo y un punto de ajuste en medio las cortaría.
   */
+  /*
+    ⚠️ UNA SECCIÓN TROCEADA EN PARADAS NO LLEVA RELLENO PROPIO, EN NINGUNA
+    ANCHURA (2026-08-21). Cada panel de `data-slides` mide una pantalla entera
+    y es una parada, así que el relleno del campo (`.field-pad`, `.pega-arriba`)
+    NO le quita alto a ninguno: se queda como una banda de color plano fuera de
+    todas las paradas. Con ajuste obligatorio el dedo no puede detenerse ahí, y
+    la banda aparece pegada al borde de la pantalla como un trozo de campo
+    vacío — las "zonas blancas" del iPhone. Medido en la home a 390x844: 176 px
+    en `.03` (88 arriba y 88 abajo) y 40 px en `.04`, o sea 216 px de página que
+    no pertenecían a nada.
+
+    Esto ya estaba anulado, pero SOLO dentro del @media de escritorio, así que
+    en el teléfono —que es justo donde el ajuste es obligatorio— seguía puesto.
+    Es la misma lección que ya está escrita para el remate del paisaje en
+    tokens.css: si el tramo va troceado en paneles, el aire va en el panel.
+    Aquí se generaliza: el aire lo pone SIEMPRE el panel, nunca la sección.
+  */
+  .home-slide[data-slides] {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
   @media (min-width: 901px) {
     .home-slide {
       height: 100svh;
@@ -590,12 +612,6 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
     */
     .home-slide > .field-tag {
       top: calc(var(--menu-h) + 14px);
-    }
-    /* En modo diapositiva el aire lo pone la pantalla, no el relleno del campo */
-    .home-slide.field-pad,
-    .home-slide.pega-arriba {
-      padding-top: 0;
-      padding-bottom: 0;
     }
     /*
       El panel de texto ya no impone su propia pantalla: la impone el campo, y

@@ -529,7 +529,19 @@ html.mar-campos .closer > .closer-inner {
     movimiento tiene una lógica y no parece que cada pantalla haga la suya.
   */
   .rv-panel {
-    min-height: 100svh;
+    /*
+      ⚠️ ALTURA, NO ALTURA MÍNIMA (2026-08-21). Con `min-height` el panel puede
+      CRECER, y entonces nada de lo que lleva dentro cede nunca: un espaciador
+      flexible solo se encoge cuando el contenedor no puede estirarse. Medido:
+      un tramo acababa en 908 px con la pantalla en 845, o sea 63 px de la
+      parada siguiente asomando por abajo — los cortes del iPhone. Con ajuste
+      obligatorio una parada TIENE que medir una pantalla, no "al menos una".
+
+      Que no se corte texto lo garantizan otras dos cosas, no el `min-height`:
+      `fusionarTramos` solo junta párrafos que caben medidos de verdad, y los
+      hijos llevan `flex-shrink: 0`, así que quien cede es el espaciador y nunca
+      el texto.
+    */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -557,17 +569,40 @@ html.mar-campos .closer > .closer-inner {
     va emparejado con el barrido (`--desde` en reveal.ts): los pasos pares
     entran desde la derecha y se pegan a la izquierda, y al revés.
   */
+  /*
+    ⚠️ EL DESPLAZAMIENTO SALE DEL ESPACIO QUE SOBRA, NUNCA AÑADE ALTO
+    (2026-08-21). Estas cuatro paradas colocaban el post-it con
+    `padding-top/bottom: 16-18svh`. Con `min-height: 100svh` y `border-box`, ese
+    relleno se SUMA al contenido en cuanto el texto es largo: medido en la home
+    a 390x845, un tramo acababa midiendo 908 px, o sea 63 px más que la
+    pantalla, y con ajuste obligatorio eso es un trozo de la parada siguiente
+    asomando por abajo. Es justo lo que Alejandro veía como cortes en el iPhone.
+
+    Subir o bajar ese 16svh habría sido un parche: con un texto un poco más
+    largo vuelve. La causa es que un relleno fijo no sabe si hay sitio. Ahora el
+    empujón es un espaciador flexible (`flex: 0 1 Nsvh`): si sobra espacio,
+    ocupa lo suyo y el post-it salta; si no sobra, SE ENCOGE A CERO y el panel
+    sigue midiendo exactamente una pantalla. El precio es el correcto y es
+    honesto: cuando el texto llena la pantalla no hay hueco por el que saltar,
+    así que no salta.
+  */
   .rv-paso-0 {
     justify-content: flex-end;
     align-items: flex-start;
-    padding-bottom: 16svh;
     text-align: left;
+  }
+  .rv-paso-0::after {
+    content: "";
+    flex: 0 1 16svh;
   }
   .rv-paso-1 {
     justify-content: flex-start;
     align-items: flex-end;
-    padding-top: 18svh;
     text-align: right;
+  }
+  .rv-paso-1::before {
+    content: "";
+    flex: 0 1 18svh;
   }
   .rv-paso-2 {
     justify-content: center;
@@ -577,8 +612,11 @@ html.mar-campos .closer > .closer-inner {
   .rv-paso-3 {
     justify-content: flex-end;
     align-items: flex-end;
-    padding-bottom: 16svh;
     text-align: right;
+  }
+  .rv-paso-3::after {
+    content: "";
+    flex: 0 1 16svh;
   }
   /*
     Ancho de post-it: lo que sobra hasta el 100% es el hueco por el que salta.
@@ -603,6 +641,13 @@ html.mar-campos .closer > .closer-inner {
   [data-reveal],
   [data-slides] {
     overflow-x: clip;
+  }
+  /*
+    El texto nunca se aplasta: en un flex, todo hijo cede por defecto. Quien
+    cede aquí es el espaciador de las paradas, que para eso existe.
+  */
+  .rv-panel > *:not(.rv-espacio) {
+    flex-shrink: 0;
   }
   .rv-panel > * {
     width: 82%;
@@ -1396,6 +1441,21 @@ html.paisaje-vivo .respiradero .tramo-nombre {
   [data-slides] .rv-panel {
     min-height: 100svh;
   }
+  /*
+    ⚠️ LA PARADA DE TEXTO LLEVA ALTURA, NO ALTURA MÍNIMA (2026-08-21). Con solo
+    un mínimo, el panel crece con su contenido y entonces nada de lo que lleva
+    dentro cede: un espaciador flexible solo se encoge cuando el contenedor ya
+    no puede estirarse. Medido en la home a 390x845: un tramo acababa en 908 px
+    y asomaban 63 px de la parada siguiente.
+
+    Va AQUÍ y no en `.rv-panel` a propósito: la altura de una parada tiene un
+    solo dueño, que es este bloque, y así la altura y el respaldo de `dvh` no
+    pueden quedar diciendo cosas distintas.
+  */
+  [data-reveal] .rv-panel,
+  [data-slides] .rv-panel {
+    height: 100svh;
+  }
   @supports (height: 100dvh) {
     .portada,
     .f-azul.field-cards,
@@ -1405,6 +1465,10 @@ html.paisaje-vivo .respiradero .tramo-nombre {
     [data-reveal] .rv-panel,
     [data-slides] .rv-panel {
       min-height: 100dvh;
+    }
+    [data-reveal] .rv-panel,
+    [data-slides] .rv-panel {
+      height: 100dvh;
     }
   }
 

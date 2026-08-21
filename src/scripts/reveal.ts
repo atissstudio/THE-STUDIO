@@ -87,6 +87,105 @@ function agruparEnTramos(read: HTMLElement) {
 }
 
 /*
+  Cuánto ocupa de verdad el contenido de un tramo: del borde de arriba del
+  primer hijo al borde de abajo del último. No vale medir el tramo, que mide
+  una pantalla entera por definición.
+
+  ⚠️ Se mide ANTES de que `prepararBarrido` ponga las clases de paso, porque
+  esas clases traen `transform` y `getBoundingClientRect` sobre un elemento
+  transformado devuelve la caja ya movida y escalada, no la real.
+*/
+function altoContenido(tramo: HTMLElement): number {
+  let min = Infinity;
+  let max = -Infinity;
+  for (const hijo of Array.from(tramo.children) as HTMLElement[]) {
+    const caja = hijo.getBoundingClientRect();
+    if (caja.height < 1) continue;
+    min = Math.min(min, caja.top);
+    max = Math.max(max, caja.bottom);
+  }
+  return max > min ? max - min : 0;
+}
+
+/*
+  ⚠️ EL TROCEO SE MIDE, NO SE CUENTA (2026-08-21).
+
+  Antes la regla era fija —el enunciado con su titular, y después cada párrafo
+  solo— y producía justo el fallo que Alejandro veía en el iPhone: pantallas
+  vacías. Medido en la home a 390x844, las ocho paradas de lectura estaban
+  llenas al 31% de media (una al 15%), o sea dos tercios de campo vacío en
+  ocho pantallas seguidas. Un párrafo mide 150-300 px y la pantalla 845: solo
+  no la llena nunca.
+
+  Bajar el número de párrafos por tramo o subir el cuerpo de la letra habrían
+  sido parches: con un texto más corto o un teléfono más alto vuelve el hueco.
+  La causa es que nadie estaba mirando cuánto ocupa el texto. Así que ahora un
+  tramo admite párrafos MIENTRAS QUEPAN, y solo abre uno nuevo cuando el
+  siguiente ya no entra. No hay ningún número que ajustar y se adapta solo a
+  cualquier texto, cualquier pantalla y cualquier página del sitio.
+
+  El sitio disponible se lee del propio tramo (su alto menos su relleno), no de
+  una constante: el relleno ES el aire de diseño. La holgura evita que la
+  última línea acabe pegada al filo.
+
+  ⚠️ SE MIDE CUANDO EL TEXTO YA TIENE SU FORMA DEFINITIVA, y por eso esta
+  función se llama DESPUÉS de `partirEnPalabras` y ANTES de `prepararBarrido`.
+  Partir en palabras envuelve cada una en un <span>, y eso mueve dónde caen los
+  saltos de línea: midiendo antes, un tramo daba por bueno un párrafo que luego
+  crecía y el panel acababa midiendo 908 px en una pantalla de 845, o sea
+  asomando 63 px de la parada siguiente. Y `prepararBarrido` trae `transform`,
+  que falsea cualquier medida. Medir algo que todavía va a cambiar no vale.
+*/
+const HOLGURA = 0.94;
+
+function fusionarTramos(read: HTMLElement) {
+  const tramos = (Array.from(read.children) as HTMLElement[]).filter((e) =>
+    e.classList.contains("rv-panel"),
+  );
+  if (tramos.length < 2) return;
+
+  const cs = getComputedStyle(tramos[0]);
+  /*
+    Un tramo mide una pantalla por definición (`min-height`), así que su alto de
+    partida ES la pantalla. Si después de meterle un párrafo CRECE por encima de
+    esa cifra, es que no cabía: no hay que calcular márgenes ni interlineados,
+    lo dice el propio navegador. Esta es la prueba que manda.
+  */
+  const base = tramos[0].getBoundingClientRect().height;
+  /*
+    Y esta es la del aire: el contenido tiene que dejar holgura contra el filo,
+    o la última línea acaba pegada al borde de la pantalla aunque técnicamente
+    quepa. El sitio disponible sale del propio tramo (alto menos relleno), no de
+    una constante inventada: el relleno ES el aire de diseño.
+  */
+  const util =
+    (base -
+      parseFloat(cs.paddingTop || "0") -
+      parseFloat(cs.paddingBottom || "0")) *
+    HOLGURA;
+  if (!(base > 0) || !(util > 0)) return;
+
+  let actual = tramos[0];
+  for (let i = 1; i < tramos.length; i++) {
+    const siguiente = tramos[i];
+    const mudados = Array.from(siguiente.children) as HTMLElement[];
+    mudados.forEach((hijo) => actual.appendChild(hijo));
+
+    const cabe =
+      actual.getBoundingClientRect().height <= base + 1 &&
+      altoContenido(actual) <= util;
+
+    if (!cabe) {
+      // No cabía: se devuelve tal cual estaba y el tramo siguiente sigue vivo.
+      mudados.forEach((hijo) => siguiente.appendChild(hijo));
+      actual = siguiente;
+    } else {
+      siguiente.remove();
+    }
+  }
+}
+
+/*
   Barrido de pizarra (solo móvil). Cada tramo entra deslizándose de un lado, y
   al asentarse coloca el texto en un sitio distinto del anterior. La posición
   NO es aleatoria: va emparejada con la dirección del barrido, de modo que el
@@ -151,19 +250,29 @@ export function revelarTexto() {
       de móvil: ocho pantallas para lo que son dos ideas.
   */
   const movil = matchMedia("(max-width: 900px)").matches;
+  const lecturas = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-reveal] .read"),
+  );
   if (movil) {
-    document.querySelectorAll<HTMLElement>("[data-reveal] .read").forEach(agruparEnTramos);
+    lecturas.forEach(agruparEnTramos);
   } else {
     document
       .querySelectorAll<HTMLElement>("[data-slides] .read")
       .forEach((read) => read.classList.add("rv-panel"));
   }
-  prepararBarrido(Array.from(document.querySelectorAll<HTMLElement>(".rv-panel")));
 
   const bloques = document.querySelectorAll<HTMLElement>(SELECTOR);
-  if (!bloques.length) return;
-
   bloques.forEach((el) => partirEnPalabras(el));
+
+  /*
+    El orden importa y no es negociable: trocear · partir en palabras · MEDIR y
+    juntar lo que quepa · animar. Ver el aviso de `fusionarTramos`.
+  */
+  if (movil) lecturas.forEach(fusionarTramos);
+
+  prepararBarrido(Array.from(document.querySelectorAll<HTMLElement>(".rv-panel")));
+
+  if (!bloques.length) return;
 
   const mostrar = (el: Element) => el.classList.add("rv-on");
   const apagar = (el: Element) => el.classList.remove("rv-on");
