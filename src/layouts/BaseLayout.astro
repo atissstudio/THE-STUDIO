@@ -199,7 +199,6 @@ const breadcrumbLd =
       aquí: cuando algo nuevo sustituye a algo que funciona, lo viejo no se
       desmonta hasta que lo nuevo esté aprobado.
     */}
-    <ShaderFondo />
     {/*
       ⚠️ EL PAISAJE PROCEDIMENTAL ESTÁ APAGADO (2026-08-21). No es un fallo: es
       una decisión. Daba resultado de aficionado —el pueblo eran rectángulos
@@ -215,6 +214,16 @@ const breadcrumbLd =
       lleva margin-bottom para dejar ver el pie, que va fijo por detrás.
     */}
     <main id="page">
+      {/*
+        ⚠️ EL MAR VA DENTRO DE LA PÁGINA, NO DETRÁS DE TODO (2026-08-21).
+        Fuera de `#page` y con `z-index: -1` quedaba debajo del fondo de la
+        página, que es opaco y existe para tapar el pie: al hacerlo
+        transparente para que el mar asomara, lo que asomaba era el pie navy a
+        través de las tarjetas. Dentro de `#page` y con z negativo, el lienzo
+        se pinta sobre el fondo de la página y por debajo de todas sus
+        secciones, que es exactamente el sitio que le corresponde.
+      */}
+      <ShaderFondo />
       <slot />
     </main>
     <Footer />

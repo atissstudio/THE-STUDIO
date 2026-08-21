@@ -26,16 +26,38 @@
 <canvas id="shader-fondo" aria-hidden="true"></canvas>
 
 <style>
+  /*
+    ⚠️ EL MAR YA NO VA ENCIMA FUNDIÉNDOSE: VA DETRÁS Y PINTA (2026-08-21).
+
+    Hasta hoy esta capa iba fija SOBRE toda la página en fusión `soft-light`.
+    Funcionaba, pero cobraba dos precios que Alejandro vio en el iPhone y que
+    son el mismo fallo:
+
+      · «al primer scroll todo parpadea, como que se raya». Una lámina de
+        fusión a pantalla completa obliga al navegador a recomponer la pantalla
+        entera en cada fotograma, y en un teléfono eso se ve como rayado.
+      · «sigue habiendo marcos». Safari saca el color de sus barras de lo que
+        hay pintado en los bordes de la ventana, y ahí había siempre una lámina
+        azulada, leyeras lo que leyeras. Se intentó dos veces por el lado del
+        color (`theme-color`) y las dos era tratar el síntoma.
+
+    Es la misma lección del 2026-08-19 con la portada, que aquí faltaba por
+    aplicar: **un mar que va sobre el azul tiene que SER el azul**. Ahora el
+    lienzo va DEBAJO del contenido (`z-index: -1`), sin fusión ninguna, y pinta
+    él el azul de los campos con el mar dentro; los campos azules se quedan
+    transparentes para dejarlo ver, y solo cuando ha pintado de verdad
+    (`html.mar-campos`), así que si no hay WebGL el sitio se ve como siempre.
+  */
   #shader-fondo {
     position: fixed;
     inset: 0;
-    z-index: 3;
+    /* Detrás del contenido, delante del fondo del documento. */
+    z-index: -1;
     width: 100%;
     height: 100%;
     pointer-events: none;
     opacity: 0;
     transition: opacity 1.2s ease;
-    mix-blend-mode: soft-light;
   }
   #shader-fondo.listo {
     /*
@@ -54,7 +76,7 @@
       ⚠️ Este número tiene que valer lo mismo que la `fuerza` de MarPortada, o
       el azul de la portada y el de las demás secciones no casarían.
     */
-    opacity: 0.34;
+    opacity: 1;
   }
   @media (prefers-reduced-motion: reduce) {
     #shader-fondo {
@@ -106,10 +128,25 @@
     };
 
     crearMar(lienzo, {
+      /*
+        Pinta el azul, no lo modula. `fuerza` vale lo mismo que en la portada
+        (0.34), que es lo que hace que los dos azules sean el mismo azul.
+      */
+      pintar: true,
+      fuerza: 0.34,
       // Esta capa es la ventana entera.
       medida: () => ({ ancho: innerWidth, alto: innerHeight }),
       zonas,
-      alArrancar: () => lienzo.classList.add("listo"),
+      alArrancar: () => {
+        lienzo.classList.add("listo");
+        /*
+          ⚠️ LA CLASE SE PONE AL PINTAR EL PRIMER FOTOGRAMA, NUNCA ANTES: es
+          ella la que deja transparentes los campos azules. Si se pusiera al
+          cargar y el lienzo no llegara a arrancar, quedaría texto en plata
+          clara sobre el blanco de la página, ilegible.
+        */
+        document.documentElement.classList.add("mar-campos");
+      },
     });
   }
 </script>

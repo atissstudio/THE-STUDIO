@@ -257,6 +257,27 @@ body {
   --em: var(--plata-clara);
 }
 
+/*
+  ⚠️ CUANDO EL MAR PINTA LOS CAMPOS, LOS CAMPOS NO PINTAN (2026-08-21).
+
+  El lienzo del mar va DEBAJO del contenido y pinta él el azul de estos
+  elementos (ver ShaderFondo.astro). Para que se vea, tienen que dejar de
+  pintar su propio azul, igual que hacía el paisaje.
+
+  La lista es EXACTAMENTE la misma que mide el lienzo para saber dónde pintar.
+  Si una cambia y la otra no, o se ve un azul liso sobre el mar, o se ve el
+  blanco de la página con texto en plata encima. Se cambian juntas.
+
+  `html.mar-campos` la pone el propio lienzo al pintar su primer fotograma, así
+  que sin WebGL nada de esto aplica y el sitio se ve como siempre.
+*/
+html.mar-campos .f-azul:not(.hero-field):not(.closer):not(.cta-screen):not(.hero):not(.f-roca),
+html.mar-campos .hero-field > .hero-inner,
+html.mar-campos .closer > .closer-inner,
+html.mar-campos .cta-screen > .cta-inner {
+  background: transparent;
+}
+
 /* campo de plata líquida con textura, ver .liquid-field más abajo */
 .f-plata {
   background: var(--plata-mid);
