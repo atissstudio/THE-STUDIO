@@ -1247,6 +1247,52 @@ html.paisaje-vivo .respiradero .tramo-nombre {
     scroll-snap-type: y mandatory;
   }
 
+  /*
+    ⚠️ NADA DE REBOTE, NI A LOS LADOS NI ABAJO. Al arrastrar, el navegador
+    despega la página y enseña lo que hay detrás —el fondo del documento, que
+    es navy— y eso se lee como un agujero. `overscroll-behavior: none` quita el
+    rebote de la página; y por si algún navegador lo ignora, el fondo del
+    documento pasa a ser el mismo claro de la página, así que aunque asome no
+    se distingue de nada.
+  */
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+  body {
+    background: var(--blanco);
+  }
+
+  /*
+    ⚠️ `dvh` Y NO `svh`, o el iPhone corta cada diapositiva (2026-08-21).
+    `svh` es la ventana PEQUEÑA, la de cuando la barra del navegador está
+    desplegada. En cuanto se repliega, la ventana real es más alta que la
+    diapositiva y por debajo asoma un trozo de la siguiente: son esos cortes
+    que hacen que todo parezca cuadrado. `dvh` sigue a la ventana de verdad,
+    que es lo que hace falta cuando cada tramo TIENE que medir una pantalla
+    exacta. Se deja `svh` como respaldo para navegadores sin `dvh`.
+  */
+  .portada,
+  .f-azul.field-cards,
+  .f-blanco.field-cards,
+  .cta-wrap,
+  .cta-screen,
+  [data-reveal] .rv-panel,
+  [data-slides] .rv-panel {
+    min-height: 100svh;
+  }
+  @supports (height: 100dvh) {
+    .portada,
+    .f-azul.field-cards,
+    .f-blanco.field-cards,
+    .cta-wrap,
+    .cta-screen,
+    [data-reveal] .rv-panel,
+    [data-slides] .rv-panel {
+      min-height: 100dvh;
+    }
+  }
+
   /* Las paradas de texto: cada párrafo, su pantalla, y no se puede saltar. */
   [data-reveal] .rv-panel,
   [data-slides] .rv-panel {
@@ -1258,14 +1304,21 @@ html.paisaje-vivo .respiradero .tramo-nombre {
     una parada obligatoria.
   */
   .portada,
-  .reel,
   .f-azul.field-cards,
   .f-blanco.field-cards,
-  .cta-wrap,
-  .escena.pie {
+  .cta-wrap {
     scroll-snap-align: start;
     scroll-snap-stop: always;
   }
+  /*
+    ⚠️ El reel NO es parada: sus dos paradas son los tramos que lleva dentro
+    (`.reel-parada`), uno para que la casa se encienda y otro para verla. Si el
+    contenedor también fuera parada, mediría dos pantallas y sería justamente
+    la parada "a media página" que había que quitar.
+
+    Y las escenas tampoco: en móvil son el remate del tramo de arriba, no un
+    tramo propio (ver Escena.astro).
+  */
 
   /*
     ⚠️ LAS ESCENAS PASAN A PANTALLA COMPLETA. Medían 456 px sobre 844, así que
@@ -1277,6 +1330,11 @@ html.paisaje-vivo .respiradero .tramo-nombre {
     height: 100svh;
     /* Y sin hundirse: en móvil el solape se comía casi un tercio del tramo. */
     margin-bottom: 0;
+  }
+  @supports (height: 100dvh) {
+    .escena.pie {
+      height: 100dvh;
+    }
   }
   .escena.e-risco.pie,
   .escena.e-pueblo.pie {

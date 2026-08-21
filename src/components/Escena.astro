@@ -67,7 +67,7 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
 ---
 
 <div class:list={["escena", `e-${tipo}`, `c-${campo}`, { pie }]} data-escena aria-hidden="true">
-  <svg viewBox={caja} preserveAspectRatio={pie ? "none" : "xMidYMid slice"} role="presentation">
+  <svg viewBox={caja} preserveAspectRatio={pie ? "none" : "xMidYMid slice"} role="presentation" data-pie={pie ? "" : null}>
     {
       tipo === "risco" && (
         <>
@@ -142,8 +142,13 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
       tipo === "pueblo" && (
         <>
           {!pie && <rect x="0" y="0" width="1200" height="520" fill="var(--cielo)" />}
-          {/* El pueblo, reducido a lo que lo hace reconocible: cubos blancos
-              de tejado plano, escalonados, y una sola puerta azul. */}
+          {/*
+            EL CASERÍO. Sigue siendo geometría plana, pero con lo que hace que
+            una casa canaria se reconozca: cornisa azul de barca, cenefa de
+            rombos en la tapia, friso de triángulos, chimenea de bloque y una
+            palmera. Son los mismos motivos del diorama de Alejandro, reducidos
+            a lo mínimo que aún los identifica.
+          */}
           <g data-plano="fondo" fill="var(--roca-lejos)" opacity={pie ? 0.4 : 1}>
             <rect x="60" y="300" width="150" height="90" />
             <rect x="250" y="286" width="120" height="104" />
@@ -152,24 +157,73 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
             <rect x="980" y="312" width="160" height="78" />
           </g>
           <g data-plano="medio">
+            {/* La palmera, a la izquierda, como en el diorama. */}
+            <g fill="var(--roca-medio)">
+              <rect x="72" y="368" width="9" height="104" />
+              <path d="M76 366 L26 350 L34 372 Z" />
+              <path d="M76 366 L126 348 L120 371 Z" />
+              <path d="M76 364 L48 330 L70 340 Z" />
+              <path d="M76 364 L106 332 L86 341 Z" />
+            </g>
             <g fill="var(--cal)">
               <rect x="120" y="352" width="190" height="120" />
               <rect x="352" y="330" width="150" height="142" />
               <rect x="546" y="366" width="230" height="106" />
               <rect x="820" y="342" width="170" height="130" />
+              <rect x="1020" y="372" width="140" height="100" />
             </g>
-            {/* Los remates: una línea azul de barca por casa, y ya. */}
+            {/* Chimeneas: dos, no cinco. Lo que se repite deja de leerse. */}
+            <g fill="var(--cal)">
+              <rect x="286" y="336" width="18" height="18" />
+              <rect x="944" y="326" width="18" height="18" />
+            </g>
             <g fill="var(--azul)">
+              {/* Cornisa: la franja azul bajo el remate, en todas. */}
               <rect x="120" y="352" width="190" height="9" />
               <rect x="352" y="330" width="150" height="9" />
               <rect x="546" y="366" width="230" height="9" />
               <rect x="820" y="342" width="170" height="9" />
+              <rect x="1020" y="372" width="140" height="9" />
+              {/* Puertas y ventanas. Una puerta por casa, ventanas de a pares. */}
               <rect x="404" y="404" width="34" height="68" />
+              <rect x="196" y="422" width="30" height="50" />
+              <rect x="640" y="424" width="30" height="48" />
+              <rect x="884" y="410" width="32" height="62" />
+              <rect x="150" y="382" width="24" height="24" />
+              <rect x="252" y="382" width="24" height="24" />
+              <rect x="372" y="360" width="22" height="22" />
+              <rect x="458" y="360" width="22" height="22" />
+              <rect x="576" y="392" width="22" height="22" />
+              <rect x="716" y="392" width="22" height="22" />
+              <rect x="840" y="372" width="22" height="22" />
+              <rect x="948" y="372" width="22" height="22" />
+              <rect x="1044" y="400" width="22" height="22" />
+              <rect x="1112" y="400" width="22" height="22" />
             </g>
+            {/* Friso de triángulos sobre la casa central: el motivo del diorama. */}
+            <g fill="var(--azul)" opacity=".9">
+              {[0, 1, 2, 3, 4].map((k) => (
+                <path d={`M${368 + k * 26} 350 L${380 + k * 26} 338 L${392 + k * 26} 350 Z`} />
+              ))}
+            </g>
+            {/* El rombo, en la fachada más ancha. */}
+            <path d="M661 392 L681 406 L661 420 L641 406 Z" fill="none" stroke="var(--azul)" stroke-width="5" />
           </g>
           <g data-plano="frente">
-            <rect x="-200" y="472" width="1600" height="48" fill="var(--picon)" />
-            <rect x="-200" y="466" width="1600" height="6" fill="var(--azul)" opacity=".5" />
+            {/* La tapia baja, con su cenefa de rombos. */}
+            <rect x="-200" y="440" width="1600" height="32" fill="var(--cal)" />
+            <g fill="var(--azul)">
+              {Array.from({ length: 34 }, (_, k) => (
+                <path d={`M${-180 + k * 44} 456 L${-166 + k * 44} 448 L${-152 + k * 44} 456 L${-166 + k * 44} 464 Z`} />
+              ))}
+            </g>
+            {/*
+              ⚠️ EL MUELLE VA EN PIEDRA, NO EN NEGRO. En picón se leía como una
+              raya negra cortando la escena; en piedra es lo que es, el murete
+              del puerto, y encaja con la roca de la sección que viene debajo.
+            */}
+            <rect x="-200" y="472" width="1600" height="48" fill="var(--roca-medio)" />
+            <rect x="-200" y="472" width="1600" height="5" fill="var(--roca-cerca)" />
           </g>
         </>
       )
@@ -299,12 +353,44 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
     regla suelta de la hoja compartida pierde por especificidad y no aplicaba.
     Medían 456 px sobre 844: parar ahí era quedarse a media página.
   */
+  /*
+    ══ MÓVIL: LA ESCENA ES EL REMATE DEL TRAMO, NO UNA DIAPOSITIVA ══════════
+
+    ⚠️ POR QUÉ CAMBIA. A pantalla completa en un teléfono la escena mide 390
+    de ancho por 844 de alto, y el dibujo está hecho apaisado: al ajustarlo a
+    esa caja se estira casi al triple en vertical y las casas y las cumbres
+    salen deformadas. Estirar menos no arregla nada, porque el problema es que
+    una cordillera es horizontal y un teléfono es vertical.
+
+    Así que en móvil la escena deja de ocupar una pantalla y pasa a ser una
+    BANDA que remata el tramo de arriba: se sube encima de él con un margen
+    negativo igual a su propio alto, así que no añade página ni crea una parada
+    nueva, y se ve al descansar en ese tramo. Y el dibujo conserva sus
+    proporciones recortando por los lados (`slice`), que es lo que hay que
+    hacer cuando la caja no tiene la forma del dibujo.
+  */
   @media (max-width: 900px) {
     .escena.pie,
     .escena.e-risco.pie,
     .escena.e-pueblo.pie {
-      height: 100svh;
+      height: 34svh;
+      margin-top: -34svh;
       margin-bottom: 0;
+      position: relative;
+      z-index: 2;
+      pointer-events: none;
+      background: transparent;
+    }
+    @supports (height: 100dvh) {
+      .escena.pie,
+      .escena.e-risco.pie,
+      .escena.e-pueblo.pie {
+        height: 34dvh;
+        margin-top: -34dvh;
+      }
+    }
+    .escena.pie .escena-nombre {
+      display: none;
     }
   }
 
@@ -318,6 +404,20 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
 </style>
 
 <script>
+  /*
+    ⚠️ `preserveAspectRatio` NO ES UNA PROPIEDAD CSS: es un atributo del SVG, así
+    que no se puede cambiar con una consulta de medios. Se cambia aquí, y se
+    vuelve a mirar al girar el teléfono.
+  */
+  const ajustarProporcion = () => {
+    const movil = matchMedia("(max-width: 900px)").matches;
+    for (const svg of document.querySelectorAll<SVGSVGElement>(".escena.pie svg")) {
+      svg.setAttribute("preserveAspectRatio", movil ? "xMidYMax slice" : "none");
+    }
+  };
+  ajustarProporcion();
+  addEventListener("resize", ajustarProporcion);
+
   /*
     Un solo observador para todas las escenas, y el cálculo dentro del bucle de
     fotogramas: leer la posición en cada evento de scroll obliga al navegador a

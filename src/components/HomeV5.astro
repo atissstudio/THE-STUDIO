@@ -60,6 +60,15 @@ const destacados = todos.slice(0, 3);
 </div>
 
 <div class="reel" id="reel">
+  {/*
+    ⚠️ DOS PARADAS EN MÓVIL, y por eso existen estos dos elementos vacíos. La
+    casa necesita su propio compás: con una sola parada llegabas, la animación
+    arrancaba y el siguiente gesto se te llevaba antes de verla acabar. Estos
+    dos tramos no pintan nada, solo marcan dónde para el dedo: uno al empezar
+    la secuencia y otro cuando ya está encendida. En escritorio no hacen nada.
+  */}
+  <i class="reel-parada p1" aria-hidden="true"></i>
+  <i class="reel-parada p2" aria-hidden="true"></i>
   <div class="reel-liquid"><i class="l1"></i><i class="l2"></i><i class="l3"></i></div>
   <div class="reel-stage" id="reelStage">
     <div class="reel-kick">El punto de partida · .02</div>
@@ -1065,11 +1074,28 @@ const destacados = todos.slice(0, 3);
   */
   @media (max-width: 900px) {
     .reel {
-      height: 100svh;
+      /* Dos pantallas: una para que la casa se encienda, otra para verla. */
+      height: 200dvh;
     }
     .reel-stage {
-      position: static;
-      height: 100%;
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+    }
+    .reel-parada {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 100dvh;
+      pointer-events: none;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
+    .reel-parada.p1 {
+      top: 0;
+    }
+    .reel-parada.p2 {
+      top: 100dvh;
     }
     .reel-house {
       /* Centrada y quieta: el viaje lateral es cosa del scroll de escritorio. */
