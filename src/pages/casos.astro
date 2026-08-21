@@ -2,55 +2,9 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import GlassButton from "../components/GlassButton.astro";
 
-/*
-  Datos citados a nuestra propia investigación de mercado (INV-01, INV-02).
-  No son resultados de clientes de The Studio. Ver la nota de transparencia.
-  Nunca añadir aquí una cifra que no venga de una fuente documentada.
-*/
-const datos = [
-  {
-    sector: "Dental",
-    big: "80%",
-    query: "Cómo evito que los pacientes falten a la cita",
-    text: "Pierdes entre el 20 y el 30% de tus pacientes al año por falta de seguimiento. Un recordatorio automático por WhatsApp reduce los no-shows hasta un 80%.",
-    source: "INV-01 / INV-02",
-  },
-  {
-    sector: "Dental",
-    big: "30%",
-    query: "Por qué no aceptan mis presupuestos",
-    text: "Solo aceptas entre el 35 y el 50% de los presupuestos que propones. El seguimiento automático sube la aceptación hasta un 30%.",
-    source: "INV-01",
-  },
-  {
-    sector: "Dental",
-    big: "2.160€",
-    query: "Cuánto vale de verdad un paciente",
-    text: "Un paciente vale de media 2.160€ para tu clínica. Captarlo cuesta entre 65 y 135€. Automatizar el seguimiento se recupera en el primer mes.",
-    source: "INV-01",
-  },
-  {
-    sector: "Reformas",
-    big: "x21",
-    query: "Cuánto tardo en contestar a un lead",
-    text: "Más de la mitad de los leads se pierden por no responder a tiempo. Contactar en menos de 5 minutos multiplica por 21 las posibilidades de cerrar.",
-    source: "INV-01 (HBR)",
-  },
-  {
-    sector: "Reformas",
-    big: "3-7%",
-    query: "Cuánto margen se me escapa",
-    text: "Tu margen neto ronda el 3 y el 7%. Cada presupuesto que se pierde por falta de seguimiento es margen que no vuelve.",
-    source: "INV-02",
-  },
-  {
-    sector: "Reformas",
-    big: "Confianza",
-    query: "Precio o confianza, qué pesa más",
-    text: "Un presupuesto desglosado y rápido sube la aceptación. En un comprador racional, la confianza pesa más que el precio.",
-    source: "INV-02",
-  },
-];
+// Los datos viven en `src/data/casos.ts`, que es la única fuente: la home
+// enseña una selección de los mismos y no una copia con otro texto.
+import { casos as datos } from "../data/casos";
 ---
 
 <BaseLayout

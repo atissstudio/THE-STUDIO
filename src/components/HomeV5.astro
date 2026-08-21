@@ -10,6 +10,25 @@ import CarrilClaim from "./CarrilClaim.astro";
 import Escena from "./Escena.astro";
 import MarPortada from "./MarPortada.astro";
 import CarrilServicios from "./CarrilServicios.astro";
+import { casos } from "../data/casos";
+
+/*
+  Cinco de los seis datos documentados (el sexto, "Confianza", no es una cifra
+  y se queda en /casos). Salen de `src/data/casos.ts`, la misma fuente que
+  alimenta esa página: antes la home llevaba una copia a mano de tres de ellos.
+
+  La colocación de cada tarjeta va aquí al lado del dato, no en el CSS, para
+  que recomponer el campo sea mover un número. Están medidas: a 1280x800 no se
+  solapa ninguna, ninguna se sale y siguen sin salirse al crecer con el ratón.
+*/
+const reparto = [
+  { x: "45%", y: "9%", rot: "-2.2deg", dur: "13s", delay: "-2s" },
+  { x: "72%", y: "27%", rot: "1.9deg", dur: "16s", delay: "-7s" },
+  { x: "6%", y: "48%", rot: "-1.4deg", dur: "11s", delay: "-4s" },
+  { x: "37%", y: "58%", rot: "2.4deg", dur: "15s", delay: "-9s" },
+  { x: "68%", y: "60%", rot: "-1.8deg", dur: "12s", delay: "-5s" },
+];
+const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
 ---
 
 {/*
@@ -201,26 +220,16 @@ import CarrilServicios from "./CarrilServicios.astro";
   <span class="field-tag" style="color:var(--azul)">.06</span>
   <div class="datos datos-flotan">
     <div class="head-cell"><p class="k">Los datos</p><h2>No hablamos por hablar.</h2></div>
-    <div class="dato" style="--x:45%; --y:9%; --rot:-2.2deg; --dur:13s; --delay:-2s">
-      <div class="dato-in">
-        <p class="big">80%</p>
-        <span class="q">cómo evitar que los pacientes falten a la cita</span>
-        <span class="a">Un recordatorio automático por WhatsApp corta los no-shows hasta ese porcentaje.</span>
-      </div>
-    </div>
-    <div class="dato" style="--x:11%; --y:56%; --rot:1.9deg; --dur:16s; --delay:-7s">
-      <div class="dato-in">
-        <p class="big">x21</p>
-        <span class="q">pierdo clientes por no responder a tiempo</span>
-        <span class="a">Contestar en menos de 5 minutos multiplica por 21 tus opciones de cerrar.</span>
-      </div>
-    </div>
-    <div class="dato" style="--x:70%; --y:45%; --rot:-1.4deg; --dur:11s; --delay:-4s">
-      <div class="dato-in">
-        <p class="big">30%</p>
-        <span class="q">por qué no aceptan mi presupuesto</span>
-        <span class="a">No es el precio, es la confianza. Automatizar el seguimiento sube la aceptación hasta un 30%.</span>
-      </div>
+    <div class="datos-carril">
+      {datosHome.map((d) => (
+        <div class="dato" style={`--x:${d.x}; --y:${d.y}; --rot:${d.rot}; --dur:${d.dur}; --delay:${d.delay}`}>
+          <div class="dato-in">
+            <p class="big">{d.big}</p>
+            <span class="q">{d.query}</span>
+            <span class="a">{d.corto}</span>
+          </div>
+        </div>
+      ))}
     </div>
   </div>
 </section>
@@ -812,6 +821,15 @@ import CarrilServicios from "./CarrilServicios.astro";
     .slide-datos {
       align-content: stretch;
     }
+    /*
+      El envoltorio del carril NO PINTA NADA en escritorio: `display: contents`
+      lo borra como caja, así que las tarjetas siguen colocándose contra el
+      lienzo con sus porcentajes. Existe solo porque en móvil hace falta algo
+      que sea el carril.
+    */
+    .slide-datos .datos-carril {
+      display: contents;
+    }
     .slide-datos .datos-flotan {
       position: relative;
       display: block;
@@ -831,7 +849,9 @@ import CarrilServicios from "./CarrilServicios.astro";
       position: absolute;
       left: var(--x);
       top: var(--y);
-      width: clamp(250px, 25%, 340px);
+      /* 23% y no 25%: con cinco tarjetas, la de la derecha se salía 15 px por
+         el borde (medido). El ancho lo manda cuántas caben, no la estética. */
+      width: clamp(240px, 23%, 310px);
       padding: 0;
       border: 0;
       animation: derivar var(--dur, 13s) ease-in-out var(--delay, 0s) infinite alternate;
@@ -877,22 +897,69 @@ import CarrilServicios from "./CarrilServicios.astro";
     reserva ese sitio en vez de repartirse hasta el borde.
   */
   @media (max-width: 900px) {
-    .slide-datos {
-      box-sizing: border-box;
-      padding-bottom: 104px;
-    }
     /*
-      Y el sitio que se reserva hay que sacarlo de algún lado: sale del aire de
-      dentro de las tarjetas, no de la pantalla. Con el relleno de escritorio
-      (44/52) el campo se iba a 912 px, o sea 69 más que la pantalla, y con
-      ajuste obligatorio una parada que no mide una pantalla es justo el fallo
-      que se corrigió esta mañana.
+      ⚠️ EN MÓVIL LOS DATOS VAN DE LADO, NO APILADOS (2026-08-21). Con cinco,
+      apilados medían 1037 px contra una pantalla de 844: la parada dejaba de
+      medir una pantalla, que es justo el fallo corregido esta mañana. En
+      horizontal caben cinco o veinte sin tocar el alto, igual que los
+      servicios, y el borde cortado de la derecha dice que hay más.
     */
-    .slide-datos .dato {
-      padding: 22px 20px 24px;
+    /*
+      El enunciado y el carril, con su alto natural y el aire repartido a los
+      dos lados. Sin esto la rejilla estiraba las dos filas y quedaba un vacío
+      de 230 px debajo de las tarjetas (medido).
+    */
+    .slide-datos .datos-flotan {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 24px;
+      border-top: 0;
     }
     .slide-datos .head-cell {
-      padding: 24px 20px;
+      flex: 0 0 auto;
+      border-bottom: 0;
+    }
+    .slide-datos .datos-carril {
+      flex: 0 0 auto;
+      display: flex;
+      /* Cada tarjeta mide lo que dice su texto. Estiradas al alto del carril
+         quedaban con media tarjeta en blanco debajo del último renglón. */
+      align-items: flex-start;
+      gap: 14px;
+      overflow-x: auto;
+      scroll-snap-type: x proximity;
+      padding: 4px 20px 14px;
+      scroll-padding-left: 20px;
+      scrollbar-width: none;
+    }
+    .slide-datos .datos-carril::-webkit-scrollbar {
+      display: none;
+    }
+    .slide-datos .dato {
+      flex: 0 0 78%;
+      scroll-snap-align: start;
+      border: 0;
+    }
+    .slide-datos .dato-in {
+      display: block;
+      box-sizing: border-box;
+      padding: 22px 20px 24px;
+      border-radius: 22px;
+      background: #fff;
+      border: 1px solid rgba(17, 21, 32, 0.08);
+      box-shadow: 0 18px 36px -24px rgba(17, 21, 32, 0.45);
+    }
+    /*
+      El relleno de las celdas de rejilla (44/52) ya no pinta nada: aquí el
+      hueco lo pone la tarjeta. Y el campo no necesita reservar sitio para la
+      píldora del menú, porque el carril no llega abajo.
+    */
+    .slide-datos .dato {
+      padding: 0;
+    }
+    .slide-datos .head-cell {
+      padding: 0 20px;
     }
   }
 
