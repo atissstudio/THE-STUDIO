@@ -111,13 +111,14 @@ body {
   position: relative;
   z-index: 2;
   /*
-    Red de seguridad contra el arrastre lateral: si algún día algo vuelve a
-    salirse por el costado, se recorta aquí en vez de dejar arrastrar la página
-    y enseñar el fondo. `clip` y nunca `hidden`: `hidden` convertiría la página
-    en contenedor de scroll y rompería los tres `sticky` del sitio (trampa ya
-    documentada).
+    ⚠️ AQUÍ NO VA NINGÚN `overflow`, Y NO ES UN OLVIDO (2026-08-21). Se puso un
+    `overflow-x: clip` como red contra el arrastre lateral y **rompió el mar**:
+    un contenedor recortado recorta también a sus descendientes `position:
+    fixed`, y el lienzo del mar es uno. Al bajar, el recorte se lo iba comiendo
+    y aparecían trozos sin pintar — los "fondos blancos raros". El desborde que
+    aquella red venía a tapar ya está arreglado donde nacía (el carril de
+    servicios, que necesitaba `min-width: 0`), así que la red sobra.
   */
-  overflow-x: clip;
   background: var(--blanco);
   margin-top: var(--menu-h);
   margin-bottom: var(--foot-h);
@@ -279,10 +280,9 @@ body {
   `html.mar-campos` la pone el propio lienzo al pintar su primer fotograma, así
   que sin WebGL nada de esto aplica y el sitio se ve como siempre.
 */
-html.mar-campos .f-azul:not(.hero-field):not(.closer):not(.cta-screen):not(.hero):not(.f-roca),
+html.mar-campos .f-azul:not(.hero-field):not(.closer):not(.hero):not(.f-roca),
 html.mar-campos .hero-field > .hero-inner,
-html.mar-campos .closer > .closer-inner,
-html.mar-campos .cta-screen > .cta-inner {
+html.mar-campos .closer > .closer-inner {
   background: transparent;
 }
 
@@ -588,6 +588,22 @@ html.mar-campos .cta-screen > .cta-inner {
     en flex. Con él puesto, todos los post-it del segundo bloque se pegaban a la
     derecha y la parada no pintaba nada.
   */
+  /*
+    ⚠️ EL SALTO DEL POST-IT SE QUEDA DENTRO DE SU SECCIÓN. Los paneles se
+    desplazan de lado a propósito (es lo que hace que salten de una esquina a
+    otra), y ese desplazamiento sobresalía 35 px por la derecha: medido, el
+    cuerpo del documento pasaba de 390 a 425 y la página se dejaba arrastrar.
+
+    El recorte va AQUÍ y no en `#page`: un contenedor recortado recorta también
+    a los `position: fixed` de dentro, y en `#page` vive el lienzo del mar —eso
+    fue lo que dejó "fondos blancos raros" al bajar. En la sección no hay ningún
+    fixed. Y `clip`, nunca `hidden`, que convertiría la sección en contenedor de
+    scroll y rompería los `sticky`.
+  */
+  [data-reveal],
+  [data-slides] {
+    overflow-x: clip;
+  }
   .rv-panel > * {
     width: 82%;
     margin-inline: 0;

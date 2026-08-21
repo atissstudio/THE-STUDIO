@@ -103,10 +103,22 @@
         tocara, habría dos mares distintos sobre el mismo campo.
     */
     const SELECTOR_AZUL = [
-      ".f-azul:not(.hero-field):not(.closer):not(.cta-screen):not(.hero):not(.f-roca)",
+      /*
+        ⚠️ `.cta-screen` VUELVE A MEDIRSE ENTERA (2026-08-21). Estaba excluida
+        de aquí y medida por su hijo, porque cuando se escribió esto el cierre
+        era una tarjeta flotante. El 21 de agosto dejó de serlo: el cierre de la
+        home es el puerto, azul A SANGRE, y quien pinta el azul es la sección.
+        Al no actualizar esta lista, el mar seguía midiendo un hijo que ya no
+        pinta nada y el agua no salía por ninguna parte —"en el vamos a que se
+        note no hay mar"—.
+
+        Regla que sale de aquí: esta lista es un espejo de QUIÉN PINTA EL AZUL.
+        Si un campo cambia de ser tarjeta a ser sección (o al revés), se cambia
+        aquí y en la regla gemela de `tokens.css`, que van juntas siempre.
+      */
+      ".f-azul:not(.hero-field):not(.closer):not(.hero):not(.f-roca)",
       ".hero-field > .hero-inner",
       ".closer > .closer-inner",
-      ".cta-screen > .cta-inner",
     ].join(",");
 
     /*
@@ -139,6 +151,20 @@
       zonas,
       alArrancar: () => {
         lienzo.classList.add("listo");
+        /*
+          ⚠️ SI EL NAVEGADOR PIERDE EL CONTEXTO, LOS CAMPOS RECUPERAN SU AZUL.
+          Mientras `mar-campos` está puesta, los campos azules no pintan nada y
+          el color lo pone este lienzo. Un móvil puede tirar el contexto WebGL
+          cuando le falta memoria, y entonces quedaría texto en plata clara
+          sobre el blanco de la página. Al perderlo se quita la clase y vuelve
+          el azul de CSS; al recuperarlo, se vuelve a poner.
+        */
+        lienzo.addEventListener("webglcontextlost", () => {
+          document.documentElement.classList.remove("mar-campos");
+        });
+        lienzo.addEventListener("webglcontextrestored", () => {
+          document.documentElement.classList.add("mar-campos");
+        });
         /*
           ⚠️ LA CLASE SE PONE AL PINTAR EL PRIMER FOTOGRAMA, NUNCA ANTES: es
           ella la que deja transparentes los campos azules. Si se pusiera al

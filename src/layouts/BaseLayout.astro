@@ -134,7 +134,15 @@ const breadcrumbLd =
           var mejor = null;
           for (var i = 0; i < campos.length; i++) {
             var r = campos[i].el.getBoundingClientRect();
-            if (r.height && r.top <= medio && r.bottom >= medio) {
+            /*
+              El campo que cruza el centro manda. Y si ninguno lo cruza —pasa al
+              final del todo, donde el pie mide menos de media pantalla— vale el
+              que ocupe el borde de abajo, que es el que se ve pegado a la barra
+              del navegador.
+            */
+            var cruza = r.height && r.top <= medio && r.bottom >= medio;
+            var abajo = r.height && r.top <= innerHeight - 2 && r.bottom >= innerHeight - 2;
+            if (cruza || (!mejor && abajo)) {
               /* El más pequeño de los que cruzan el centro es el más interior,
                  y ese es el que se está viendo (una tarjeta azul dentro de una
                  sección clara manda sobre la sección). */
@@ -145,12 +153,14 @@ const breadcrumbLd =
           actual = mejor.color;
           meta.setAttribute("content", actual);
           /*
-            Y el fondo del documento con él. Es el otro sitio de donde puede
-            salir una franja de otro color: lo que el navegador pinta fuera del
-            contenido (el rebote al arrastrar, o el hueco de las barras cuando
-            se pliegan) es el fondo del documento, no el de ninguna sección.
+            ⚠️ AQUÍ NO SE PINTA EL FONDO DEL DOCUMENTO, y se probó (2026-08-21).
+            Se hacía para que ninguna franja quedara de otro color, pero traía
+            dos fallos peores: al llegar al pie ningún campo cruza el centro de
+            la pantalla (el pie mide 306 px), así que el fondo se quedaba con el
+            AZUL del tramo anterior y el pie se veía rodeado de azul; y repintar
+            el fondo del documento en cada scroll hacía parpadear la página.
+            El fondo lo pone el CSS y no se toca.
           */
-          document.documentElement.style.background = actual;
         }
 
         var pendiente = false;

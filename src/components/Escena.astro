@@ -50,6 +50,81 @@ interface Props {
 const { tipo, nombre, pie = false, campo = "blanco" } = Astro.props;
 
 /*
+  ══ LA TEXTURA DEL RISCO (2026-08-21, pedido de Alejandro: "que las montañas
+     tengan más texturas") ══════════════════════════════════════════════════
+
+  ⚠️ NO SE HACE CON RUIDO, y esa es la lección que ya costó cuatro pasadas con
+  el mar: la textura va a la escala del MATERIAL, no a la de la pantalla. Un
+  ruido fino sobre una montaña se lee como suciedad en el cristal. Lo que hace
+  que una roca plana se lea como roca son tres cosas que sí tienen tamaño de
+  roca:
+
+    · la CARA DE SOMBRA de cada pico, que es lo que separa un triángulo de una
+      montaña (una ladera da al sol y la otra no);
+    · los BARRANCOS, las líneas que bajan de la cumbre al pie siguiendo la
+      pendiente, que es el rasgo que hace canaria a una montaña canaria;
+    · los ESTRATOS, las franjas de colada, solo en la fila de delante, que es
+      la única lo bastante cerca para distinguir una de otra.
+
+  Sigue siendo geometría plana: son más polígonos, no un filtro.
+*/
+type Punto = [number, number];
+
+/** Los vértices de cada cordillera, de izquierda a derecha. */
+const CRESTAS: Record<"fondo" | "medio" | "frente", Punto[]> = {
+  fondo: [
+    [-200, 344], [0, 330], [210, 196], [330, 268], [520, 132], [700, 250],
+    [880, 168], [1060, 262], [1200, 214], [1400, 236],
+  ],
+  medio: [
+    [-200, 438], [0, 420], [180, 300], [300, 356], [470, 190], [640, 330],
+    [760, 286], [900, 380], [1060, 320], [1200, 386], [1400, 404],
+  ],
+  frente: [
+    [-200, 498], [0, 486], [150, 430], [340, 470], [560, 412], [780, 462],
+    [1000, 424], [1200, 468], [1400, 480],
+  ],
+};
+
+const cresta = (p: Punto[]) => p.map(([x, y]) => `${x} ${y}`).join(" L ");
+/** El relleno: la línea de cumbres y de ahí al suelo. */
+const macizo = (p: Punto[]) => `M${cresta(p)} L1400 520 L-200 520 Z`;
+
+/**
+ * La cara de sombra: por cada tramo que BAJA, un polígono de la cumbre al
+ * suelo. Va en negro translúcido, así que funciona igual sobre los tres tonos
+ * de roca sin inventar colores nuevos.
+ */
+const caras = (p: Punto[]) => {
+  const out: string[] = [];
+  for (let i = 0; i < p.length - 1; i++) {
+    const [x1, y1] = p[i];
+    const [x2, y2] = p[i + 1];
+    if (y2 <= y1) continue;
+    out.push(`M${x1} ${y1} L${x2} ${y2} L${x2} 520 L${x1} 520 Z`);
+  }
+  return out;
+};
+
+/**
+ * Los barrancos: dos por cumbre, bajando CON la pendiente y muriendo antes del
+ * pie. En vertical parecerían grietas de un cristal, no barrancos.
+ */
+const barrancos = (p: Punto[]) => {
+  const out: string[] = [];
+  for (let i = 1; i < p.length - 1; i++) {
+    const [x, y] = p[i];
+    const [, ya] = p[i - 1];
+    const [, yd] = p[i + 1];
+    if (y > ya || y > yd) continue;
+    const largo = Math.min(150, (520 - y) * 0.62);
+    out.push(`M${x} ${y + 6} L${x - largo * 0.34} ${y + largo}`);
+    out.push(`M${x + 8} ${y + 10} L${x + largo * 0.42} ${y + largo * 0.92}`);
+  }
+  return out;
+};
+
+/*
   ⚠️ CADA ESCENA TIENE SU ENCUADRE EN MODO PIE. El dibujo se hizo para un cuadro
   cuadrado-ish (1200x520) y la franja de pie es mucho más ancha que alta, así
   que al ajustarse se aplasta. La solución no es estirar menos, es MIRAR SOLO LA
@@ -73,19 +148,58 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
         <>
           {/* Cielo: una sola banda, sin degradado. */}
           {!pie && <rect x="0" y="0" width="1200" height="520" fill="var(--cielo)" />}
-          {/* Fondo: la cordillera lejana, un solo tono lavado. */}
+          {/*
+            Las tres cordilleras llevan lo mismo, y lo que cambia es la FUERZA:
+            la de lejos casi no tiene relieve —la distancia aplana, y por eso se
+            lee como lejos— y la de delante lo tiene todo.
+          */}
           <g data-plano="fondo">
-            <path d="M-200 344 L0 330 L210 196 L330 268 L520 132 L700 250 L880 168 L1060 262 L1200 214 L1400 236 L1400 520 L-200 520 Z" fill="var(--roca-lejos)" />
+            <path d={macizo(CRESTAS.fondo)} fill="var(--roca-lejos)" />
+            <g fill="#0b1230" fill-opacity=".07">
+              {caras(CRESTAS.fondo).map((d) => (
+                <path d={d} />
+              ))}
+            </g>
           </g>
-          {/* Medio: el macizo que manda, con su cumbre. */}
           <g data-plano="medio">
-            <path d="M-200 438 L0 420 L180 300 L300 356 L470 190 L640 330 L760 286 L900 380 L1060 320 L1200 386 L1400 404 L1400 520 L-200 520 Z" fill="var(--roca-medio)" />
-            {/* Dos coladas: el estrato como línea, no como textura. */}
-            <path d="M470 190 L640 330 L760 286 L900 380 L1060 320 L1200 386 L1400 404" fill="none" stroke="var(--cal)" stroke-opacity=".18" stroke-width="2" />
+            <path d={macizo(CRESTAS.medio)} fill="var(--roca-medio)" />
+            <g fill="#0b1230" fill-opacity=".13">
+              {caras(CRESTAS.medio).map((d) => (
+                <path d={d} />
+              ))}
+            </g>
+            <g stroke="#0b1230" stroke-opacity=".16" stroke-width="2" fill="none" stroke-linecap="round">
+              {barrancos(CRESTAS.medio).map((d) => (
+                <path d={d} />
+              ))}
+            </g>
+            {/* El filo de luz sobre la línea de cumbres. */}
+            <path d={`M${cresta(CRESTAS.medio)}`} fill="none" stroke="var(--cal)" stroke-opacity=".2" stroke-width="2" />
           </g>
-          {/* Frente: el pie del acantilado, casi negro. */}
           <g data-plano="frente">
-            <path d="M-200 498 L0 486 L150 430 L340 470 L560 412 L780 462 L1000 424 L1200 468 L1400 480 L1400 520 L-200 520 Z" fill="var(--roca-cerca)" />
+            <path d={macizo(CRESTAS.frente)} fill="var(--roca-cerca)" />
+            <g fill="#0b1230" fill-opacity=".22">
+              {caras(CRESTAS.frente).map((d) => (
+                <path d={d} />
+              ))}
+            </g>
+            <g stroke="#0b1230" stroke-opacity=".28" stroke-width="2.4" fill="none" stroke-linecap="round">
+              {barrancos(CRESTAS.frente).map((d) => (
+                <path d={d} />
+              ))}
+            </g>
+            {/*
+              Los estratos, recortados por el propio macizo para que no se
+              salgan por el cielo. Muy tenues: son colada, no rayas.
+            */}
+            <clipPath id="risco-frente">
+              <path d={macizo(CRESTAS.frente)} />
+            </clipPath>
+            <g clip-path="url(#risco-frente)" stroke="var(--cal)" stroke-opacity=".09" stroke-width="6" fill="none">
+              {[450, 476, 502].map((y) => (
+                <path d={`M-200 ${y} L1400 ${y - 10}`} />
+              ))}
+            </g>
           </g>
         </>
       )
