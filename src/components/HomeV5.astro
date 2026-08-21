@@ -7,7 +7,6 @@
 */
 import GlassButton from "./GlassButton.astro";
 import CarrilClaim from "./CarrilClaim.astro";
-import MarPortada from "./MarPortada.astro";
 import { servicios as todos } from "../data/servicios";
 
 // En la home solo entran los tres primeros. El resto vive en /servicios.
@@ -29,11 +28,13 @@ const destacados = todos.slice(0, 3);
 <div class="portada" id="portada">
   <div class="portada-pin">
     {/*
-      El azul de la portada lo pinta este lienzo, con el mar dentro (ver
-      MarPortada.astro). El fondo azul de CSS que hay más abajo sigue ahí como
-      respaldo: si no hay WebGL, esto no arranca y manda el CSS.
+      ⚠️ AQUÍ YA NO SE MONTA NINGÚN LIENZO PROPIO (2026-08-21). Estaba
+      `MarPortada`, que pintaba el azul de la portada con su mar dentro, y
+      detrás corría el paisaje: DOS pintores para la misma superficie, cada uno
+      con su dibujo, y en el borde de abajo del bloque anclado se veía la junta
+      entre los dos mares. Eso es lo que se rompía. Ahora pinta el paisaje y
+      solo el paisaje; el azul de esta pantalla es su cielo alto.
     */}
-    <MarPortada />
     <section class="f-azul hero row12">
       <h1 class="logo-h1">
         <span class="scr">the</span><span class="hvy">STUDIO</span><span class="scr">by</span><span class="hvy">ATIS</span>
@@ -260,8 +261,19 @@ const destacados = todos.slice(0, 3);
     encima, o vuelve a derramarse sobre la plata al desvanecerse el velo.
   */
   :global(html.mar-vivo) .hero,
-  :global(html.mar-vivo) .portada-pin::before,
-  :global(html.mar-vivo) .portada-pin::after {
+  /*
+    ⚠️ CON PAISAJE, LA PORTADA NO PINTA SU PROPIO AZUL.
+
+    Aquí estaba el fallo que Alejandro describía como "la textura ahí siempre
+    se rompe". No es un número que ajustar: dos pintores para una misma
+    superficie SIEMPRE dejan junta. Ahora el azul de la portada es el cielo
+    alto del mundo, y los tres azules planos de aquí —el campo, el parche de
+    arriba y el velo que se desvanece— se apagan. Sin WebGL siguen mandando
+    ellos, intactos, y la portada se ve como siempre.
+  */
+  :global(html.paisaje-vivo) .hero,
+  :global(html.paisaje-vivo) .portada-pin::before,
+  :global(html.paisaje-vivo) .portada-pin::after {
     background: transparent;
   }
 
