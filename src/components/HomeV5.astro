@@ -181,24 +181,46 @@ import CarrilServicios from "./CarrilServicios.astro";
   />
 </section>
 
-<section class="f-blanco row12 field-cards home-slide">
+{/*
+  .06 · LOS DATOS, EN TARJETAS FLOTANTES (2026-08-21, pedido de Alejandro).
+
+  Eran tres celdas de una rejilla a sangre. Ahora flotan repartidas por el
+  campo, cada una torcida a su aire y meciéndose despacio, y al pasar el ratón
+  la tarjeta se endereza, crece y se pone por delante de las demás.
+
+  ⚠️ LAS POSICIONES SON DESORDENADAS, PERO NO AL AZAR (decisión de Alejandro
+  entre las dos opciones). Están compuestas una a una en porcentajes del campo,
+  así que se puede garantizar que ninguna se solapa, ninguna se sale y todas se
+  leen. Con posiciones sorteadas en cada carga eso no se puede prometer.
+
+  Cada tarjeta lleva sus números en el propio elemento (`--x`, `--y`, el giro y
+  el compás de la mecida) para que cambiar la composición sea mover un número
+  aquí, sin tocar el CSS.
+*/}
+<section class="f-blanco row12 field-cards home-slide slide-datos">
   <span class="field-tag" style="color:var(--azul)">.06</span>
-  <div class="datos">
+  <div class="datos datos-flotan">
     <div class="head-cell"><p class="k">Los datos</p><h2>No hablamos por hablar.</h2></div>
-    <div class="dato">
-      <p class="big">80%</p>
-      <span class="q">cómo evitar que los pacientes falten a la cita</span>
-      <span class="a">Un recordatorio automático por WhatsApp corta los no-shows hasta ese porcentaje.</span>
+    <div class="dato" style="--x:45%; --y:9%; --rot:-2.2deg; --dur:13s; --delay:-2s">
+      <div class="dato-in">
+        <p class="big">80%</p>
+        <span class="q">cómo evitar que los pacientes falten a la cita</span>
+        <span class="a">Un recordatorio automático por WhatsApp corta los no-shows hasta ese porcentaje.</span>
+      </div>
     </div>
-    <div class="dato">
-      <p class="big">x21</p>
-      <span class="q">pierdo clientes por no responder a tiempo</span>
-      <span class="a">Contestar en menos de 5 minutos multiplica por 21 tus opciones de cerrar.</span>
+    <div class="dato" style="--x:11%; --y:56%; --rot:1.9deg; --dur:16s; --delay:-7s">
+      <div class="dato-in">
+        <p class="big">x21</p>
+        <span class="q">pierdo clientes por no responder a tiempo</span>
+        <span class="a">Contestar en menos de 5 minutos multiplica por 21 tus opciones de cerrar.</span>
+      </div>
     </div>
-    <div class="dato">
-      <p class="big">30%</p>
-      <span class="q">por qué no aceptan mi presupuesto</span>
-      <span class="a">No es el precio, es la confianza. Automatizar el seguimiento sube la aceptación hasta un 30%.</span>
+    <div class="dato" style="--x:70%; --y:45%; --rot:-1.4deg; --dur:11s; --delay:-4s">
+      <div class="dato-in">
+        <p class="big">30%</p>
+        <span class="q">por qué no aceptan mi presupuesto</span>
+        <span class="a">No es el precio, es la confianza. Automatizar el seguimiento sube la aceptación hasta un 30%.</span>
+      </div>
     </div>
   </div>
 </section>
@@ -766,6 +788,129 @@ import CarrilServicios from "./CarrilServicios.astro";
     debajo (medido a 390x844). Con la sección en flex, el carril estira sea
     cual sea la forma de medir de cada tamaño.
   */
+  /*
+    ══ .06 · LAS TARJETAS FLOTANTES DE LOS DATOS (2026-08-21) ════════════════
+
+    Solo en escritorio. En un teléfono no hay ni ratón que las agrande ni sitio
+    donde repartirlas, así que allí se quedan como están: apiladas en su
+    pantalla, con sus cifras contando igual.
+
+    ⚠️ DOS ELEMENTOS Y NO UNO, a propósito. La mecida y el crecer al pasar el
+    ratón son las dos transformaciones, y una sola caja no puede llevar las dos
+    sin que se pisen: la animación gana siempre y el hover no se vería. El de
+    fuera se mece (animación), el de dentro se gira y crece (transición).
+  */
+  @media (min-width: 901px) {
+    /*
+      ⚠️ EL LIENZO TIENE QUE MEDIR LA PANTALLA, O LOS PORCENTAJES NO SIRVEN.
+      `.home-slide` centra sus filas (`align-content: center`), así que el
+      bloque de datos tomaba el alto de su contenido y un `top: 9%` era el 9%
+      de nada: las tres tarjetas aparecían amontonadas a media altura (medido:
+      las tres entre 394 y 400). Estirando la fila, el lienzo mide la
+      diapositiva entera y cada tarjeta cae donde dice.
+    */
+    .slide-datos {
+      align-content: stretch;
+    }
+    .slide-datos .datos-flotan {
+      position: relative;
+      display: block;
+      border-top: 0;
+      align-self: stretch;
+      height: 100%;
+    }
+    .slide-datos .head-cell {
+      position: absolute;
+      left: 4%;
+      top: 15%;
+      width: 34%;
+      padding: 0;
+      border: 0;
+    }
+    .slide-datos .dato {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      width: clamp(250px, 25%, 340px);
+      padding: 0;
+      border: 0;
+      animation: derivar var(--dur, 13s) ease-in-out var(--delay, 0s) infinite alternate;
+    }
+    .slide-datos .dato-in {
+      /*
+        Tarjeta flotante: esquinas redondas, cristal y sombra propia, el mismo
+        lenguaje de las fichas de servicio. Es la excepción al pico ya aceptada
+        para lo que flota (a sangre y en pico lo que es campo).
+      */
+      display: block;
+      padding: 26px 26px 30px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(17, 21, 32, 0.08);
+      box-shadow: 0 22px 44px -26px rgba(17, 21, 32, 0.5), 0 2px 6px -2px rgba(17, 21, 32, 0.12);
+      transform: rotate(var(--rot, 0deg));
+      transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.24, 1), box-shadow 0.45s ease;
+      will-change: transform;
+    }
+    /* Al pasar el ratón se endereza, crece y se pone por delante. */
+    .slide-datos .dato:hover {
+      z-index: 5;
+    }
+    .slide-datos .dato:hover .dato-in,
+    .slide-datos .dato:focus-within .dato-in {
+      transform: rotate(0deg) scale(1.07);
+      box-shadow: 0 40px 70px -30px rgba(17, 21, 32, 0.55), 0 3px 10px -3px rgba(17, 21, 32, 0.16);
+    }
+    /* Y deja de mecerse mientras la estás mirando. */
+    .slide-datos .dato:hover,
+    .slide-datos .dato:focus-within {
+      animation-play-state: paused;
+    }
+  }
+
+  /*
+    ⚠️ EN MÓVIL, EL ÚLTIMO DATO SE LO COMÍA LA PÍLDORA DEL MENÚ. El campo llena
+    la pantalla justa y el menú flota fijo sobre los últimos ~90 px, así que la
+    última línea del tercer dato quedaba debajo (visto en pantalla). El campo
+    reserva ese sitio en vez de repartirse hasta el borde.
+  */
+  @media (max-width: 900px) {
+    .slide-datos {
+      box-sizing: border-box;
+      padding-bottom: 104px;
+    }
+    /*
+      Y el sitio que se reserva hay que sacarlo de algún lado: sale del aire de
+      dentro de las tarjetas, no de la pantalla. Con el relleno de escritorio
+      (44/52) el campo se iba a 912 px, o sea 69 más que la pantalla, y con
+      ajuste obligatorio una parada que no mide una pantalla es justo el fallo
+      que se corrigió esta mañana.
+    */
+    .slide-datos .dato {
+      padding: 22px 20px 24px;
+    }
+    .slide-datos .head-cell {
+      padding: 24px 20px;
+    }
+  }
+
+  /* La mecida: poca distancia y mucho tiempo, o se lee como un tiovivo. */
+  @keyframes derivar {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(6px, -14px, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .slide-datos .dato {
+      animation: none;
+    }
+  }
+
   .slide-servicios {
     display: flex;
   }
