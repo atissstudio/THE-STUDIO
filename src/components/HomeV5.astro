@@ -1431,13 +1431,35 @@ const destacados = todos.slice(0, 3);
 
     /*
       MÓVIL: la casa se enciende al entrar en pantalla, no con el scroll.
-      Red de seguridad obligatoria: las tres imágenes de encima arrancan en
-      opacidad cero, así que si el observador no dispara la casa se quedaría
-      apagada para siempre.
+
+      ⚠️ LA RED DE SEGURIDAD NO PUEDE SER UN RELOJ A CIEGAS (corregido el
+      2026-08-21). Había un `setTimeout` de 6 s que encendía la casa pasara lo
+      que pasara, y en un teléfono se tarda MÁS de 6 s en pasar la portada: la
+      secuencia se gastaba con la casa todavía fuera de pantalla y, al llegar,
+      lo que se veía era una casa encendida y quieta. Eso es lo que Alejandro
+      describía como "la casa no se apaga y enciende". No estaba rota: se había
+      encendido sin nadie delante.
+
+      La red sigue siendo obligatoria (las tres capas arrancan en opacidad
+      cero), pero ahora mira DÓNDE ESTÁ la casa en vez de mirar el reloj: un
+      vigía por scroll, que es un mecanismo distinto del observador y por tanto
+      sirve de respaldo si aquel fallara, y que por definición nunca se
+      adelanta. Al imprimir se enciende igual.
     */
     const reelEl = document.getElementById("reel");
     if (reelEl && matchMedia("(max-width: 900px)").matches) {
-      const encender = () => reelEl.classList.add("play");
+      let encendida = false;
+      const encender = () => {
+        if (encendida) return;
+        encendida = true;
+        reelEl.classList.add("play");
+        removeEventListener("scroll", vigia);
+      };
+      // Se enciende cuando la casa ya está entrando de verdad en la pantalla.
+      const vigia = () => {
+        const c = reelEl.getBoundingClientRect();
+        if (c.top < innerHeight * 0.6 && c.bottom > innerHeight * 0.2) encender();
+      };
       new IntersectionObserver(
         (es, o) => {
           es.forEach((e) => {
@@ -1449,8 +1471,9 @@ const destacados = todos.slice(0, 3);
         },
         { threshold: 0.4 }
       ).observe(reelEl);
-      setTimeout(encender, 6000);
+      addEventListener("scroll", vigia, { passive: true });
       addEventListener("beforeprint", encender);
+      vigia();
     }
 
     const cta = document.getElementById("ctaScreen");

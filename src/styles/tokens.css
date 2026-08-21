@@ -168,13 +168,32 @@ body {
 .em {
   font-family: var(--sans);
   font-weight: 800;
-  color: var(--plata-clara);
+  /*
+    EL RESALTADO EN NEGRITA VA EN AZUL (2026-08-21, pedido de Alejandro).
+    Sustituye a la plata del manual (§4). Medido sobre la paleta real: el azul
+    da 7,42 sobre blanco, 6,92 sobre plata clara y 7,00 sobre cal, contra el
+    6,20/5,78/5,84 de la plata oscura que había. O sea que además de ser color
+    de marca, se lee mejor.
+
+    ⚠️ QUIÉN ELIGE EL COLOR ES EL CAMPO, NO QUIEN ESCRIBE EL TEXTO. Antes
+    había dos clases (`.em` y `.em.on-light`) y el autor tenía que acordarse
+    de cuál tocaba según el color de la sección: eso es lo que hacía posible
+    el fallo de poner un resaltado ilegible. Ahora cada campo declara su
+    `--em` y `.em` a secas funciona en cualquier sitio. Sobre campo azul o
+    roca el azul da 1,0 y 1,35, o sea invisible, así que allí sigue siendo
+    plata clara.
+  */
+  color: var(--em, var(--azul));
   font-size: calc(1em + 1pt);
   padding: 0 0.04em;
 }
+/*
+  `on-light` ya no hace falta (el campo manda) y se conserva solo para que los
+  seis usos que hay escritos no cambien de significado. No usarla en nada
+  nuevo.
+*/
 .em.on-light {
-  color: var(--plata-oscura);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+  color: var(--em, var(--azul));
 }
 
 /* Subtítulos (nuevo, 2026-07-10): Arial cursiva, para distinguir de un resaltado puntual */
@@ -203,6 +222,7 @@ body {
 .f-azul {
   background: var(--azul);
   color: var(--plata-clara);
+  --em: var(--plata-clara);
 }
 .f-claro {
   background: var(--plata-clara);
@@ -215,6 +235,7 @@ body {
 .f-navy {
   background: var(--navy);
   color: var(--plata-clara);
+  --em: var(--plata-clara);
 }
 /*
   Campo de ROCA (2026-08-21). Exactamente el mismo valor que la fila de
@@ -227,6 +248,7 @@ body {
 .f-roca {
   background: var(--basalto);
   color: var(--plata-clara);
+  --em: var(--plata-clara);
 }
 
 /* campo de plata líquida con textura, ver .liquid-field más abajo */
@@ -1149,6 +1171,9 @@ html.paisaje-vivo .f-navy {
 html.paisaje-vivo .read {
   background: var(--cal);
   color: var(--ink);
+  /* Sobre cal el resaltado vuelve a ser azul aunque el campo sea azul o navy:
+     manda la superficie donde está posado el texto, no la sección. */
+  --em: var(--azul);
   padding: clamp(30px, 4vw, 56px);
   box-shadow: 0 30px 60px -34px rgba(11, 18, 48, 0.55);
 }
@@ -1172,10 +1197,12 @@ html.paisaje-vivo .datos .dato,
 html.paisaje-vivo .datos .head-cell {
   background: var(--cal);
   color: var(--ink);
+  --em: var(--azul);
 }
 html.paisaje-vivo .f-azul .cells .cell,
 html.paisaje-vivo .f-azul .cells .head-cell {
   background: var(--azul);
+  --em: var(--plata-clara);
   color: var(--plata-clara);
 }
 html.paisaje-vivo .hero-field.f-azul > .hero-inner,
@@ -1321,28 +1348,13 @@ html.paisaje-vivo .respiradero .tramo-nombre {
   */
 
   /*
-    ⚠️ LAS ESCENAS PASAN A PANTALLA COMPLETA. Medían 456 px sobre 844, así que
-    al parar en ellas se veía media escena y media sección: exactamente
-    "quedarte a media página". Con la pantalla entera, el risco y el pueblo son
-    contenido cerrado, como cualquier otro tramo.
+    ⚠️ LAS ESCENAS SE GOBIERNAN DESDE `Escena.astro`, NO DESDE AQUÍ. Había dos
+    dueños diciendo cosas distintas del mismo elemento (aquí, pantalla completa;
+    en el componente, banda con margen negativo) y ganaba siempre el componente,
+    porque Astro le añade su atributo al selector y una regla de este archivo no
+    puede sobrescribirla. Las reglas móviles de la escena viven en el componente
+    y ahí se cambian.
   */
-  .escena.pie {
-    height: 100svh;
-    /* Y sin hundirse: en móvil el solape se comía casi un tercio del tramo. */
-    margin-bottom: 0;
-  }
-  @supports (height: 100dvh) {
-    .escena.pie {
-      height: 100dvh;
-    }
-  }
-  .escena.e-risco.pie,
-  .escena.e-pueblo.pie {
-    margin-bottom: 0;
-  }
-  .escena.pie .escena-nombre {
-    bottom: 26px;
-  }
 
   /*
     El carril de cierre es una franja de 58 px entre dos paradas. No es parada

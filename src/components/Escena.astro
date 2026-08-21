@@ -289,10 +289,15 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
   */
   .escena.e-risco.pie {
     margin-bottom: calc(clamp(56px, 10svh, 118px) * -1);
+    /* El campo que viene debajo del risco es la roca de `.05`, el mismo valor
+       exacto que la fila de montaña más cercana. Solo se usa en móvil. */
+    --suelo: var(--roca-cerca);
   }
   /* Y el pueblo se mete en el agua: el mar sale de debajo del muelle. */
   .escena.e-pueblo.pie {
     margin-bottom: calc(clamp(34px, 6svh, 76px) * -1);
+    /* Y debajo del pueblo, el agua del cierre: queda a pie de muelle. */
+    --suelo: var(--azul);
   }
   /*
     ⚠️ QUIEN TIENE QUE PINTAR ENCIMA SE MARCA A MANO, no con un selector de
@@ -354,43 +359,81 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
     Medían 456 px sobre 844: parar ahí era quedarse a media página.
   */
   /*
-    ══ MÓVIL: LA ESCENA ES EL REMATE DEL TRAMO, NO UNA DIAPOSITIVA ══════════
+    ══ MÓVIL: LA ESCENA TIENE SU PROPIA PANTALLA, Y EL DIBUJO ES UNA BANDA ═══
 
-    ⚠️ POR QUÉ CAMBIA. A pantalla completa en un teléfono la escena mide 390
-    de ancho por 844 de alto, y el dibujo está hecho apaisado: al ajustarlo a
-    esa caja se estira casi al triple en vertical y las casas y las cumbres
-    salen deformadas. Estirar menos no arregla nada, porque el problema es que
-    una cordillera es horizontal y un teléfono es vertical.
+    ⚠️ CORREGIDO EL 2026-08-21 (la banda tapaba texto). Estaba puesta como un
+    remate que se SUBÍA encima del tramo de arriba con un margen negativo. Pero
+    ese tramo es una pantalla entera con su texto centrado, así que la banda le
+    comía el tercio de abajo. Medido en la home a 390x844: la montaña arrancaba
+    en 9271 y el enlace "Ver el método completo" vivía en 9303-9371, o sea
+    entero debajo del risco; el pueblo tapaba el dato del 30% enterito.
 
-    Así que en móvil la escena deja de ocupar una pantalla y pasa a ser una
-    BANDA que remata el tramo de arriba: se sube encima de él con un margen
-    negativo igual a su propio alto, así que no añade página ni crea una parada
-    nueva, y se ve al descansar en ese tramo. Y el dibujo conserva sus
-    proporciones recortando por los lados (`slice`), que es lo que hay que
-    hacer cuando la caja no tiene la forma del dibujo.
+    La causa no era el tamaño de la banda: era que ocupaba sitio ajeno. Bajarla
+    a 20 o a 25 habría dejado el mismo fallo esperando a un texto un poco más
+    largo. Así que la escena vuelve a tener SU pantalla, como cualquier otro
+    tramo, y el dibujo es una banda pegada al borde de abajo que conserva sus
+    proporciones recortando por los lados (`slice`). El resto de la pantalla lo
+    pinta el color del campo del que cuelga, que hace de cielo. Ni se solapa
+    con nadie ni se estira, que eran los dos fallos de las dos versiones
+    anteriores.
   */
   @media (max-width: 900px) {
     .escena.pie,
     .escena.e-risco.pie,
     .escena.e-pueblo.pie {
-      height: 34svh;
-      margin-top: -34svh;
+      height: 100svh;
+      margin-top: 0;
       margin-bottom: 0;
-      position: relative;
-      z-index: 2;
-      pointer-events: none;
-      background: transparent;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
     }
     @supports (height: 100dvh) {
       .escena.pie,
       .escena.e-risco.pie,
       .escena.e-pueblo.pie {
-        height: 34dvh;
-        margin-top: -34dvh;
+        height: 100dvh;
+      }
+    }
+    /*
+      ⚠️ EL DIBUJO NO SE PEGA AL BORDE DE ABAJO EN MÓVIL: LA PÍLDORA DEL MENÚ
+      VIVE AHÍ. Flota fija sobre los últimos ~90 px de cualquier pantalla, así
+      que con el dibujo pegado abajo el muelle del pueblo y el pie de las
+      montañas quedaban debajo del menú (visto en pantalla, no medido).
+
+      Así que la pantalla de la escena se compone entera: cielo arriba (el
+      color del campo del que cuelga), el dibujo, y debajo una franja del color
+      del campo que VIENE, que es justo lo que la escena presenta. Esa franja
+      hace dos cosas a la vez: deja al menú flotando sobre color plano y
+      empalma con la sección siguiente sin junta, que es lo que ya hacía el
+      solape en escritorio.
+    */
+    .escena.pie::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 112px;
+      background: var(--suelo, transparent);
+    }
+    .escena.pie svg {
+      position: absolute;
+      left: 0;
+      right: 0;
+      /* ⚠️ `top: auto` es obligatorio: la regla base pone `inset: 0`, y con
+         arriba y abajo fijados a la vez el alto no manda y la banda se queda
+         pegada ARRIBA (visto midiendo: el dibujo salía en el cielo). */
+      top: auto;
+      bottom: 112px;
+      height: 26svh;
+    }
+    @supports (height: 100dvh) {
+      .escena.pie svg {
+        height: 26dvh;
       }
     }
     .escena.pie .escena-nombre {
-      display: none;
+      bottom: 26px;
     }
   }
 
@@ -408,11 +451,19 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
     ⚠️ `preserveAspectRatio` NO ES UNA PROPIEDAD CSS: es un atributo del SVG, así
     que no se puede cambiar con una consulta de medios. Se cambia aquí, y se
     vuelve a mirar al girar el teléfono.
+
+    ⚠️ Y EN MÓVIL ES `meet`, NO `slice` (corregido el 2026-08-21). Con `slice`
+    el dibujo escala hasta CUBRIR la banda, y como el dibujo es panorámico
+    (1200x520) y el teléfono estrecho, se veía menos de la mitad del ancho: dos
+    casas gigantes cortadas por los lados en vez de un caserío. Con `meet` cabe
+    entero de lado a lado, apoyado en el borde de abajo (`YMax`), y lo que
+    sobra de banda por arriba es cielo, o sea el color del campo. Ni se
+    deforma (eso lo evitan los dos) ni se amplía.
   */
   const ajustarProporcion = () => {
     const movil = matchMedia("(max-width: 900px)").matches;
     for (const svg of document.querySelectorAll<SVGSVGElement>(".escena.pie svg")) {
-      svg.setAttribute("preserveAspectRatio", movil ? "xMidYMax slice" : "none");
+      svg.setAttribute("preserveAspectRatio", movil ? "xMidYMax meet" : "none");
     }
   };
   ajustarProporcion();

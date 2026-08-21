@@ -17,14 +17,34 @@
 */
 import FichaServicio from "./FichaServicio.astro";
 import { servicios } from "../data/servicios";
+
+/*
+  Props (2026-08-21). El carril nació pegado a /servicios, con su propio campo
+  claro y su titular escrito dentro. Para poder montarlo también en la
+  diapositiva `.05` de la home hacía falta que el texto y el campo vengan de
+  fuera: `desnudo` quita el campo propio (lo pone la sección que lo acoge) y
+  `kicker`/`titulo`/`enlace` se pasan desde donde se use.
+*/
+interface Props {
+  kicker?: string;
+  titulo?: string;
+  enlace?: { href: string; texto: string };
+  desnudo?: boolean;
+}
+const {
+  kicker = "El catálogo",
+  titulo = "Siete servicios, una sola puerta de entrada.",
+  enlace,
+  desnudo = false,
+} = Astro.props;
 ---
 
-<section class="f-claro carril-campo">
+<section class:list={["carril-campo", { "f-claro": !desnudo, desnudo }]}>
   <div class="row12">
     <div class="cab">
-      <p class="k">El catálogo</p>
+      <p class="k">{kicker}</p>
       <div class="cab-fila">
-        <h2>Siete servicios, una sola puerta de entrada.</h2>
+        <h2>{titulo}</h2>
         <div class="flechas">
           <button type="button" class="fl" data-dir="-1" aria-label="Ver los servicios anteriores">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
@@ -40,6 +60,11 @@ import { servicios } from "../data/servicios";
           </button>
         </div>
       </div>
+      {enlace && (
+        <a class="head-link" href={enlace.href}>
+          {enlace.texto}
+        </a>
+      )}
     </div>
   </div>
 
