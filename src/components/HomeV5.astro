@@ -216,7 +216,7 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
   el compás de la mecida) para que cambiar la composición sea mover un número
   aquí, sin tocar el CSS.
 */}
-<section class="f-blanco row12 field-cards home-slide slide-datos deja-remate">
+<section class="f-blanco row12 field-cards home-slide slide-datos">
   <span class="field-tag" style="color:var(--azul)">.06</span>
   <div class="datos datos-flotan">
     <div class="head-cell"><p class="k">Los datos</p><h2>No hablamos por hablar.</h2></div>
@@ -234,12 +234,46 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
   </div>
 </section>
 
-<Escena tipo="pueblo" pie campo="blanco" />
+{/*
+  .07 · EL RESPALDO (2026-08-21, pedido de Alejandro).
+
+  Va DESPUÉS de las cifras y antes del cierre a propósito: .06 enseña los
+  números del sector y esta dice de dónde salen y qué se promete a cambio.
+
+  ⚠️ El compromiso de retorno lo pidió Alejandro por escrito, avisado de que
+  hoy no hay dato que lo sostenga: no hay ningún cliente cerrado todavía e
+  INV-04 (Precio) sigue en espera. En cuanto haya una cifra real, el sitio
+  donde ponerla es esta diapositiva. Aquí NO se inventa ninguna: se afirma el
+  compromiso, sin número.
+
+  Campo azul porque es texto corto, que es lo que manda el sistema (la lectura
+  larga va en claro). Y es esta sección la que le hace sitio a la escena del
+  pueblo (`deja-remate`), que antes colgaba de .06.
+*/}
+<section class="f-azul row12 field-cards home-slide slide-respaldo deja-remate" data-reveal>
+  <span class="field-tag">.07</span>
+  <div class="respaldo">
+    <p class="k">El respaldo</p>
+    <h2>Nada de esto es una corazonada.</h2>
+    <p class="respaldo-txt">
+      Cada decisión sale de una investigación propia, no de una intuición.
+      Estudiamos tu sector, tu competencia y a quien te compra antes de
+      proponerte nada. Y aseguramos un retorno sobre la inversión.
+    </p>
+    <ul class="pointlist respaldo-lista">
+      <li>Investigamos antes de proponer.</li>
+      <li>Medimos lo que hacemos.</li>
+      <li>Aseguramos un retorno sobre la inversión.</li>
+    </ul>
+  </div>
+</section>
+
+<Escena tipo="pueblo" pie campo="azul" />
 
 <div class="cta-wrap">
   <div class="cta-screen f-azul home-slide" id="ctaScreen">
     <div class="cta-inner">
-      <p class="k2">.07 · Tu plan gratis</p>
+      <p class="k2">.08 · Tu plan gratis</p>
       <h2>Vamos a que se note.</h2>
       <p>Déjame tu correo y te mando un plan gratis, hecho para ti. Sin compromiso.</p>
       <form class="ctaform" id="ctaform" action="/api/lead" method="post">
@@ -832,6 +866,84 @@ const datosHome = casos.slice(0, 5).map((c, i) => ({ ...c, ...reparto[i] }));
     sin que se pisen: la animación gana siempre y el hover no se vería. El de
     fuera se mece (animación), el de dentro se gira y crece (transición).
   */
+  /*
+    .07 · EL RESPALDO. Bloque de texto corto sobre campo azul, con la misma
+    columna y el mismo margen que `.read` (2/9 más 20 px) para que no aparezca
+    un tercer margen en la página: ya pasó con las fichas de servicios.
+  */
+  /*
+    El bloque se centra en lo que queda de campo. Pegado arriba se montaba
+    encima de la etiqueta `.07`, que va en absoluto a 18 px del borde, y dejaba
+    el aire sobrante todo junto abajo. El relleno de `deja-remate` ya descuenta
+    la banda del pueblo, así que el centrado respeta la escena.
+  */
+  .slide-respaldo {
+    align-content: center;
+  }
+  .respaldo {
+    grid-column: 2/9;
+    padding: 0 20px;
+  }
+  /*
+    En el teléfono ocupa las doce columnas, igual que `.read`: con 2/9 el bloque
+    se quedaba en 228 px de los 390 y el texto salía en una columna angosta con
+    media pantalla vacía al lado. El margen sigue siendo el mismo relleno de
+    20 px que usa el resto de la página.
+  */
+  @media (max-width: 900px) {
+    .respaldo {
+      grid-column: 1/13;
+    }
+  }
+  .respaldo .k {
+    margin: 0 0 16px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    opacity: 0.82;
+  }
+  .respaldo h2 {
+    margin: 0;
+    font-weight: 800;
+    font-size: clamp(2.1rem, 3.6vw, 3.4rem);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    max-width: 20ch;
+    text-wrap: pretty;
+  }
+  .respaldo-txt {
+    margin: 26px 0 0;
+    font-size: clamp(1.08rem, 1.35vw, 1.32rem);
+    line-height: 1.6;
+    max-width: 62ch;
+    text-wrap: pretty;
+  }
+  /*
+    Cada compromiso abierto por su filete de 1 px, que es el elemento de
+    maquetación del sistema. El color sale de `currentColor`, así que el bloque
+    funciona igual si algún día se muda a un campo claro.
+  */
+  .respaldo-lista {
+    margin-top: 36px;
+    max-width: 62ch;
+  }
+  .respaldo-lista li {
+    border-top: 1px solid color-mix(in srgb, currentColor 26%, transparent);
+    padding: 14px 0;
+    font-weight: 700;
+  }
+  /*
+    Justificado solo en pantalla ancha. En columna estrecha el hueco sobrante se
+    reparte entre las pocas palabras que caben y abre ríos, y la partición está
+    prohibida, así que en el teléfono va en bandera.
+  */
+  @media (min-width: 901px) {
+    .respaldo-txt {
+      text-align: justify;
+    }
+  }
+
   @media (min-width: 901px) {
     /*
       ⚠️ EL LIENZO TIENE QUE MEDIR LA PANTALLA, O LOS PORCENTAJES NO SIRVEN.
