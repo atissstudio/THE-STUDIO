@@ -341,18 +341,33 @@ const destacados = todos.slice(0, 3);
       está viajando: opaco hasta el último cuarto del recorrido, y ahí la casa
       se destapa de golpe, justo cuando el logo aterriza.
     */
+    /*
+      ⚠️ EL VELO SE RETIRA, NO SE DESVANECE (2026-08-21, y resuelve dos fallos
+      de golpe).
+
+      Antes se apagaba bajando su opacidad, y eso obligaba a elegir entre dos
+      males: con textura, a media opacidad se veían las olas cruzando por
+      encima de la casa; sin textura, quedaba un BLOQUE AZUL PLANO que no
+      casaba con el azul texturado del logo justo arriba, y se veía la costura
+      en la primera pantalla.
+
+      Los dos salían de lo mismo: un velo semitransparente. Si en vez de
+      apagarse ENCOGE —su borde de abajo sube hasta quedarse en el bloque del
+      logo—, nunca es semitransparente: siempre es opaco, así que puede llevar
+      la misma textura que el resto del campo y casar sin junta, y nunca hay
+      nada translúcido por encima de la casa. La casa se destapa de abajo
+      arriba, como quien retira una tela.
+    */
     .portada-pin::before {
       content: "";
       position: absolute;
-      inset: 0;
+      top: 0;
+      left: 0;
+      right: 0;
       background: var(--azul);
-      /*
-        Se apaga del todo cuando aún queda un 40% de recorrido, no en el último
-        suspiro: así, en la segunda mitad de la entrada, la casa ya se ve limpia
-        y lo único que sigue moviéndose es el tamaño del logo y del carril. Con
-        el x4 de antes, a media pantalla bajada la casa seguía teñida de azul.
-      */
-      opacity: clamp(0, calc((var(--intro, 0) - 0.4) * 2.5), 1);
+      height: calc(
+        var(--hero-h, 306px) + (100% - var(--hero-h, 306px)) * clamp(0, var(--intro, 0), 1)
+      );
       z-index: 0;
     }
     /*
@@ -743,9 +758,14 @@ const destacados = todos.slice(0, 3);
     display: flex;
     flex-direction: column;
     text-align: center;
-    /* Transparente, no un claro propio: ver la nota de tokens.css. Con un
-       claro distinto al de la página se veía la costura del marco. */
-    background: transparent;
+    /*
+      ⚠️ EL AGUA ES EL CAMPO, NO EL BLOQUE QUE ENTRA (2026-08-21). El azul iba
+      pintado en `.cta-inner`, que entra con desvanecido y desplazamiento, así
+      que el mar aparecía TARDE y con un salto: el pueblo se quedaba un rato
+      sobre la nada y de pronto el agua subía. El mar tiene que estar siempre,
+      pegado al muelle; lo único que entra es el texto que lleva encima.
+    */
+    background: var(--azul);
     /*
       ⚠️ SIN RELLENO ARRIBA. Ese relleno dejaba ver la página entre el muelle y
       el agua: la franja blanca que sobraba. El aire lo pone `.cta-inner` por
@@ -768,7 +788,8 @@ const destacados = todos.slice(0, 3);
     justify-content: center;
     align-items: center;
     padding: clamp(48px, 5.5vw, 78px) clamp(28px, 4vw, 64px);
-    background: var(--azul);
+    /* El azul ya lo pone el campo: aquí solo va el contenido. */
+    background: transparent;
     color: var(--plata-clara);
     /*
       ⚠️ NI ESQUINAS NI SOMBRA: ESTO ES AGUA, NO UNA TARJETA (2026-08-21).
@@ -779,9 +800,9 @@ const destacados = todos.slice(0, 3);
     */
     border-radius: 0;
     box-shadow: none;
-    transform: translateY(var(--cta-y, 40px));
+    transform: translateY(var(--cta-y, 18px));
     opacity: var(--cta-o, 0);
-    transition: transform 1s 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 1s 0.2s ease;
+    transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.7s ease;
   }
   .cta-screen.in .cta-inner {
     --cta-y: 0px;
@@ -1331,6 +1352,14 @@ const destacados = todos.slice(0, 3);
         },
         { threshold: 0.35 }
       ).observe(cta);
+      /*
+        ⚠️ RED DE SEGURIDAD OBLIGATORIA. Esta entrada arranca en opacidad cero,
+        así que si el observador no llega a disparar —pantalla corta, pestaña en
+        segundo plano, impresión— la llamada a la acción NO SE VE NUNCA. Es la
+        regla del proyecto para cualquier cosa que empiece invisible.
+      */
+      setTimeout(() => cta.classList.add("in"), 6000);
+      addEventListener("beforeprint", () => cta.classList.add("in"));
     }
 
     // El campo "qué necesitas" se abre al tocar el correo, no de entrada.

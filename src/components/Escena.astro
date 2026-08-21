@@ -58,7 +58,7 @@ const { tipo, nombre, pie = false, campo = "blanco" } = Astro.props;
   aire que tiene encima, y las casas vuelven a ser casas en vez de lonchas.
 */
 const encuadre: Record<string, string> = {
-  risco: "0 110 1200 410",
+  risco: "0 88 1200 432",
   pueblo: "0 296 1200 224",
   mar: "0 0 1200 520",
   playa: "0 0 1200 520",
@@ -216,7 +216,7 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
       lonchas. Con este alto la deformación es leve y las montañas y el caserío
       se leen bien los dos.
     */
-    height: clamp(260px, 46svh, 470px);
+    height: clamp(300px, 54svh, 560px);
     margin-top: calc(var(--row) * -0.35);
     /* Pegada a lo que venga debajo: si es agua, el pueblo queda a pie de
        muelle. Un hueco aquí rompe el puerto. */
@@ -258,14 +258,21 @@ const caja = pie ? encuadre[tipo] : "0 0 1200 520";
     que esté: el fondo apenas se mueve, el frente se mueve mucho. `--pl` la
     escribe el guion con el avance de la escena por la pantalla, de -1 a 1.
   */
+  /*
+    ⚠️ CADA FILA VIAJA HACIA UN LADO (2026-08-21). Con las tres yendo en el
+    mismo sentido y solo a distinta velocidad, el ojo lee UN bloque que se
+    desliza. Cruzándolas —el fondo a un lado, el medio al contrario, el frente
+    otra vez al primero— lee tres cosas distintas a tres distancias distintas,
+    que es lo que se busca. Es el mismo principio que el mar cruzado.
+  */
   .escena [data-plano="fondo"] {
-    transform: translate3d(calc(var(--pl, 0) * 1.2%), 0, 0);
+    transform: translate3d(calc(var(--pl, 0) * 2%), 0, 0);
   }
   .escena [data-plano="medio"] {
-    transform: translate3d(calc(var(--pl, 0) * 3.4%), 0, 0);
+    transform: translate3d(calc(var(--pl, 0) * -4.2%), 0, 0);
   }
   .escena [data-plano="frente"] {
-    transform: translate3d(calc(var(--pl, 0) * 7%), 0, 0);
+    transform: translate3d(calc(var(--pl, 0) * 8.5%), 0, 0);
   }
   /*
     ⚠️ Los dibujos se salen 200 unidades por cada lado del cuadro. Al
