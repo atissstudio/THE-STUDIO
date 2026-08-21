@@ -24,29 +24,20 @@ from PIL import Image, ImageFilter
 BASE = Path(__file__).resolve().parent
 
 
-def modelo_de_fondo(rgb: np.ndarray) -> np.ndarray:
-    """
-    Superficie suave ajustada al marco: cómo sería la imagen sin la casa.
+def _dilatar(m: np.ndarray) -> np.ndarray:
+    """Crece un píxel en las cuatro direcciones."""
+    d = m.copy()
+    d[1:, :] |= m[:-1, :]
+    d[:-1, :] |= m[1:, :]
+    d[:, 1:] |= m[:, :-1]
+    d[:, :-1] |= m[:, 1:]
+    return d
 
-    ⚠️ CÚBICA Y ROBUSTA, y las dos cosas hacen falta. Con una cuadrática el
-    modelo no seguía el degradado en las esquinas, y justo ahí quedaban trozos
-    de fondo sin quitar. Y el ajuste se repite descartando lo que se desvía
-    mucho: si una esquina del marco pilla parte de la casa o su sombra, un
-    ajuste normal se va detrás de ella y estropea el modelo entero.
-    """
+
+def _superficie(rgb: np.ndarray, muestra: np.ndarray) -> np.ndarray:
+    """Ajusta una superficie cúbica robusta a los píxeles marcados."""
     alto, ancho, _ = rgb.shape
     ys, xs = np.mgrid[0:alto, 0:ancho]
-    marco = np.zeros((alto, ancho), bool)
-    marco[: int(alto * 0.16), :] = True          # la franja de arriba
-    marco[:, : int(ancho * 0.035)] = True        # el canto izquierdo
-    marco[:, -int(ancho * 0.035) :] = True       # el canto derecho
-    # Y LAS DOS ESQUINAS DE ABAJO. Sin ellas el modelo no tenía ni una muestra
-    # del borde inferior y tenía que extrapolar justo donde el degradado es más
-    # claro: quedaba una lengua de fondo pegada bajo la peana, visible en tres
-    # de las seis. Si alguna esquina pillara la peana, el ajuste robusto la
-    # descarta sola.
-    marco[-int(alto * 0.07) :, : int(ancho * 0.13)] = True
-    marco[-int(alto * 0.07) :, -int(ancho * 0.13) :] = True
 
     def base(x, y):
         return np.stack(
@@ -55,14 +46,14 @@ def modelo_de_fondo(rgb: np.ndarray) -> np.ndarray:
             axis=-1,
         )
 
-    xm = (xs[marco] / ancho).astype(np.float64)
-    ym = (ys[marco] / alto).astype(np.float64)
+    xm = (xs[muestra] / ancho).astype(np.float64)
+    ym = (ys[muestra] / alto).astype(np.float64)
     Am = base(xm, ym)
     Af = base((xs / ancho).astype(np.float64), (ys / alto).astype(np.float64))
 
     fondo = np.zeros_like(rgb, dtype=np.float64)
     for c in range(3):
-        valores = rgb[marco][:, c].astype(np.float64)
+        valores = rgb[muestra][:, c].astype(np.float64)
         peso = np.ones_like(valores, bool)
         for _ in range(3):
             coef, *_ = np.linalg.lstsq(Am[peso], valores[peso], rcond=None)
@@ -74,14 +65,42 @@ def modelo_de_fondo(rgb: np.ndarray) -> np.ndarray:
     return fondo
 
 
-def _dilatar(m: np.ndarray) -> np.ndarray:
-    """Crece un píxel en las cuatro direcciones."""
-    d = m.copy()
-    d[1:, :] |= m[:-1, :]
-    d[:-1, :] |= m[1:, :]
-    d[:, 1:] |= m[:, :-1]
-    d[:, :-1] |= m[:, 1:]
-    return d
+def modelo_de_fondo(rgb: np.ndarray, umbral: float = 26.0) -> np.ndarray:
+    """
+    Cómo sería la imagen si la casa no estuviera.
+
+    ⚠️ SE AJUSTA DOS VECES, Y LA SEGUNDA ES LA QUE ARREGLA EL HALO. Con una
+    sola pasada las muestras salen solo del marco de la imagen, o sea LEJOS de
+    la casa. Pero un render deja un resplandor alrededor del objeto —la luz que
+    rebota en él y tiñe el fondo—, y ese resplandor una superficie ajustada a
+    lo lejos no lo puede seguir: donde hay glow, el fondo real es más claro que
+    el previsto, la diferencia se dispara y esos píxeles entran como si fueran
+    casa. Eso es el halo pálido y dentellado que se veía pegado a la izquierda
+    del diorama y bajo la peana.
+
+    Así que la primera pasada solo sirve para SABER DÓNDE ESTÁ LA CASA. Se
+    aparta con margen y se vuelve a ajustar usando todo el fondo restante,
+    incluido el de justo al lado del objeto. Entonces el modelo sí lleva el
+    resplandor dentro y la diferencia vuelve a ser cero donde tiene que serlo.
+    """
+    alto, ancho, _ = rgb.shape
+    marco = np.zeros((alto, ancho), bool)
+    marco[: int(alto * 0.16), :] = True
+    marco[:, : int(ancho * 0.035)] = True
+    marco[:, -int(ancho * 0.035) :] = True
+    marco[-int(alto * 0.07) :, : int(ancho * 0.13)] = True
+    marco[-int(alto * 0.07) :, -int(ancho * 0.13) :] = True
+
+    primera = _superficie(rgb, marco)
+    objeto = np.linalg.norm(rgb - primera, axis=-1) > umbral
+    # Margen generoso alrededor: el resplandor no debe entrar como muestra.
+    for _ in range(max(6, int(min(alto, ancho) * 0.02))):
+        objeto = _dilatar(objeto)
+
+    fondo_visible = ~objeto
+    if fondo_visible.sum() < rgb[..., 0].size * 0.06:
+        return primera
+    return _superficie(rgb, fondo_visible)
 
 
 def quitar_lenguas(mask: np.ndarray, radio: int = 5, tope: int = 900) -> np.ndarray:
@@ -222,7 +241,7 @@ def recortar(entrada: Path, salida: Path, umbral: float = 26.0, abrir: bool = Tr
     La sombra se quita por su FORMA, no por su color: es una lengua fina pegada
     al borde, y una apertura morfológica se la lleva sin tocar el cuerpo.
     """
-    dist = np.linalg.norm(rgb - modelo_de_fondo(rgb), axis=-1)
+    dist = np.linalg.norm(rgb - modelo_de_fondo(rgb, umbral), axis=-1)
     # Rampa suave: el borde no es un sí o un no, y de ahí sale el antialias.
     alfa = np.clip((dist - umbral) / (umbral * 0.75), 0.0, 1.0)
 
