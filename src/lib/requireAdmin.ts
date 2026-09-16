@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "./supabase";
 
 // Un único admin identificado por email — sin tabla de roles, no hay más de un usuario
 // interno todavía (ver supabase/schema.sql, is_admin()).
-const ADMIN_EMAIL = "atisdev@atis.studio";
+const ADMIN_EMAIL = "carebyatis@gmail.com";
 
 // Comprueba la sesión y redirige a /admin/login si no hay usuario o no es el admin.
 // Devuelve null si ya redirigió (el caller debe `return` inmediatamente en ese caso).

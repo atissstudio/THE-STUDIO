@@ -62,7 +62,7 @@ returns boolean
 language sql
 stable
 as $$
-  select coalesce(auth.jwt() ->> 'email', '') = 'atisdev@atis.studio';
+  select coalesce(auth.jwt() ->> 'email', '') = 'carebyatis@gmail.com';
 $$;
 
 create policy "admin acceso total clientes" on clientes
@@ -116,7 +116,7 @@ create policy "cliente lee sus documentos storage" on storage.objects
 -- ═════════════════════════════════════════════════════════════
 -- SIGUIENTE PASO (a mano, en el panel de Supabase — no por SQL):
 -- Authentication → Users → Add user
---   Email:    atisdev@atis.studio   (Supabase exige email, no "usuario" plano)
+--   Email:    carebyatis@gmail.com   (Supabase exige email, no "usuario" plano)
 --   Password: (elígela en el panel y NO la escribas aquí — este repositorio es
 --             público. Hasta el 2026-08-06 esta línea llevaba la contraseña real
 --             en texto plano y cualquiera podía leerla.)
