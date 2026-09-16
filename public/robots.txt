@@ -4,4 +4,4 @@ Allow: /
 Disallow: /admin
 Disallow: /portal
 
-Sitemap: https://the-studio-delta.vercel.app/sitemap-index.xml
+Sitemap: https://thestudio.atisstudio.org/sitemap-index.xml

@@ -4,11 +4,16 @@ import sitemap from "@astrojs/sitemap";
 import vercel from "@astrojs/vercel";
 import { servicios } from "./src/data/servicios.ts";
 
-// Dominio provisional (subdominio de Vercel) hasta que se elija el dominio propio — CLAUDE.md §6.
-// Corregido 2026-08-05: apuntaba a "the-studio-atis", que no existe (404). El proyecto
-// real de Vercel sirve en "the-studio-delta", así que canonical, og:image y sitemap
-// estaban señalando a un dominio muerto (sin previsualización al compartir el enlace).
-const SITE_URL = "https://the-studio-delta.vercel.app";
+/*
+  Dominio DEFINITIVO de la agencia (2026-09-16): Alejandro compró atisstudio.org para
+  la cooperativa y The Studio vive en el subdominio thestudio. La raíz atisstudio.org
+  es de la cooperativa entera — este repositorio NO la reclama nunca.
+
+  De aquí salen el canonical, el og:image y el sitemap, así que este valor es el que
+  le dice a Google cuál es la dirección buena. Mientras dijo "the-studio-delta.vercel.app"
+  (subdominio provisional de Vercel), el sitio se habría partido entre dos direcciones.
+*/
+const SITE_URL = "https://thestudio.atisstudio.org";
 
 // https://astro.build/config
 export default defineConfig({

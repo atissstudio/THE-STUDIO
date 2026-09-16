@@ -27,13 +27,13 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "ProfessionalService",
   name: "The Studio, by Atis",
-  url: new URL(path, Astro.site ?? "https://the-studio-delta.vercel.app").toString(),
+  url: new URL(path, Astro.site ?? "https://thestudio.atisstudio.org").toString(),
   description: "Consultoría de comunicación, marketing e IA para negocios en Canarias.",
   areaServed: "Canarias, España",
 };
 
 // Breadcrumbs JSON-LD, calculados a partir del path — solo en páginas internas (no home).
-const siteBase = Astro.site ?? new URL("https://the-studio-delta.vercel.app");
+const siteBase = Astro.site ?? new URL("https://thestudio.atisstudio.org");
 const segments = path.split("/").filter(Boolean);
 const breadcrumbLd =
   segments.length > 0
